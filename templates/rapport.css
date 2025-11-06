@@ -1,0 +1,752 @@
+/* =====================================================
+   rapport.css — version optimisée (préserve le rendu existant)
+   - Organisation stricte des sections
+   - Élimination des doublons (notamment .stress)
+   - Unification des styles communs (big-num)
+   - Commentaires clairs sans verbiage excessif
+   ===================================================== */
+
+/* =====================================================
+   1) Variables & fondations typographiques
+   ===================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+    /* Couleurs principales */
+    --bg: #ffffff;
+    --text: #334155;
+    --muted: #64748b;
+    --blue: #1e3a8a;
+    --blue-dark: #0f172a;
+    --blue-light: #eef2ff;
+    --gold: #fbbf24;
+    --gold-dark: #cc9b1d;
+    --gold-light: #fffcf0;
+    --gray-light: #ececef;
+    --red: #dc2626;
+    --red-dark: #b91c1c;
+    --red-light: #fff6f5;
+    --green: #477f50;
+    --green-dark: #1f3b25;
+    --green-light: #ebfaef;
+
+    /* Tons UI */
+    --line: #eef6ff;
+    --subtle: #fbfbfd;
+
+    /* Bordures & ombres */
+    --border-radius: 10px;
+    --border-gray: 1px solid var(--gray-light);
+    --border-gold: 1px solid var(--gold);
+    --border-side-gold: 4px solid var(--gold);
+    --border-side-blue: 4px solid var(--blue);
+    --border-side-red: 4px solid var(--red);
+    --border-side-gray: 5px solid var(--gray-light);
+    --border-side-dashed: 1px dashed #e5e7eb;
+    --shadow-card: 0 6px 18px rgba(16, 24, 40, 0.06);
+    --shadow-cover: 0 10px 30px rgba(2, 6, 23, 0.18);
+
+    /* Espacements */
+    --padding-page: 24px;
+    --padding-card: 16px 18px 14px;
+    --margin-h3: 0 0 6px 0;
+
+    /* Typo */
+    --font-stack:
+        "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial;
+    --font-size-xxs: 8px;
+    --font-size-xs: 10px;
+    --font-size-sm: 12px;
+    --font-size-md: 14px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+    --font-size-xxxl: 36px;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+}
+
+/* =====================================================
+   2) Base globale
+   ===================================================== */
+* {
+    box-sizing: border-box;
+}
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    padding: var(--padding-page);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-stack);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =====================================================
+   3) Impression / PDF
+   ===================================================== */
+@page {
+    size: A4;
+    margin: 18mm;
+}
+@media print {
+    :root {
+        --padding-page: 12px;
+    }
+    body {
+        padding: 0;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .page-break {
+        page-break-after: always;
+    }
+}
+
+/* =====================================================
+   4) Structure générale (titres, sommaire, tables, badges, alerts)
+   ===================================================== */
+
+/* Titres de section */
+section h2 {
+    position: relative;
+    padding-left: 14px;
+    margin-top: 64px;
+    font-weight: var(--font-weight-bold);
+    color: var(--blue-dark);
+}
+section h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 70%;
+    background: var(--gold);
+    border-radius: 2px;
+}
+
+/* Sommaire */
+.toc {
+    padding: 16px;
+    margin: 20px 0;
+}
+.toc h2 {
+    margin: 0 0 8px 0;
+    color: var(--blue-dark);
+}
+.toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+}
+.toc li {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+.toc .num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--gold);
+    color: var(--blue-dark);
+    font-weight: var(--font-weight-bold);
+    margin-right: 12px;
+}
+.toc a {
+    color: var(--blue-dark);
+    text-decoration: none;
+    font-weight: var(--font-weight-bold);
+}
+
+/* Tableaux */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 18px;
+    font-size: var(--font-size-sm);
+}
+thead tr {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+    border-bottom: 2px solid var(--gold);
+}
+thead th {
+    color: var(--bg);
+    padding: 10px;
+    text-transform: uppercase;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-md);
+}
+tbody td {
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+}
+tbody tr:nth-child(even) {
+    background: #fbfbfc;
+}
+.nowrap {
+    white-space: nowrap;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--blue-dark);
+    background: var(--blue-light);
+}
+.badge.crit,
+.badge.high {
+    background: var(--red-light);
+    color: var(--red-dark);
+}
+.badge.mid {
+    background: var(--gold-light);
+    color: var(--gold-dark);
+}
+.badge.low {
+    background: var(--green-light);
+    color: var(--green-dark);
+}
+.badge.neutral {
+    background: var(--blue-light);
+    color: var(--blue-dark);
+}
+table .badge {
+    padding: 3px 8px;
+} /* version compacte */
+
+/* Alertes simples */
+.alert {
+    padding: 12px;
+    border-left: var(--border-side-red);
+    background: var(--red-light);
+    border-radius: var(--border-radius);
+    margin: 12px 0;
+}
+
+/* Titres unifiés des cartes */
+.card-title,
+.reco h3,
+.alert strong,
+.stress .scenario,
+.mk-card-current h3,
+.mk-card-optimal h3 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    color: var(--blue-dark);
+    margin: var(--margin-h3);
+    line-height: 1.3;
+    letter-spacing: 0.1px;
+}
+
+/* Numéros géants (cartes) */
+.reco .big-num,
+.risque .big-num {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    font-size: var(--font-size-xxxl);
+    color: var(--gray-light);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+}
+/* Accent de contexte pour les risques */
+.risque .big-num {
+    color: var(--red-dark);
+    opacity: 0.1;
+}
+
+/* =====================================================
+   5) Sections principales
+   ===================================================== */
+
+/* 5.1 Cover (entête) */
+.cover {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 240px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+    box-shadow: var(--shadow-cover);
+}
+.cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at 35% 35%,
+        rgba(251, 191, 36, 0.18),
+        transparent 40%
+    );
+}
+.cover .title {
+    position: relative;
+    z-index: 2;
+    font-size: var(--font-size-xxxl);
+    font-weight: var(--font-weight-bold);
+    margin: 0;
+    line-height: 1;
+    background: linear-gradient(90deg, #fcd34d, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 3px 16px rgba(15, 23, 42, 0.28);
+}
+.cover .subtitle-profile {
+    z-index: 2;
+    margin-top: 8px;
+    color: rgba(222, 211, 177, 0.78);
+    font-size: var(--font-size-md);
+}
+.cover .subtitle {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    font-size: var(--font-size-sm);
+    color: rgba(222, 211, 177, 1);
+    text-transform: lowercase;
+    font-variant-caps: all-small-caps;
+    font-weight: var(--font-weight-regular);
+}
+
+/* 5.2 Metrics */
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+    max-width: 90%;
+    margin: -40px auto 20px;
+}
+.card {
+    background: var(--bg);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    border-top: var(--border-side-gold);
+    box-shadow: var(--shadow-card);
+}
+.card .label {
+    font-size: var(--font-size-sm);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+.card .value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--blue-dark);
+    margin-top: 8px;
+}
+
+/* 5.3 Risques patrimoniaux */
+.risque {
+    position: relative;
+    background: var(--red-light);
+    border: var(--border-gray);
+    border-left: var(--border-side-red);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-card);
+    padding: var(--padding-card);
+    margin: 12px 0;
+}
+.risque h3 {
+    margin: var(--margin-h3);
+    color: var(--blue-dark);
+    font-weight: var(--font-weight-bold);
+}
+.risque p {
+    color: var(--text);
+}
+.risque p + p {
+    margin-top: 8px;
+    border-top: var(--border-side-dashed);
+    padding-top: 8px;
+}
+.risque strong {
+    color: var(--blue);
+}
+.risque details summary {
+    font-weight: var(--font-weight-semibold);
+    margin-top: 10px;
+    color: var(--blue-dark);
+}
+.risque details ul {
+    margin: 6px 0 0 14px;
+    padding: 0;
+    list-style: disc;
+    color: var(--text);
+}
+.risque details li {
+    font-size: var(--font-size-sm);
+}
+.risque ul[data-field="sources_list"] a {
+    font-weight: var(--font-weight-medium);
+    color: var(--blue-dark);
+}
+.risque ul[data-field="sources_list"] small {
+    display: block;
+    color: var(--muted);
+    font-size: var(--font-size-sm);
+}
+
+/* 5.4 Recommandations */
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.reco {
+    position: relative;
+    background: var(--subtle);
+    border: var(--border-gray);
+    border-left: var(--border-side-gray);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-card);
+    padding: var(--padding-card);
+}
+.reco h3 {
+    margin: var(--margin-h3);
+    color: var(--blue-dark);
+}
+.reco p {
+    color: var(--text);
+}
+.reco p + p {
+    margin-top: 8px;
+    border-top: var(--border-side-dashed);
+    padding-top: 8px;
+}
+.stress strong,
+.reco strong {
+    color: var(--blue);
+}
+.markowitz-methodology small.muted,
+.reco small.muted {
+    font-size: var(--font-size-xs);
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* 5.5 Tests de résistance */
+/* NOTE: Consolidation des styles .stress (suppression des doublons) */
+.stress-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+.stress {
+    position: relative;
+    background: var(--subtle);
+    border: var(--border-gray);
+    border-left: var(--border-side-gold);
+    border-radius: var(--border-radius);
+    padding: var(--padding-card);
+    box-shadow: var(--shadow-card);
+}
+.stress.low {
+    border-left-color: var(--green);
+}
+.stress.mid {
+    border-left-color: var(--gold);
+}
+.stress.high {
+    border-left-color: var(--red);
+}
+
+.stress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+/* Bloc harmonisé prix/% */
+.stress .impact {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 4px 0 6px;
+}
+.stress .impact .price {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--blue-dark);
+    line-height: 1.2;
+}
+.stress .impact .pct {
+    font-size: var(--font-size-md);
+    color: var(--muted);
+    font-weight: var(--font-weight-medium);
+}
+.stress p.description {
+    margin-top: 8px;
+    border-top: var(--border-side-dashed);
+    padding-top: 8px;
+    color: var(--text);
+    line-height: 1.45;
+}
+/* Compatibilité descendante (si anciens templates utilisent .value/.context/.details) */
+.stress .value {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--blue);
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+.stress .context {
+    font-size: var(--font-size-md);
+    color: var(--muted);
+    margin-left: 4px;
+}
+.stress .details {
+    font-size: var(--font-size-sm);
+    color: var(--text);
+    line-height: 1.45;
+    margin-top: 8px;
+}
+
+/* 5.6 Markowitz / Synthèse */
+.chart-wrap {
+    max-width: 520px;
+    margin: 16px auto;
+}
+.markowitz-chart {
+    text-align: center;
+    margin: 24px 0;
+}
+.markowitz-chart img {
+    max-width: 90%;
+    border-radius: var(--border-radius);
+}
+.markowitz-chart .chart-caption {
+    margin-top: 8px;
+    font-size: var(--font-size-sm);
+    color: #6b7280;
+    font-style: italic;
+}
+
+.markowitz-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 16px;
+}
+.mk-card-current,
+.mk-card-optimal {
+    padding: var(--padding-card);
+    border: var(--border-gray);
+    border-radius: var(--border-radius);
+    border-left: var(--border-side-blue);
+    background: var(--subtle);
+    box-shadow: var(--shadow-card);
+}
+.mk-card-optimal {
+    border-left: var(--border-side-gold);
+}
+.mk-card li {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+    color: #334155;
+    font-size: var(--font-size-sm);
+    position: relative;
+}
+.mk-card-li::before {
+    content: "•";
+    position: absolute;
+    left: -14px;
+    color: var(--blue-dark);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.4;
+}
+.markowitz-methodology {
+    margin-top: 40px;
+    background: var(--subtle);
+    border: var(--border-gray);
+    border-left: var(--border-side-gray);
+    border-radius: var(--border-radius);
+    padding: var(--padding-card);
+    box-shadow: var(--shadow-card);
+}
+.markowitz-methodology h3 {
+    font-size: var(--font-size-md);
+    color: var(--blue-dark);
+    margin-bottom: 16px;
+}
+.methodology-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+.methodology-content h4 {
+    color: var(--blue);
+    font-size: var(--font-size-md);
+    margin-bottom: 10px;
+    font-weight: var(--font-weight-bold);
+}
+.methodology-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.methodology-content li {
+    padding: 5px 0;
+    border-bottom: var(--border-side-dashed);
+    color: #475569;
+    font-size: var(--font-size-sm);
+}
+.methodology-content li:last-child {
+    border-bottom: none;
+}
+.methodology-content .limits li::before {
+    content: "●";
+    color: var(--gold);
+    margin-right: 8px;
+    font-size: var(--font-size-xxs);
+}
+
+/* =====================================================
+   6) Utilitaires & pied de page
+   ===================================================== */
+.muted {
+    color: var(--muted);
+}
+.right {
+    text-align: right;
+}
+.center {
+    text-align: center;
+}
+[data-field] {
+    min-height: 1em;
+}
+
+footer {
+    margin-top: 26px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: var(--font-size-sm);
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+}
+
+/* =====================================================
+   7) Responsif léger
+   ===================================================== */
+@media (max-width: 1000px) {
+    .metrics {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+        margin: 16px 0;
+    }
+    .markowitz-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================================
+   Harmonisation des tableaux (sections 1 & 2)
+   ===================================================== */
+
+/* Colonnes alignées et proportionnelles */
+#etablissements table th:nth-child(1),
+#actifs table th:nth-child(1) {
+    width: 40%;
+    text-align: left;
+}
+#etablissements table th:nth-child(2),
+#actifs table th:nth-child(2) {
+    width: 25%;
+    text-align: left;
+}
+
+/* Corps de tableau — cellules texte alignées à gauche */
+#etablissements table td:nth-child(1),
+#actifs table td:nth-child(1),
+#etablissements table td:nth-child(2),
+#actifs table td:nth-child(2) {
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Harmoniser le rendu typographique */
+#actifs table td:nth-child(1) strong,
+#actifs table td:nth-child(2) strong {
+    font-weight: var(--font-weight-bold);
+    color: var(--blue-dark);
+}
+
+/* Uniformisation des espacements */
+#actifs table td,
+#etablissements table td {
+    padding: 10px 12px;
+}
+/* Harmonisation colonnes 1 & 2 — tableaux sections 1 et 2 */
+#etablissements table th:nth-child(1),
+#actifs table th:nth-child(1) {
+    width: 40%;
+    text-align: left;
+}
+#etablissements table th:nth-child(2),
+#actifs table th:nth-child(2) {
+    width: 25%;
+    text-align: left;
+}
+
+#etablissements table td:nth-child(1),
+#etablissements table td:nth-child(2),
+#actifs table td:nth-child(1),
+#actifs table td:nth-child(2) {
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* Colonne 1 du tableau 2 en deux lignes, ligne 1 = style de référence (gras) */
+#actifs table td:nth-child(1) .cell-primary {
+    display: block;
+    font-weight: var(--font-weight-bold); /* comme <strong> du tableau 1 */
+    color: var(--blue-dark);
+}
+#actifs table td:nth-child(1) .cell-secondary {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted); /* style actuel */
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
+/* Optionnel : même pad pour les cellules */
+#etablissements table td,
+#actifs table td {
+    padding: 10px 12px;
+}

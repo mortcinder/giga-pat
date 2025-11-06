@@ -1,0 +1,25 @@
+# Prompts personnalisés pour recherches web
+
+prompts:
+  loi_sapin_2:
+    sujet: "Loi Sapin 2 - Article 21 HCSF"
+    queries:
+      - "Loi Sapin 2 blocage assurance-vie 2025"
+      - "HCSF article 21 conditions application"
+      - "assurance-vie gel temporaire crise bancaire"
+      - "article L. 612-33 code monétaire financier"
+
+  fiscalite_epargne:
+    sujet: "Fiscalité épargne 2025-2026"
+    queries:
+      - "projet loi finances 2026 fiscalité épargne"
+      - "PFU flat tax évolution 2025"
+      - "assurance-vie fiscalité réforme"
+      - "PEA fiscalité modification 2025"
+
+  marches_actions:
+    sujet: "Contexte marchés actions 2025"
+    queries:
+      - "prévisions marchés actions 2025 2026"
+      - "volatilité marchés financiers risques"
+      - "correction boursière probabilité analyse"

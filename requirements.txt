@@ -1,0 +1,29 @@
+# Core
+python>=3.10
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# File parsing
+pdfplumber>=0.10.0
+PyPDF2>=3.0.0
+openpyxl>=3.1.0
+
+# HTML/Web
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# API
+requests>=2.31.0
+
+# Config
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Utils
+python-dateutil>=2.8.0
+
+# Financial analysis
+matplotlib>=3.7.0
+scipy>=1.11.0

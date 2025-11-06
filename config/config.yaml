@@ -1,0 +1,45 @@
+project:
+  name: "Patrimoine Analyzer"
+  version: "1.0.0"
+
+paths:
+  sources: "sources/"
+  templates: "templates/"
+  generated: "generated/"
+  logs: "logs/"
+
+normalizer:
+  input_file: "patrimoine.md"
+  output_file: "patrimoine_input.json"
+  date_format: "ISO8601"
+
+analyzer:
+  input_file: "patrimoine_input.json"
+  output_file: "patrimoine_analysis.json"
+  web_research:
+    enabled: true
+    max_queries: 50
+    timeout_seconds: 30
+    retry_count: 3
+  risk_thresholds:
+    concentration_etablissement_critique: 50
+    concentration_etablissement_eleve: 30
+    concentration_juridiction_critique: 80
+    concentration_juridiction_eleve: 60
+    liquidite_critique: 5000
+    liquidite_faible: 15000
+
+generator:
+  input_file: "patrimoine_analysis.json"
+  template_file: "rapport_template.html"
+  output_prefix: "rapport_"
+  date_format: "%Y%m%d_%H%M%S"
+
+logging:
+  level: "INFO"
+  format: "[%(asctime)s] %(levelname)s: %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+analysis:
+  config_file: "analysis.yaml"  # Fichier de configuration pour l'analyse
+  active_profile: "default"     # Profil à utiliser : default, dynamique, equilibre, prudent

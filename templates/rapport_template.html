@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <title>
+            {{report_title | Rapport Patrimonial}} — {{report_date |
+            2025-10-20}}
+        </title>
+        <!-- Chart.js is optional: if your PDF renderer doesn't run JS, you can replace the canvas with a static image before rendering -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <link rel="stylesheet" href="rapport.css" />
+    </head>
+    <body>
+        <!--
+    Template notes for scripting:
+    - Replace any element with a data-field attribute using your script, e.g.
+        document.querySelector('[data-field="patrimoine_total"]').innerText = '470 354 €'
+    - For table rows, duplicate the <tr data-repeat="etablissement"> block from the template and fill fields inside.
+    - If your PDF renderer doesn't execute JS, render the chart to an image (PNG) server-side and replace the canvas with <img src="..."> before PDF conversion.
+  -->
+
+        <!-- COVER -->
+        <section class="cover" role="banner">
+            <h1 class="title" data-field="title">Rapport Patrimonial</h1>
+            <div class="subtitle-profile" data-field="subtitle_profile">
+                … • 0 ans • Profil: ? • Emploi: ? • Revenu: 0 €/mois
+            </div>
+            <div class="subtitle" data-field="subtitle">
+                Analyse approfondie • Recommandations • Synthèse —
+                <span data-field="report_date">20 octobre 2025</span>
+            </div>
+        </section>
+
+        <!-- METRICS -->
+        <section class="metrics">
+            <div class="card" data-field="patrimoine_card">
+                <div class="label">Patrimoine total</div>
+                <div class="value" data-field="patrimoine_total">0 €</div>
+            </div>
+            <div class="card" data-field="actifs_card">
+                <div class="label">Actifs financiers</div>
+                <div class="value" data-field="actifs_financiers">0 €</div>
+            </div>
+            <div class="card" data-field="immo_card">
+                <div class="label">Immobilier</div>
+                <div class="value" data-field="immobilier">0 €</div>
+            </div>
+            <div class="card" data-field="score_card">
+                <div class="label">Score global</div>
+                <div class="value" data-field="score_global">0/10</div>
+            </div>
+        </section>
+
+        <!-- SOMMAIRE / TOC -->
+        <nav class="toc page-break">
+            <h2>Sommaire</h2>
+            <ul>
+                <li>
+                    <span class="num">1</span
+                    ><a href="#etablissements"
+                        >Répartition par établissements</a
+                    >
+                </li>
+                <li>
+                    <span class="num">2</span
+                    ><a href="#actifs">Classes d'actifs</a>
+                </li>
+                <li>
+                    <span class="num">3</span
+                    ><a href="#risques">Risques patrimoniaux</a>
+                </li>
+                <li>
+                    <span class="num">4</span
+                    ><a href="#recommandations">Recommandations</a>
+                </li>
+                <li>
+                    <span class="num">5</span
+                    ><a href="#stress">Tests de résistance</a>
+                </li>
+                <li>
+                    <span class="num">6</span
+                    ><a href="#markowitz">Optimisation (Markowitz)</a>
+                </li>
+                <li>
+                    <span class="num">7</span
+                    ><a href="#synthese">Synthèse finale</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- CHAPTER 1 - ESTABLISHMENTS -->
+        <section id="etablissements" class="page-break">
+            <h2>1. Répartition par établissements</h2>
+            <p class="subtitle">
+                Ce tableau présente la répartition du patrimoine financier entre
+                les différents établissements et permet d'identifier les zones
+                de concentration de risque.
+            </p>
+
+            <!-- Table header is static; rows can be repeated by the script using data-repeat -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Établissement</th>
+                        <th>Juridiction</th>
+                        <th class="right">Montant</th>
+                        <th class="right">% Patrimoine</th>
+                        <th class="center">Risque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Example row — scripts should clone this <tr> and replace its [data-field] values -->
+                    <tr data-repeat="etablissement">
+                        <td>
+                            <strong data-field="etablissement_name">…</strong>
+                        </td>
+                        <td data-field="etablissement_juridiction">…</td>
+                        <td
+                            class="right nowrap"
+                            data-field="etablissement_montant"
+                        >
+                            0 €
+                        </td>
+                        <td class="right" data-field="etablissement_pct">
+                            0 %
+                        </td>
+                        <td class="center">
+                            <span class="badge" data-field="etablissement_risk"
+                                >…</span
+                            >
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="alert" data-conditional="concentration_alert">
+                <span data-field="concentration_alert_content"></span>
+            </div>
+        </section>
+
+        <!-- CHAPTER 2 - ASSET CLASSES -->
+        <section id="actifs" class="page-break">
+            <h2>2. Répartition par classes d'actifs</h2>
+            <p class="subtitle">
+                Ce tableau permet d’évaluer l’équilibre global du patrimoine
+                selon les principales classes d’actifs et de repérer les
+                surpondérations éventuelles.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Classe d'actifs</th>
+                        <th>Établissement</th>
+                        <th class="right">Montant</th>
+                        <th class="right">% Patrimoine</th>
+                        <th class="center">Écart benchmark</th>
+                    </tr>
+                </thead>
+                <tbody data-repeat="classes">
+                    <tr>
+                        <td>
+                            <span
+                                class="cell-primary"
+                                data-field="class_name_primary"
+                                >…</span
+                            >
+                            <span
+                                class="cell-secondary"
+                                data-field="class_name_secondary"
+                                >…</span
+                            >
+                        </td>
+                        <td class="right" data-field="class_etablissement">
+                            …
+                        </td>
+                        <td class="right" data-field="class_amount">0 €</td>
+                        <td class="right" data-field="class_pct">0 %</td>
+                        <td class="center" data-field="class_benchmark_gap">
+                            <span data-field="class_gap_message">…</span>
+                            <span data-field="class_gap_badge" class="badge"
+                                >…</span
+                            >
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- CHAPTER 3 - RISKS -->
+        <section id="risques" class="page-break">
+            <h2>3. Risques patrimoniaux</h2>
+            <p class="subtitle">
+                Les encadrés ci-dessous résument les principaux risques
+                identifiés : concentration, fiscalité et exposition
+                réglementaire.
+            </p>
+
+            <!-- Risques dynamiques injectés depuis le JSON -->
+            <div class="risque" data-repeat="risque">
+                <div class="big-num" data-field="risque_num">…</div>
+                <h3 data-field="risque_titre">Titre du risque</h3>
+
+                <p data-field="risque_description">…</p>
+
+                <p>
+                    <strong>Exposition :</strong>
+                    <span data-field="risque_montant">0 €</span>
+                    (<span data-field="risque_pct">0 %</span>)
+                </p>
+
+                <div>
+                    <strong>Sources web :</strong>
+                    <ul data-field="sources_list">
+                        <!-- Sources injectées dynamiquement -->
+                        <a href="https://example.com/source1" target="_blank"
+                            >…</a
+                        >
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHAPTER 4 - RECOMMENDATIONS -->
+        <section id="recommandations" class="page-break">
+            <h2>4. Recommandations prioritaires</h2>
+            <p class="subtitle">
+                Les recommandations suivantes visent à corriger les
+                déséquilibres majeurs identifiés et à renforcer la résilience du
+                patrimoine.
+            </p>
+
+            <div class="stack">
+                <!-- Template recommandation - sera dupliqué pour chaque recommandation -->
+                <div class="reco" data-repeat="recommandation">
+                    <div class="big-num" data-field="reco_num">…</div>
+                    <h3 data-field="reco_titre">Titre de la recommandation</h3>
+
+                    <p data-field="reco_description">…</p>
+
+                    <p>
+                        <strong>Bénéfice :</strong>
+                        <span data-field="reco_benefice">…</span>
+                    </p>
+                    <div>
+                        <strong>Actions concrètes :</strong>
+                        <ul data-field="reco_actions">
+                            <!-- Liste d'actions injectée dynamiquement -->
+                        </ul>
+                    </div>
+                    <small class="muted">
+                        Délai estimé :
+                        <span data-field="reco_delai">0 jour</span>
+                    </small>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHAPTER 5 - STRESS TESTS -->
+        <section id="stress" class="page-break">
+            <h2>5. Tests de résistance</h2>
+            <p class="subtitle">
+                Ces scénarios simulent l'impact de crises majeures sur le
+                patrimoine et évaluent la capacité de résistance.
+            </p>
+
+            <div class="stack">
+                <!-- Template stress test - sera dupliqué pour chaque test -->
+                <div class="stress high" data-repeat="stress_test">
+                    <header class="stress-header">
+                        <h3 class="scenario" data-field="test_scenario">…</h3>
+                        <div class="badge">…</div>
+                    </header>
+
+                    <div class="impact">
+                        <span class="price" data-field="test_impact_valeur"
+                            >0 €</span
+                        >
+                        <span class="pct" data-field="test_impact_pct"
+                            >0 %</span
+                        >
+                    </div>
+
+                    <p class="description">
+                        <strong>Résumé :</strong>
+                        <span data-field="test_details">…</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHAPTER 6 - PORTFOLIO OPTIMIZATION (MARKOWITZ) -->
+        <section id="markowitz" class="page-break">
+            <h2>6. Optimisation de portefeuille (Markowitz)</h2>
+            <p class="subtitle">
+                Analyse selon la théorie moderne du portefeuille : frontière
+                efficiente et ratio de Sharpe. Compare l'allocation actuelle
+                avec l'allocation optimale maximisant le ratio rendement/risque.
+            </p>
+
+            <!-- Graphique de la frontière efficiente -->
+            <div class="markowitz-chart">
+                <img
+                    data-field="markowitz_chart"
+                    alt="Frontière efficiente de Markowitz"
+                />
+                <p class="chart-caption">
+                    Frontière efficiente — Allocation optimale vs actuelle
+                </p>
+            </div>
+
+            <!-- Métriques comparatives -->
+            <div class="markowitz-cards">
+                <!-- Portefeuille actuel -->
+                <div class="mk-card-current">
+                    <h3>Portefeuille actuel</h3>
+                    <ul>
+                        <li class="mk-card li">
+                            <span>Rendement espéré :</span>
+                            <strong data-field="markowitz_current_return"
+                                >0 %</strong
+                            >
+                        </li>
+                        <li class="mk-card li">
+                            <span>Volatilité annuelle :</span>
+                            <strong data-field="markowitz_current_volatility"
+                                >0 %</strong
+                            >
+                        </li>
+                        <li class="mk-card li">
+                            <span>Ratio de Sharpe :</span>
+                            <strong
+                                class="mk-sharpe"
+                                data-field="markowitz_current_sharpe"
+                                >0</strong
+                            >
+                        </li>
+                    </ul>
+                </div>
+                <!-- Portefeuille optimal -->
+                <div class="mk-card-optimal">
+                    <h3>Portefeuille optimal</h3>
+                    <ul>
+                        <li class="mk-card-li">
+                            <span>Rendement espéré :</span>
+                            <strong data-field="markowitz_optimal_return"
+                                >0 %</strong
+                            >
+                        </li>
+                        <li class="mk-card-li">
+                            <span>Volatilité annuelle :</span>
+                            <strong data-field="markowitz_optimal_volatility"
+                                >0 %</strong
+                            >
+                        </li>
+                        <li class="mk-card-li">
+                            <span>Ratio de Sharpe :</span>
+                            <strong
+                                class="mk-sharpe"
+                                data-field="markowitz_optimal_sharpe"
+                                >0</strong
+                            >
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interprétation -->
+            <div class="alert">
+                <strong>⚠️ Amélioration modérée possible :</strong>
+                <span
+                    style="margin: 0; font-size: 10.5pt; line-height: 1.6"
+                    data-field="markowitz_interpretation"
+                >
+                    …
+                </span>
+            </div>
+
+            <!-- Note méthodologique -->
+            <div class="markowitz-methodology">
+                <h3>Méthodologie et limites</h3>
+                <div class="methodology-content">
+                    <div class="methods">
+                        <h4>Méthodologie</h4>
+                        <ul>
+                            <li>
+                                <strong>Approche :</strong> Estimations
+                                statistiques moyennes par classe d'actifs
+                                (données historiques génériques)
+                            </li>
+                            <li>
+                                <strong>Univers :</strong> Actions (monde, USA,
+                                Europe, émergents), obligations (État,
+                                corporate), crypto, or, immobilier, livrets
+                            </li>
+                            <li>
+                                <strong>Rendements et volatilités :</strong>
+                                Moyennes historiques long terme (sources : MSCI,
+                                indices de marché)
+                            </li>
+                            <li>
+                                <strong>Corrélations :</strong> Matrice
+                                simplifiée basée sur corrélations typiques entre
+                                classes d'actifs
+                            </li>
+                            <li>
+                                <strong>Taux sans risque :</strong>
+                                <span data-field="markowitz_risk_free_rate"
+                                    >0</span
+                                >
+                                % (OAT 10 ans France)
+                            </li>
+                            <li>
+                                <strong>Optimisation :</strong> Maximisation du
+                                ratio de Sharpe
+                            </li>
+                            <li>
+                                <strong>Contraintes :</strong> poids ≥ 0 ; somme
+                                = 100 %
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Limites</h4>
+                        <ul>
+                            <li>
+                                <strong>Pas de données réelles :</strong>
+                                utilisation de moyennes historiques génériques,
+                                non spécifiques au portefeuille
+                            </li>
+                            <li>
+                                <strong>Corrélations simplifiées :</strong>
+                                matrice statique ne reflétant pas les évolutions
+                                de marché
+                            </li>
+                            <li>
+                                <strong>Coûts non intégrés :</strong> frais de
+                                transaction, fiscalité et contraintes de
+                                liquidité ignorés
+                            </li>
+                            <li>
+                                <strong>Ruptures de régime :</strong> crises
+                                financières et changements structurels non
+                                modélisés
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <p>
+                    <small class="muted">
+                        Les résultats présentés constituent des estimations
+                        statistiques et ne préjugent pas des performances
+                        futures.
+                    </small>
+                </p>
+            </div>
+        </section>
+
+        <!-- SYNTHÈSE -->
+        <section id="synthese" class="page-break">
+            <h2>7. Synthèse finale</h2>
+            <p data-field="synthese_commentaire">…</p>
+            <ul>
+                <li>
+                    <strong>Solidité globale :</strong>
+                    <span data-field="score_global">0</span>
+                </li>
+                <li>
+                    <strong>Risque principal :</strong>
+                    <span data-field="risque_principal">…</span>
+                </li>
+                <li>
+                    <strong>Priorités :</strong>
+                    <span data-field="priorites">…</span>
+                </li>
+            </ul>
+
+            <!-- Détails score de diversification -->
+            <details class="diversification-details" style="margin: 1.5rem 0">
+                <summary
+                    style="
+                        cursor: pointer;
+                        font-weight: 600;
+                        color: var(--blue-dark);
+                        margin-bottom: 0.75rem;
+                    "
+                >
+                    Détails du score de diversification
+                    <span
+                        data-field="div_label"
+                        class="badge"
+                        style="margin-left: 0.5rem"
+                        >…</span
+                    >
+                </summary>
+                <ul
+                    style="
+                        padding-left: 1rem;
+                        border-left: 3px solid var(--blue-light);
+                    "
+                >
+                    <p style="margin-bottom: 0.5rem">
+                        <strong>Score final :</strong>
+                        <span data-field="div_score_final">0</span>/10
+                    </p>
+                    <p style="margin-bottom: 0.5rem">
+                        <strong>Composition du score :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            Score institutionnel (60%) :
+                            <span data-field="div_score_institutional">0</span
+                            >/10
+                        </li>
+                        <li>
+                            Score juridictionnel (40%) :
+                            <span data-field="div_score_jurisdictional">0</span
+                            >/10
+                        </li>
+                        <li>
+                            Score pondéré :
+                            <span data-field="div_score_weighted">0</span>/10
+                        </li>
+                        <li>
+                            Bonus de diversification : +<span
+                                data-field="div_bonus_total"
+                                >0</span
+                            >
+                        </li>
+                    </ul>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Métriques de diversification :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            Nombre de classes d'actifs :
+                            <span data-field="div_nb_classes">0</span>
+                        </li>
+                        <li>
+                            Nombre de positions/comptes :
+                            <span data-field="div_nb_positions">0</span>
+                        </li>
+                        <li>
+                            Exposition internationale :
+                            <span data-field="div_pct_international">0</span>%
+                        </li>
+                    </ul>
+                    <div data-field="div_bonus_details">
+                        <!-- Bonus details will be injected here if present -->
+                    </div>
+                </ul>
+            </details>
+
+            <!-- Détails score de résilience -->
+            <details class="resilience-details" style="margin: 1.5rem 0">
+                <summary
+                    style="
+                        cursor: pointer;
+                        font-weight: 600;
+                        color: var(--blue-dark);
+                        margin-bottom: 0.75rem;
+                    "
+                >
+                    Détails du score de résilience
+                    <span
+                        data-field="res_label"
+                        class="badge"
+                        style="margin-left: 0.5rem"
+                        >…</span
+                    >
+                </summary>
+                <div
+                    style="
+                        padding-left: 1rem;
+                        border-left: 3px solid var(--blue-light);
+                    "
+                >
+                    <p style="margin-bottom: 0.5rem">
+                        <strong>Score final :</strong>
+                        <span data-field="res_score_final">0</span>/10
+                    </p>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Méthode de calcul :</strong>
+                    </p>
+                    <ul>
+                        <li>Score de base : 8.0/10</li>
+                        <li>Pénalité par stress test haute sévérité : -2.0</li>
+                        <li>Pénalité par stress test moyenne sévérité : -0.5</li>
+                        <li>Bonus si 0 risque critique : +1.0</li>
+                        <li>Malus si ≥3 risques critiques : -1.5</li>
+                    </ul>
+                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
+                        Le score de résilience mesure la robustesse du patrimoine face aux chocs exogènes (marché, taux, fiscalité, etc.).
+                    </p>
+                </div>
+            </details>
+
+            <!-- Détails score de liquidité -->
+            <details style="margin-top: 1.25rem">
+                <summary
+                    style="
+                        cursor: pointer;
+                        font-weight: 600;
+                        color: var(--blue-dark);
+                        margin-bottom: 0.75rem;
+                    "
+                >
+                    Détails du score de liquidité
+                    <span
+                        data-field="liq_label"
+                        class="badge"
+                        style="margin-left: 0.5rem"
+                        >…</span
+                    >
+                </summary>
+                <div
+                    style="
+                        padding-left: 1rem;
+                        border-left: 3px solid var(--blue-light);
+                    "
+                >
+                    <p style="margin-bottom: 0.5rem">
+                        <strong>Score final :</strong>
+                        <span data-field="liq_score_final">0</span>/10
+                    </p>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Situation actuelle :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            Liquidités disponibles :
+                            <span data-field="liq_liquidite_actuelle">0 €</span>
+                        </li>
+                        <li>
+                            Liquidité cible (<span data-field="liq_target_months">12</span> mois de dépenses) :
+                            <span data-field="liq_liquidite_cible">0 €</span>
+                        </li>
+                        <li>
+                            Ratio liquidités/cible :
+                            <span data-field="liq_ratio">0.00</span>
+                        </li>
+                        <li>
+                            Dépenses mensuelles estimées :
+                            <span data-field="liq_depenses_mensuelles">0 €</span>
+                        </li>
+                    </ul>
+                    <div
+                        data-field="liq_overliquid_message"
+                        style="
+                            margin-top: 0.75rem;
+                            padding: 0.75rem;
+                            background-color: var(--gold-light);
+                            border-left: 4px solid var(--gold-dark);
+                            border-radius: 4px;
+                            font-size: 0.9rem;
+                        "
+                    ></div>
+                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
+                        Le score de liquidité mesure la capacité à faire face à 12 mois de dépenses sans revenus.
+                        La cible est adaptée au profil investisseur (prudent = 15 mois, équilibré = 12 mois, dynamique = 9 mois).
+                    </p>
+                </div>
+            </details>
+
+            <!-- Détails score de fiscalité -->
+            <details style="margin-top: 1.25rem">
+                <summary
+                    style="
+                        cursor: pointer;
+                        font-weight: 600;
+                        color: var(--blue-dark);
+                        margin-bottom: 0.75rem;
+                    "
+                >
+                    Détails du score de fiscalité
+                    <span
+                        data-field="fisc_label"
+                        class="badge"
+                        style="margin-left: 0.5rem"
+                        >…</span
+                    >
+                </summary>
+                <div
+                    style="
+                        padding-left: 1rem;
+                        border-left: 3px solid var(--blue-light);
+                    "
+                >
+                    <p style="margin-bottom: 0.5rem">
+                        <strong>Score final :</strong>
+                        <span data-field="fisc_score_final">0</span>/10
+                    </p>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Répartition par enveloppe fiscale :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            PEA (fiscalement avantageux après 5 ans) :
+                            <span data-field="fisc_pea_total">0 €</span>
+                        </li>
+                        <li>
+                            CTO (fiscalité standard PFU 30%) :
+                            <span data-field="fisc_cto_total">0 €</span>
+                        </li>
+                        <li>
+                            Assurance-vie (succession optimisée) :
+                            <span data-field="fisc_av_total">0 €</span>
+                        </li>
+                        <li>
+                            PER (avantage fiscal à l'entrée) :
+                            <span data-field="fisc_per_total">0 €</span>
+                        </li>
+                        <li>
+                            Cryptomonnaies (fiscalité lourde) :
+                            <span data-field="fisc_crypto_total">0 €</span>
+                            (<span data-field="fisc_crypto_percentage">0%</span>)
+                        </li>
+                    </ul>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Optimisations détectées :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            PEA > CTO :
+                            <span data-field="fisc_pea_over_cto">Non</span>
+                        </li>
+                        <li>
+                            PER présent :
+                            <span data-field="fisc_has_per">Non</span>
+                        </li>
+                    </ul>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Bonus appliqués :</strong>
+                    </p>
+                    <div data-field="fisc_bonuses"></div>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Pénalités appliquées :</strong>
+                    </p>
+                    <div data-field="fisc_penalties"></div>
+                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
+                        Le score de fiscalité mesure le degré d'optimisation fiscale structurelle du patrimoine.
+                        Il évalue si le portefeuille est logé dans les bonnes enveloppes (PEA, AV, PER) ou s'il expose
+                        inutilement le foyer à une fiscalité lourde (CTO, cryptos non optimisés).
+                    </p>
+                </div>
+            </details>
+
+            <!-- Détails score de croissance -->
+            <details style="margin-top: 1.25rem">
+                <summary
+                    style="
+                        cursor: pointer;
+                        font-weight: 600;
+                        color: var(--blue-dark);
+                        margin-bottom: 0.75rem;
+                    "
+                >
+                    Détails du score de croissance
+                    <span
+                        data-field="growth_label"
+                        class="badge"
+                        style="margin-left: 0.5rem"
+                        >…</span
+                    >
+                </summary>
+                <div
+                    style="
+                        padding-left: 1rem;
+                        border-left: 3px solid var(--blue-light);
+                    "
+                >
+                    <p style="margin-bottom: 0.5rem">
+                        <strong>Score final :</strong>
+                        <span data-field="growth_score_final">0</span>/10
+                    </p>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Exposition aux actions :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            Montant en actions :
+                            <span data-field="growth_exposition_actions">0 €</span>
+                        </li>
+                        <li>
+                            Patrimoine financier total :
+                            <span data-field="growth_patrimoine_financier">0 €</span>
+                        </li>
+                        <li>
+                            Pourcentage actions :
+                            <span data-field="growth_pct_actions">0%</span>
+                        </li>
+                    </ul>
+                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
+                        <strong>Analyse par profil :</strong>
+                    </p>
+                    <ul>
+                        <li>
+                            Profil investisseur :
+                            <span data-field="growth_profil_actif">default</span>
+                        </li>
+                        <li>
+                            Plage optimale :
+                            <span data-field="growth_optimal_range">60-70%</span>
+                        </li>
+                    </ul>
+                    <p style="margin-top: 0.75rem; padding: 0.75rem; background-color: var(--blue-light); border-left: 4px solid var(--blue-dark); border-radius: 4px;">
+                        <strong>Interprétation :</strong>
+                        <span data-field="growth_interpretation">…</span>
+                    </p>
+                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
+                        Le score de croissance mesure le potentiel de rendement à long terme du patrimoine financier,
+                        basé sur l'exposition aux marchés actions. La plage optimale varie selon votre profil investisseur
+                        (prudent = 30-45%, équilibré = 50-65%, dynamique = 70-85%).
+                    </p>
+                </div>
+            </details>
+
+            <div class="chart-wrap">
+                <canvas id="radarChart" role="img"></canvas>
+            </div>
+        </section>
+
+        <footer class="no-print">
+            Rapport patrimonial — Octobre 2025 · Confidentiel · Design IA
+        </footer>
+
+        <script>
+            // Chart: keep it optional — script-based renderers will run this; server-side PDF renderers may not.
+            if (typeof Chart !== "undefined") {
+                const ctx = document.getElementById("radarChart");
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: "radar",
+                        data: {
+                            labels: [
+                                "Diversification",
+                                "Résilience",
+                                "Liquidité",
+                                "Fiscalité",
+                                "Croissance",
+                            ],
+                            datasets: [
+                                {
+                                    label: "Score Patrimonial",
+                                    data: [8, 7.5, 6.5, 7, 8.5],
+                                    fill: true,
+                                    backgroundColor: "rgba(30,64,175,0.14)",
+                                    borderColor: "#1e3a8a",
+                                    borderWidth: 2,
+                                    pointBackgroundColor: "#fbbf24",
+                                    pointRadius: 5,
+                                },
+                            ],
+                        },
+                        options: {
+                            animation: { duration: 700 },
+                            scales: {
+                                r: {
+                                    angleLines: { color: "#eef6ff" },
+                                    grid: { color: "#eef6ff" },
+                                    suggestedMin: 0,
+                                    suggestedMax: 10,
+                                    ticks: { display: false },
+                                    pointLabels: {
+                                        color: "#0f172a",
+                                        font: { size: 12 },
+                                    },
+                                },
+                            },
+                            plugins: { legend: { display: false } },
+                        },
+                    });
+                }
+            }
+
+            /* Example tiny helper to populate fields quickly if you test in browser
+       window.fill = function(data){ Object.keys(data).forEach(k=>{ const el=document.querySelector('[data-field="'+k+'"]').innerText=data[k] }) }
+    */
+        </script>
+    </body>
+</html>

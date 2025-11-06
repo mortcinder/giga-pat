@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(pip3 install:*)",
+      "Bash(export BRAVE_API_KEY=\"BSA81KxMOB0qrs_BtDxDoSthWZfNuPc\")",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(/dev/null)",
+      "WebFetch(domain:fr.wikipedia.org)",
+      "WebFetch(domain:www.abcbourse.com)",
+      "Bash(echo:*)",
+      "Bash(open:*)",
+      "Bash(python tests/test_generator.py:*)",
+      "Bash(python:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
