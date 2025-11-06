@@ -9,6 +9,10 @@ Transformer vos fichiers sources (CSV, PDF, Markdown) en un rapport patrimonial 
 - ✅ Identification des risques (concentration, réglementaire, fiscal, marché, liquidité, politique, changes)
 - ✅ Recommandations prioritisées et actionnables
 - ✅ Stress tests (crise bancaire, krach, perte emploi, crise immobilière...)
+- ✅ **Optimisation de portefeuille (Markowitz)** avec frontière efficiente et ratio de Sharpe
+- ✅ **4 profils d'investisseur configurables** (default, dynamique, équilibré, prudent)
+- ✅ **Benchmark gap** : comparaison allocation actuelle vs cibles par profil
+- ✅ **Scores enrichis v2.0** avec labels qualitatifs et détails complets
 - ✅ Recherches web exhaustives avec sources citées et affichées
 - ✅ Profil investisseur personnalisé sur la page de couverture
 - ✅ Rapport HTML premium professionnel **autonome** (CSS intégré)
@@ -29,6 +33,68 @@ Transformer vos fichiers sources (CSV, PDF, Markdown) en un rapport patrimonial 
 - 15-18 recherches par analyse
 - Sources web citées et affichées dans chaque section de risque
 - Sections dépliables pour consulter les sources
+
+### Optimisation de portefeuille (Markowitz)
+- **Frontière efficiente** : Calcul automatique du portefeuille optimal
+- **Ratio de Sharpe** : Comparaison portefeuille actuel vs optimal
+- **Graphique PNG intégré** : Visualisation de la frontière efficiente et inefficiente
+- **Recommandations d'allocation** : Propositions concrètes pour améliorer le rendement/risque
+- **Méthode statistique** : Basé sur moyennes historiques (pas d'API externe)
+- **Configuration flexible** : Tous les paramètres dans `config/analysis.yaml`
+
+### Profils d'investisseur configurables
+Le système supporte **4 profils d'investisseur** avec des paramètres adaptés à chaque horizon et tolérance au risque :
+
+1. **Default** : Statistiques historiques long terme (20-30 ans)
+   - Actions : 60-75% | Obligations : 15-25% | Liquidités : 5-10%
+   - Profil équilibré classique
+
+2. **Dynamique** : Croissance agressive (jeune actif, horizon >15 ans)
+   - Actions : 70-85% | Obligations : 5-15% | Liquidités : 3-8%
+   - Maximisation du potentiel de croissance
+
+3. **Équilibré** : Compromis rendement/risque (horizon 10-15 ans)
+   - Actions : 50-65% | Obligations : 20-30% | Liquidités : 5-12%
+   - Balance entre sécurité et performance
+
+4. **Prudent** : Préservation du capital (proche retraite)
+   - Actions : 30-45% | Obligations : 25-40% | Liquidités : 10-20%
+   - Priorité à la stabilité
+
+**Configuration** : Modifiez `config/config.yaml` → `analysis.active_profile` pour changer de profil.
+
+### Benchmark gap (écarts d'allocation)
+- **Comparaison automatique** : Allocation actuelle vs cibles du profil sélectionné
+- **Colonne dédiée** : "Écart benchmark" dans le tableau des classes d'actifs
+- **5 niveaux de statut** :
+  - ✅ Dans la cible (±2pts)
+  - ⚠️ Sur/sous-pondéré modéré (<10pts hors bornes)
+  - 🚨 Sur/sous-pondéré fort (≥10pts hors bornes)
+- **Badges colorés** : Identification visuelle des déséquilibres majeurs
+
+### Scores enrichis v2.0
+Les 5 scores (0-10) incluent désormais des **labels qualitatifs** et des **détails complets** :
+
+1. **Diversification (v1.1)** : "Excellente", "Bonne", "Modérée", "Forte concentration", "Critique"
+   - Composantes institutionnelles et juridictionnelles pondérées
+   - 3 bonus : ≥5 classes d'actifs, ≥10 positions, >15% international
+
+2. **Résilience (v1.0)** : "Patrimoine robuste", "Patrimoine solide", "Vulnérabilités", "Vulnérable", "Critique"
+   - Impact des stress tests et nombre de risques critiques
+
+3. **Liquidité (v2.0)** : "Excellente", "Bonne", "Adéquate", "Faible", "Critique"
+   - Ratio liquidités/cible adapté au profil (9-15 mois selon profil)
+   - Alertes sur-liquidité et sous-liquidité
+
+4. **Fiscalité (v2.0)** : "Optimisation excellente", "Bonne", "Améliorable", "Perfectible", "Sous-optimale"
+   - Analyse enveloppes fiscales (PEA, AV, PER, CTO, crypto)
+   - Liste bonus/pénalités détaillée
+
+5. **Croissance (v2.0)** : "Potentiel exceptionnel", "Potentiel élevé", "Équilibré", "Modéré", "Limité"
+   - Exposition actions avec contexte profil
+   - Fourchette optimale personnalisée
+
+**Affichage** : Sections dépliables avec détails, métriques et interprétations contextualisées.
 
 ### Profil investisseur personnalisé
 - Affichage du profil complet sur la page de couverture
@@ -112,11 +178,47 @@ Le rapport HTML est **complètement autonome** :
 
 ## ⚙️ Configuration
 
-Modifiez `config/config.yaml` pour ajuster :
-- Seuils de risques
-- Nombre max de recherches web
-- Chemins de fichiers
-- Format de dates
+Le système utilise **3 fichiers de configuration YAML** pour une personnalisation complète :
+
+### 1. `config/config.yaml` (Configuration principale)
+Paramètres généraux du système :
+- **Chemins** : sources/, templates/, generated/, logs/
+- **Seuils de risques** : Concentration, liquidité, juridiction
+- **Recherches web** : Nombre max (50), timeout (30s), retry (3×)
+- **Profil actif** : Sélection du profil d'investisseur (`analysis.active_profile`)
+- **Formats** : Dates, noms de fichiers
+
+### 2. `config/analysis.yaml` (Configuration de l'analyse - 827 lignes)
+Tous les paramètres d'analyse et d'optimisation :
+- **4 profils d'investisseur** : default, dynamique, équilibré, prudent
+  - Statistiques de marché par classe d'actifs (rendements, volatilités)
+  - Matrice de corrélations entre classes d'actifs
+- **Benchmarks d'allocation** : Fourchettes cibles (min/target/max) par classe et profil
+- **Paramètres des 5 scores** : Diversification, résilience, liquidité, fiscalité, croissance
+  - Pondérations, pénalités, bonus, labels qualitatifs
+- **Classification des actifs** : Tickers et mots-clés pour identifier les classes
+- **Optimiseur Markowitz** : Contraintes, itérations, paramètres graphiques
+- **Interprétation** : Seuils pour l'analyse des résultats
+
+**Personnalisation** : Vous pouvez créer vos propres profils ou ajuster les benchmarks existants.
+
+### 3. `config/research_prompts.yaml` (Prompts de recherche web)
+Templates de requêtes pour les recherches Brave Search API par catégorie de risque.
+
+**Exemple de modification de profil** :
+```yaml
+# Modifier le profil actif dans config.yaml
+analysis:
+  active_profile: "dynamique"  # Changer de default à dynamique
+
+# Ajuster les benchmarks dans analysis.yaml
+benchmarks:
+  dynamique:
+    Actions:
+      min: 75      # Au lieu de 70
+      target: 80   # Au lieu de 77.5
+      max: 85
+```
 
 ## 🎨 Personnalisation du template
 
@@ -143,6 +245,33 @@ generated/
 └── rapport_20251015_164522.html
 ```
 
+## 🧪 Tests unitaires
+
+Le projet inclut une suite complète de tests pour chaque composant :
+
+```bash
+# Tester la normalisation (Stage 1)
+python tests/test_normalizer.py
+
+# Tester l'analyse (Stage 2)
+python tests/test_analyzer.py
+
+# Tester la génération HTML (Stage 3)
+python tests/test_generator.py
+
+# Tester les recherches web
+python tests/test_web_research.py
+
+# Tests spécialisés
+python tests/test_benchmark_gap.py              # Écarts d'allocation
+python tests/test_diversification_score.py      # Score diversification v1.1
+python tests/test_resilience_complete.py        # Score résilience complet
+python tests/test_resilience_all_labels.py      # Labels de résilience
+python tests/test_resilience_generator.py       # Injection HTML résilience
+```
+
+**Couverture** : Tous les composants critiques sont testés (normalizer, analyzer, generator, web research, scores, benchmarks).
+
 ## 🔍 Résolution de problèmes
 
 ### Erreur "Fichier introuvable"
@@ -162,5 +291,22 @@ Usage personnel uniquement. Tous droits réservés.
 
 ---
 
-**Version** : 1.0.0
-**Dernière mise à jour** : Octobre 2025
+**Version** : 1.1.0
+**Dernière mise à jour** : Novembre 2025
+
+## 📝 Changelog
+
+### v1.1.0 (Novembre 2025)
+- ✨ **Optimisation de portefeuille Markowitz** : Frontière efficiente, ratio de Sharpe, graphique PNG
+- ✨ **4 profils d'investisseur** : default, dynamique, équilibré, prudent
+- ✨ **Benchmark gap** : Comparaison allocation vs cibles avec badges colorés
+- ✨ **Scores enrichis v2.0** : Labels qualitatifs et détails complets
+  - Diversification v1.1 (composantes + 3 bonus)
+  - Liquidité v2.0 (ratio adapté au profil)
+  - Fiscalité v2.0 (enveloppes + bonus/pénalités)
+  - Croissance v2.0 (contexte profil + fourchette optimale)
+- ✨ **Configuration analysis.yaml** : 827 lignes, tous paramètres externalisés
+- ✨ **Suite de tests complète** : 12 fichiers de tests unitaires
+
+### v1.0.0 (Octobre 2025)
+- 🎉 Version initiale : Pipeline 3 stages, 7 catégories de risques, recherches web, stress tests
