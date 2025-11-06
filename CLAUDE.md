@@ -331,11 +331,10 @@ The HTML template (`templates/rapport_template.html`) can be freely customized:
 
 ## Common Development Scenarios
 
-**Adding a new risk category**:
-1. Add detection logic in `tools/utils/risk_analyzer.py`
-2. Call new method in `analyze()` around line 67-69
-3. Return risk dict with: `id, titre, description, exposition_montant, exposition_pct, probabilite, impact, niveau, categorie, sources_web`
-4. Risk automatically appears in HTML (generator shows all risk levels, limit 10)
+**Adding a new risk** (see "Risk Detection System v2.0" section below for details):
+- **Option 1**: Add contextual search in `config/risks.yaml` (no code, dynamic detection via web)
+- **Option 2**: Add structural risk method in `risk_analyzer.py` (requires code)
+- **Option 3**: Modify existing risk thresholds in `config/risks.yaml`
 
 **Adding a new template field**:
 1. Add `data-field="newfield"` in template HTML
@@ -365,6 +364,177 @@ The HTML template (`templates/rapport_template.html`) can be freely customized:
 - Each stage can be tested independently via `tests/test_*.py`
 - Generated JSON files preserved in `generated/` for debugging
 - Logs saved to `logs/rapport_YYYYMMDD_HHMMSS.log`
+
+## Risk Detection System v2.0 (Dynamic & Configurable)
+
+Starting with v2.0 (November 2025), the risk detection system is **hybrid and dynamic**:
+
+### Architecture
+
+The system operates on **3 levels**:
+
+1. **Level 1: Structural Risks** (legacy methods, always active)
+   - Concentration, regulatory, fiscal, market, liquidity, political, currency risks
+   - Detection logic coded in `risk_analyzer.py` methods
+   - Fully backward compatible with v1.0
+
+2. **Level 2: Contextual Risks** (dynamic web detection, optional)
+   - Automatic detection of emerging risks via web research
+   - Searches on recent economic/political news, regulatory changes, market alerts
+   - Configurable via `config/risks.yaml` → `contextual_searches`
+   - Can be enabled/disabled via `risk_settings.enable_contextual_detection`
+
+3. **Level 3: Future** (LLM-based analysis)
+   - Reserved for future enhancement
+   - Would use LLM to analyze web results and classify risks automatically
+
+### Configuration File: `config/risks.yaml`
+
+This file externalizes all risk detection rules and contextual searches.
+
+**Structure**:
+```yaml
+risk_settings:
+  enable_contextual_detection: true  # Enable/disable dynamic detection
+  max_contextual_risks_per_search: 3 # Max contextual risks per search category
+  version: "2.0.0"
+
+structural_risks:
+  concentration_etablissement_critique:
+    enabled: true
+    category: "Concentration"
+    detection:
+      type: "threshold"
+      metric: "establishment_percentage"
+      threshold: 50
+    risk_properties:
+      niveau: "Critique"
+      titre_template: "Concentration excessive - {establishment_name}"
+    web_research:
+      enabled: true
+      queries: [...]
+
+contextual_searches:
+  actualite_economique_france:
+    enabled: true
+    priority: "high"
+    queries:
+      - "nouvelles lois économiques France 2025 épargne"
+      - "réformes fiscales France 2025 patrimoine"
+    relevance_threshold: 0.7
+```
+
+### How It Works
+
+**Structural risks** (level 1):
+- Legacy methods in `risk_analyzer.py` run first
+- Execute the 7 standard risk category checks
+- Rules can be referenced in YAML but detection logic remains in code
+
+**Contextual risks** (level 2):
+- Only execute if `enable_contextual_detection: true`
+- For each enabled search in `contextual_searches`:
+  1. Execute web queries via Brave Search API
+  2. Analyze results and determine relevance
+  3. If ≥2 sources confirm, generate a contextual risk
+  4. Attach web sources to the risk
+- Generated risks have category suffix `" - Contexte"` for identification
+- Examples:
+  - "Évolution réglementaire économique France" (category: Réglementaire - Contexte)
+  - "Risques système bancaire français" (category: Concentration - Contexte)
+  - "Volatilité accrue des marchés" (category: Marché - Contexte)
+
+### Adding/Modifying Risks
+
+**Option 1: Add a contextual search** (no code changes)
+```yaml
+# In config/risks.yaml → contextual_searches
+nouvelle_reforme_taxation:
+  enabled: true
+  priority: "high"
+  description: "Détecte les nouvelles réformes de taxation"
+  queries:
+    - "nouvelle taxe patrimoine France 2026"
+    - "réforme taxation plus-values immobilières"
+  analysis_context: "Identifier nouvelles taxes sur le patrimoine"
+  relevance_threshold: 0.7
+```
+
+Then add mapping in `risk_analyzer.py` → `_get_contextual_risk_mapping()`:
+```python
+"nouvelle_reforme_taxation": {
+    "titre": "Nouvelle réforme de taxation",
+    "description": "...",
+    "niveau": "Moyen",
+    "categorie": "Fiscal - Contexte",
+    ...
+}
+```
+
+**Option 2: Add a structural risk** (requires code)
+1. Add detection logic in `tools/utils/risk_analyzer.py`
+2. Call new method in `analyze()` around line 123
+3. Return risk dict with: `id, titre, description, exposition_montant, exposition_pct, probabilite, impact, niveau, categorie, sources_web`
+4. Risk automatically appears in HTML (generator shows all risk levels, limit 10)
+
+**Option 3: Modify existing structural risk thresholds**
+- Edit `config/risks.yaml` → `structural_risks.[risk_id].detection.threshold`
+- Example: Change concentration critical threshold from 50% to 60%
+- Note: Detection logic must be updated in code to use YAML thresholds (future enhancement)
+
+### Activating/Deactivating Features
+
+**Enable contextual detection**:
+```yaml
+# config/risks.yaml
+risk_settings:
+  enable_contextual_detection: true  # Set to false to disable
+```
+
+**Disable specific contextual search**:
+```yaml
+# config/risks.yaml → contextual_searches
+regulation_crypto:
+  enabled: false  # Skip this search
+```
+
+**Disable specific structural risk**:
+```yaml
+# config/risks.yaml → structural_risks
+plafond_pea:
+  enabled: false  # Skip this risk check
+```
+Note: Structural risk enable/disable requires code modification in v2.0 (reads legacy methods)
+
+### Maintenance
+
+**Update frequency**: Quarterly recommended (see `metadata.recommended_update_frequency`)
+
+**What to update**:
+- Contextual search queries to reflect current concerns
+- Risk thresholds based on regulatory changes
+- New contextual searches for emerging risk categories
+- Remove obsolete searches (e.g., past crises)
+
+**Version control**:
+- `risk_settings.version`: Semantic versioning (2.0.0)
+- `risk_settings.last_updated`: Date of last modification
+- `metadata.changelog`: Track all changes
+
+### Performance Impact
+
+- **Contextual detection disabled**: No performance impact vs v1.0
+- **Contextual detection enabled**:
+  - Additional 6-12 web searches (depending on enabled searches)
+  - ~10-20 seconds added to analysis time
+  - Rate limiting: 1.1-1.5s between requests (Brave API compliance)
+
+### Example Output
+
+With contextual detection enabled, the report may show:
+- Traditional risks: "Concentration excessive - Crédit Agricole" (Critique)
+- Contextual risks: "Évolution réglementaire économique France" (Moyen, category: Réglementaire - Contexte)
+- Each contextual risk includes 2-3 web sources for validation
 
 ## Important Implementation Details
 

@@ -1,0 +1,429 @@
+# ============================================================================
+# CONFIGURATION DES RÈGLES DE DÉTECTION DES RISQUES
+# ============================================================================
+# Ce fichier externalise les règles de détection des risques patrimoniaux
+# pour permettre des mises à jour sans modification du code.
+#
+# Structure:
+#   - structural_risks: Risques structurels/permanents (détection automatique)
+#   - contextual_searches: Recherches web pour détecter risques émergents
+#   - risk_settings: Paramètres globaux
+# ============================================================================
+
+# ============================================================================
+# PARAMÈTRES GLOBAUX
+# ============================================================================
+
+risk_settings:
+  # Activer/désactiver la détection dynamique de risques contextuels
+  enable_contextual_detection: true
+
+  # Nombre maximum de risques contextuels à générer par recherche
+  max_contextual_risks_per_search: 3
+
+  # Date de dernière mise à jour de cette configuration
+  last_updated: "2025-11-06"
+
+  # Version de la configuration
+  version: "2.0.0"
+
+
+# ============================================================================
+# RISQUES STRUCTURELS (détection automatique basée sur le patrimoine)
+# ============================================================================
+# Ces risques sont toujours analysés. Ils sont activés/désactivés individuellement.
+
+structural_risks:
+
+  # --------------------------------------------------------------------------
+  # CONCENTRATION
+  # --------------------------------------------------------------------------
+
+  concentration_etablissement_critique:
+    enabled: true
+    category: "Concentration"
+    detection:
+      type: "threshold"
+      metric: "establishment_percentage"
+      threshold: 50  # % du patrimoine financier
+      operator: "gte"
+    risk_properties:
+      niveau: "Critique"
+      probabilite: "Faible"
+      impact: "Élevé"
+      titre_template: "Concentration excessive - {establishment_name}"
+      description_template: "L'établissement {establishment_name} représente {percentage:.1f}% du patrimoine financier, créant un risque de concentration critique."
+    web_research:
+      enabled: true
+      queries:
+        - "risques concentration bancaire {establishment_name}"
+        - "diversification établissements bancaires France"
+      max_sources: 2
+
+  concentration_etablissement_eleve:
+    enabled: true
+    category: "Concentration"
+    detection:
+      type: "threshold"
+      metric: "establishment_percentage"
+      threshold: 30
+      operator: "gte"
+    risk_properties:
+      niveau: "Élevé"
+      probabilite: "Faible"
+      impact: "Moyen"
+      titre_template: "Concentration élevée - {establishment_name}"
+      description_template: "L'établissement {establishment_name} représente {percentage:.1f}% du patrimoine financier."
+    web_research:
+      enabled: false
+
+  concentration_juridiction_critique:
+    enabled: true
+    category: "Concentration géographique"
+    detection:
+      type: "threshold"
+      metric: "jurisdiction_percentage"
+      threshold: 80
+      operator: "gte"
+    risk_properties:
+      niveau: "Critique"
+      probabilite: "Moyenne"
+      impact: "Élevé"
+      titre_template: "Concentration géographique critique - {jurisdiction}"
+      description_template: "La juridiction {jurisdiction} représente {percentage:.1f}% du patrimoine total, créant un risque pays important."
+    web_research:
+      enabled: true
+      queries:
+        - "risque pays {jurisdiction}"
+        - "diversification géographique patrimoine"
+      max_sources: 2
+
+  # --------------------------------------------------------------------------
+  # RÉGLEMENTAIRE
+  # --------------------------------------------------------------------------
+
+  loi_sapin2:
+    enabled: true
+    category: "Réglementaire"
+    detection:
+      type: "threshold"
+      metric: "assurance_vie_percentage"
+      threshold: 0  # Toujours vérifier si AV > 0
+      operator: "gt"
+    risk_properties:
+      # Niveau calculé dynamiquement : >= 25% = Critique, >= 15% = Élevé, sinon Moyen
+      probabilite: "Faible"
+      impact: "Élevé"
+      titre_template: "Loi Sapin 2 - Blocage assurance-vie"
+      description_template: "Risque de gel temporaire de l'assurance-vie en cas de crise bancaire. Exposition actuelle : {amount:,.0f}€ ({percentage:.1f}% du patrimoine financier)."
+    web_research:
+      enabled: true
+      queries:
+        - "Loi Sapin 2 blocage assurance-vie 2025"
+        - "HCSF article 21 Loi Sapin 2"
+        - "risques assurance-vie gel rachats"
+      max_sources: 3
+
+  garantie_depots:
+    enabled: true
+    category: "Réglementaire"
+    detection:
+      type: "threshold"
+      metric: "deposits_per_establishment"
+      threshold: 100000  # Euros
+      operator: "gt"
+    risk_properties:
+      niveau: "Moyen"
+      probabilite: "Très faible"
+      impact: "Élevé"
+      titre_template: "Dépassement garantie dépôts - {establishment_name}"
+      description_template: "Les dépôts chez {establishment_name} dépassent de {excess:,.0f}€ le plafond de garantie de 100 000€."
+    web_research:
+      enabled: true
+      queries:
+        - "garantie dépôts bancaires France 100000 euros"
+        - "FGDR fonds garantie dépôts résolution"
+      max_sources: 1
+
+  plafond_pea:
+    enabled: true
+    category: "Réglementaire"
+    detection:
+      type: "threshold"
+      metric: "pea_amount"
+      threshold: 150000
+      operator: "gt"
+    risk_properties:
+      niveau: "Faible"
+      probabilite: "N/A"
+      impact: "Faible"
+      titre_template: "Plafond PEA dépassé"
+      description_template: "Le PEA dépasse le plafond de 150 000€. Nouveaux versements impossibles."
+    web_research:
+      enabled: false
+
+  # --------------------------------------------------------------------------
+  # FISCAL
+  # --------------------------------------------------------------------------
+
+  risque_pfu:
+    enabled: true
+    category: "Fiscal"
+    detection:
+      type: "threshold"
+      metric: "cto_amount"
+      threshold: 50000
+      operator: "gt"
+    risk_properties:
+      niveau: "Moyen"
+      probabilite: "Moyenne"
+      impact: "Moyen"
+      titre_template: "Risque hausse fiscalité PFU"
+      description_template: "Le CTO ({amount:,.0f}€) est soumis au PFU de 30%. Risque de hausse fiscale future (ex: 35%)."
+    web_research:
+      enabled: true
+      queries:
+        - "PFU prélèvement forfaitaire unique évolution 2025"
+        - "fiscalité assurance-vie France"
+        - "flat tax 30% réforme fiscale"
+      max_sources: 2
+
+  # --------------------------------------------------------------------------
+  # MARCHÉ
+  # --------------------------------------------------------------------------
+
+  exposition_actions_elevee:
+    enabled: true
+    category: "Marché"
+    detection:
+      type: "threshold"
+      metric: "equity_percentage"
+      threshold: 70
+      operator: "gt"
+    risk_properties:
+      niveau: "Moyen"
+      probabilite: "Moyenne"
+      impact: "Élevé"
+      titre_template: "Forte exposition au risque actions"
+      description_template: "L'exposition aux actions ({percentage:.1f}%) est élevée. Volatilité et risque de correction important."
+    web_research:
+      enabled: true
+      queries:
+        - "volatilité marchés actions risques"
+        - "diversification actions obligations"
+      max_sources: 1
+
+  valorisation_immobiliere:
+    enabled: true
+    category: "Marché - Immobilier"
+    detection:
+      type: "exists"
+      metric: "real_estate_property"
+    risk_properties:
+      niveau: "Faible"
+      probabilite: "Faible"
+      impact: "Moyen"
+      titre_template: "Valorisation {property_type} - {city}"
+      description_template: "{property_type} situé à {address}. Valeur estimée actuelle: {value:,.0f}€. Consulter les sources web pour l'évolution du marché local."
+    web_research:
+      enabled: true
+      queries:
+        - "prix immobilier m² {city} 2025"
+        - "marché immobilier {city} évolution"
+        - "valorisation {property_type_lower} {city}"
+      max_sources: 3
+
+  # --------------------------------------------------------------------------
+  # LIQUIDITÉ
+  # --------------------------------------------------------------------------
+
+  liquidite_critique:
+    enabled: true
+    category: "Liquidité"
+    detection:
+      type: "threshold"
+      metric: "liquid_assets"
+      threshold: 5000
+      operator: "lt"
+    risk_properties:
+      niveau: "Critique"
+      probabilite: "N/A"
+      impact: "Élevé"
+      titre_template: "Liquidité critique"
+      description_template: "Liquidité disponible très faible : {amount:,.0f}€. Recommandé : minimum 3-6 mois de dépenses."
+    web_research:
+      enabled: false
+
+  liquidite_faible:
+    enabled: true
+    category: "Liquidité"
+    detection:
+      type: "threshold"
+      metric: "liquid_assets"
+      threshold: 15000
+      operator: "lt"
+    risk_properties:
+      niveau: "Moyen"
+      probabilite: "N/A"
+      impact: "Moyen"
+      titre_template: "Liquidité faible"
+      description_template: "Liquidité disponible limitée : {amount:,.0f}€."
+    web_research:
+      enabled: false
+
+  # --------------------------------------------------------------------------
+  # POLITIQUE
+  # --------------------------------------------------------------------------
+
+  risque_politique_france:
+    enabled: true
+    category: "Politique"
+    detection:
+      type: "threshold"
+      metric: "france_concentration"
+      threshold: 90
+      operator: "gt"
+    risk_properties:
+      niveau: "Faible"
+      probabilite: "Faible"
+      impact: "Moyen"
+      titre_template: "Risque politique concentration France"
+      description_template: "Très forte concentration en France ({percentage:.1f}%). Exposition aux décisions politiques françaises."
+    web_research:
+      enabled: true
+      queries:
+        - "risque politique France investissements"
+        - "concentration géographique patrimoine France"
+        - "diversification internationale patrimoine"
+      max_sources: 3
+
+  # --------------------------------------------------------------------------
+  # CHANGE
+  # --------------------------------------------------------------------------
+
+  risque_change:
+    enabled: true
+    category: "Change"
+    detection:
+      type: "threshold"
+      metric: "foreign_currency_percentage"
+      threshold: 3  # % du patrimoine total
+      operator: "gt"
+    risk_properties:
+      # Niveau calculé dynamiquement : >= 20% = Élevé, >= 10% = Moyen, sinon Faible
+      titre_template: "Risque de change (EUR/USD et crypto)"
+      description_template: "Exposition à {percentage:.1f}% en devises étrangères (USD: {usd_amount:,.0f}€, Crypto: {crypto_amount:,.0f}€, Immobilier étranger: {foreign_re_amount:,.0f}€). Risque de perte en cas de dépréciation EUR."
+    web_research:
+      enabled: true
+      queries:
+        - "volatilité EUR USD 2025"
+        - "risque de change investissement"
+        - "couverture risque devise"
+      max_sources: 2
+
+
+# ============================================================================
+# DÉTECTION CONTEXTUELLE (recherches web pour risques émergents)
+# ============================================================================
+# Ces recherches sont effectuées systématiquement pour identifier de nouveaux
+# risques liés à l'actualité récente (lois, crises, réformes, etc.)
+
+contextual_searches:
+
+  # Actualité économique et financière France
+  actualite_economique_france:
+    enabled: true
+    priority: "high"
+    description: "Détecte les risques liés aux nouvelles mesures économiques et financières en France"
+    queries:
+      - "nouvelles lois économiques France 2025 épargne"
+      - "réformes fiscales France 2025 patrimoine"
+      - "mesures gouvernement France investissements 2025"
+    analysis_context: "Identifier les nouvelles réglementations ou réformes susceptibles d'impacter l'épargne et les investissements"
+    relevance_threshold: 0.7  # Score minimum pour générer un risque (0-1)
+
+  # Risques bancaires et financiers
+  risques_bancaires:
+    enabled: true
+    priority: "high"
+    description: "Détecte les risques systémiques bancaires et crises financières"
+    queries:
+      - "crise bancaire France 2025"
+      - "faillite banque France risques"
+      - "stabilité système bancaire français 2025"
+    analysis_context: "Identifier les menaces sur la stabilité du système bancaire français"
+    relevance_threshold: 0.6
+
+  # Fiscalité et réglementation en évolution
+  evolution_fiscalite:
+    enabled: true
+    priority: "medium"
+    description: "Détecte les changements fiscaux récents ou annoncés"
+    queries:
+      - "projet loi finances 2026 épargne investissement"
+      - "taxation gains capital France évolution"
+      - "IFI impôt fortune immobilière changements 2025"
+    analysis_context: "Identifier les évolutions fiscales récentes ou à venir"
+    relevance_threshold: 0.7
+
+  # Contexte géopolitique
+  risques_geopolitiques:
+    enabled: true
+    priority: "medium"
+    description: "Détecte les risques géopolitiques affectant les marchés"
+    queries:
+      - "tensions géopolitiques impact marchés financiers 2025"
+      - "risque politique zone euro stabilité"
+    analysis_context: "Identifier les risques géopolitiques majeurs affectant les investissements"
+    relevance_threshold: 0.5
+
+  # Marchés et volatilité
+  volatilite_marches:
+    enabled: true
+    priority: "medium"
+    description: "Détecte les alertes sur la volatilité et les risques de marché"
+    queries:
+      - "volatilité marchés actions 2025 correction"
+      - "bulle immobilière France 2025"
+      - "krach boursier risques 2025"
+    analysis_context: "Identifier les risques de correction ou de forte volatilité sur les marchés"
+    relevance_threshold: 0.6
+
+  # Cryptomonnaies et actifs numériques
+  regulation_crypto:
+    enabled: true
+    priority: "low"
+    description: "Détecte les évolutions réglementaires sur les cryptomonnaies"
+    queries:
+      - "régulation crypto France 2025 MiCA"
+      - "taxation cryptomonnaies France nouvelles règles"
+    analysis_context: "Identifier les nouvelles réglementations crypto susceptibles d'impacter les détenteurs"
+    relevance_threshold: 0.7
+
+
+# ============================================================================
+# MÉTADONNÉES
+# ============================================================================
+
+metadata:
+  # Fréquence de mise à jour recommandée
+  recommended_update_frequency: "quarterly"  # trimestriel
+
+  # Prochaine revue suggérée
+  next_review_date: "2025-02-06"
+
+  # Auteur/mainteneur
+  maintainer: "Patrimoine Analyzer"
+
+  # Notes de version
+  changelog:
+    - version: "2.0.0"
+      date: "2025-11-06"
+      changes:
+        - "Externalisation complète des règles de risques"
+        - "Ajout de la détection contextuelle dynamique"
+        - "Support des recherches web configurables"
+    - version: "1.0.0"
+      date: "2025-10-01"
+      changes:
+        - "Version initiale (risques codés en dur)"
