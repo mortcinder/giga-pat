@@ -111,7 +111,8 @@ Les 5 scores (0-10) incluent désormais des **labels qualitatifs** et des **dét
 ### Profil investisseur personnalisé
 - Affichage du profil complet sur la page de couverture
 - Format: Prénom NOM • âge • situation • profil • profession • revenu
-- Extrait automatiquement depuis `sources/patrimoine.md`
+- Données personnelles extraites de `sources/patrimoine.md`
+- **Type de profil** (Dynamique/Équilibré/Prudent) déterminé par `config/config.yaml → analysis.active_profile`
 
 ## 🚀 Installation
 

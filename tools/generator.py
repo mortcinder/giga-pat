@@ -1022,6 +1022,9 @@ class ReportGenerator:
         """
         Synthétise le profil investisseur pour le subtitle du rapport
         Section 3.3.8 du PRD
+
+        IMPORTANT: Utilise le profil actif du système (profil_actif) depuis config/analysis.yaml,
+        et non le champ type_investissement de patrimoine.md
         """
         profil = data.get("profil", {})
 
@@ -1031,10 +1034,21 @@ class ReportGenerator:
         age = profil.get("age", "")
         situation = profil.get("situation_familiale", "")
         enfants = profil.get("enfants", 0)
-        type_inv = profil.get("type_investissement", "")
         statut = profil.get("statut", "")
         profession = profil.get("profession", "")
         revenu = profil.get("revenu_mensuel_net", 0)
+
+        # Récupérer le profil actif depuis les détails de croissance (source: config/analysis.yaml)
+        profil_actif_technique = data.get("synthese", {}).get("growth_details", {}).get("details", {}).get("profil_actif", "")
+
+        # Mapper le profil technique vers un label français
+        profile_labels = {
+            "default": "Équilibré",
+            "dynamique": "Dynamique",
+            "equilibre": "Équilibré",
+            "prudent": "Prudent"
+        }
+        type_inv = profile_labels.get(profil_actif_technique, profil_actif_technique.capitalize())
 
         # Construire la synthèse
         parts = []
@@ -1056,7 +1070,7 @@ class ReportGenerator:
                 situation_text += f", {enfants} enfant" + ("s" if enfants > 1 else "")
             parts.append(situation_text)
 
-        # Type d'investisseur
+        # Type d'investisseur (maintenant basé sur config/analysis.yaml)
         if type_inv:
             parts.append(f"Profil {type_inv}")
 

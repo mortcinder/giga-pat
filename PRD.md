@@ -1293,15 +1293,18 @@ data: {
 **Données JSON source** : `profil`
 
 **Champs utilisés pour subtitle-profile** :
-- `prénom` : Prénom de l'investisseur
-- `nom` : Nom de l'investisseur (affiché en MAJUSCULES)
-- `age` : Âge calculé depuis la date de naissance
-- `situation_familiale` : Situation familiale (Marié, Célibataire, etc.)
-- `enfants` : Nombre d'enfants (integer)
-- `type_investissement` : Type d'investisseur (Dynamique, Équilibré, Prudent)
-- `statut` : Statut professionnel (Actif, Retraité, etc.)
-- `profession` : Profession exercée
-- `revenu_mensuel_net` : Revenu mensuel net en euros
+- `prénom` : Prénom de l'investisseur (depuis `profil` dans patrimoine.md)
+- `nom` : Nom de l'investisseur (affiché en MAJUSCULES) (depuis `profil` dans patrimoine.md)
+- `age` : Âge calculé depuis la date de naissance (depuis `profil` dans patrimoine.md)
+- `situation_familiale` : Situation familiale (Marié, Célibataire, etc.) (depuis `profil` dans patrimoine.md)
+- `enfants` : Nombre d'enfants (integer) (depuis `profil` dans patrimoine.md)
+- **`profil_actif`** : **Type d'investisseur déterminé par `config/config.yaml → analysis.active_profile`** (Dynamique, Équilibré, Prudent)
+  - **IMPORTANT** : Le profil affiché provient de `config/analysis.yaml`, PAS du champ `type_investissement` dans `patrimoine.md`
+  - Mapping : `dynamique` → "Dynamique", `equilibre` → "Équilibré", `prudent` → "Prudent", `default` → "Équilibré"
+  - Source technique : `data["synthese"]["growth_details"]["details"]["profil_actif"]`
+- `statut` : Statut professionnel (Actif, Retraité, etc.) (depuis `profil` dans patrimoine.md)
+- `profession` : Profession exercée (depuis `profil` dans patrimoine.md)
+- `revenu_mensuel_net` : Revenu mensuel net en euros (depuis `profil` dans patrimoine.md)
 
 **Format de subtitle-profile** :
 
@@ -1332,9 +1335,11 @@ Le générateur construit dynamiquement une chaîne avec séparateurs " • " in
 
 La méthode `_synthesize_investor_profile()` dans `generator.py` :
 1. Extrait les champs du profil depuis le JSON (`data.get("profil", {})`)
-2. Construit une liste de segments textuels
-3. Joint les segments avec " • "
-4. Injecte dans `data-field="subtitle_profile"`
+2. **Récupère le profil actif depuis `config/analysis.yaml`** via `data["synthese"]["growth_details"]["details"]["profil_actif"]`
+3. Mappe le profil technique vers un label français (ex: "dynamique" → "Dynamique")
+4. Construit une liste de segments textuels
+5. Joint les segments avec " • "
+6. Injecte dans `data-field="subtitle_profile"`
 
 **Traçabilité** : Cette structure à trois niveaux permet d'identifier rapidement le type de document, sa date, et le profil du client dès la page de couverture, sans avoir à chercher ces informations dans le reste du document.
 
