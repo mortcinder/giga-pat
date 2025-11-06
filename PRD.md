@@ -568,6 +568,62 @@ Analyser le patrimoine en profondeur avec recherches web exhaustives et génére
 - Évaluation probabilité × impact
 - Sources web citées
 
+**🆕 v2.0 (Novembre 2025) : Système de détection dynamique**
+
+Le système de détection des risques a évolué vers une **architecture hybride à 3 niveaux** pour s'adapter aux évolutions du contexte économique, légal et politique.
+
+**Architecture** :
+
+1. **Niveau 1 : Risques structurels** (toujours actifs)
+   - Les 7 catégories ci-dessus détectées par méthodes legacy
+   - Règles documentées dans `config/risks.yaml`
+   - Rétrocompatibilité totale avec v1.0
+
+2. **Niveau 2 : Risques contextuels** (optionnel, configurable)
+   - Détection dynamique via recherches web automatiques
+   - 6 catégories de recherches contextuelles :
+     * Actualité économique France
+     * Risques bancaires systémiques
+     * Évolution fiscalité
+     * Risques géopolitiques
+     * Volatilité marchés
+     * Régulation crypto
+   - Génère des risques si ≥2 sources confirment
+   - Identifiés par suffixe `" - Contexte"` dans la catégorie
+
+3. **Niveau 3 : Analyse LLM** (réservé futur)
+   - Classification automatique par IA
+   - Génération de descriptions contextualisées
+
+**Configuration** (`config/risks.yaml`) :
+- `risk_settings` : Activation/désactivation globale
+- `structural_risks` : Définitions des 13 risques structurels
+- `contextual_searches` : Configuration des 6 recherches contextuelles
+- `metadata` : Versioning et changelog
+
+**Activation/Désactivation** :
+```yaml
+risk_settings:
+  enable_contextual_detection: true  # false pour désactiver
+```
+
+**Ajout de nouveaux risques contextuels** :
+```yaml
+contextual_searches:
+  nouvelle_reforme:
+    enabled: true
+    priority: "high"
+    queries: ["requête 1", "requête 2"]
+```
+
+Puis ajouter le mapping dans `risk_analyzer.py` → `_get_contextual_risk_mapping()`.
+
+**Impact performance** :
+- Désactivé : Aucun impact vs v1.0
+- Activé : +6-12 recherches web, +10-20s analyse
+
+**Maintenance** : Mise à jour trimestrielle recommandée des requêtes de recherche.
+
 ##### 3.2.5.3 Génération recommandations (`tools/utils/recommendations.py`)
 
 **Critères de priorisation** :

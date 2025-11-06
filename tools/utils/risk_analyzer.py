@@ -1,17 +1,30 @@
 """
-Module d'analyse des risques patrimoniaux
+Module d'analyse des risques patrimoniaux (v2.0)
 Suit les spécifications de la section 3.2.5.2 du PRD
+
+Nouveautés v2.0:
+- Support des règles de risques configurables (config/risks.yaml)
+- Détection dynamique de risques contextuels via recherche web
+- Architecture hybride : risques structurels + risques émergents
 """
 
 import logging
 import re
+import yaml
+import os
 from typing import Dict, List, Any, Optional
+from datetime import datetime
 
 
 class RiskAnalyzer:
     """
     Analyse tous types de risques patrimoniaux
-    Section 3.2.5.2 du PRD - 6 catégories de risques
+    Section 3.2.5.2 du PRD - 7 catégories de risques
+
+    Architecture v2.0:
+    - Niveau 1: Risques structurels (règles YAML config/risks.yaml)
+    - Niveau 2: Risques contextuels (détection dynamique via web)
+    - Niveau 3: Legacy (méthodes codées en dur, fallback)
     """
 
     def __init__(self, config: dict, web_researcher):
@@ -19,7 +32,7 @@ class RiskAnalyzer:
         self.logger = logging.getLogger(__name__)
         self.web_researcher = web_researcher
 
-        # Seuils de risque depuis config
+        # Seuils de risque depuis config (legacy, pour compatibilité)
         self.seuils = config.get("analyzer", {}).get("risk_thresholds", {
             "concentration_etablissement_critique": 50,
             "concentration_etablissement_eleve": 30,
@@ -31,14 +44,56 @@ class RiskAnalyzer:
 
         self.risk_id_counter = 1
 
+        # Charger les définitions de risques depuis YAML
+        self.risk_definitions = self._load_risk_definitions()
+        self.contextual_searches = self.risk_definitions.get("contextual_searches", {})
+        self.risk_settings = self.risk_definitions.get("risk_settings", {})
+
+        self.logger.info(f"RiskAnalyzer v{self.risk_settings.get('version', '2.0.0')} initialisé")
+        if self.risk_settings.get("enable_contextual_detection"):
+            self.logger.info("  → Détection contextuelle activée")
+
+    def _load_risk_definitions(self) -> dict:
+        """
+        Charge les définitions de risques depuis config/risks.yaml
+        Retourne un dictionnaire avec les règles structurelles et contextuelles
+        """
+        risks_config_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "config",
+            "risks.yaml"
+        )
+
+        try:
+            if os.path.exists(risks_config_path):
+                with open(risks_config_path, "r", encoding="utf-8") as f:
+                    risk_defs = yaml.safe_load(f)
+                    self.logger.info(f"✓ Définitions de risques chargées depuis {risks_config_path}")
+                    return risk_defs
+            else:
+                self.logger.warning(f"Fichier {risks_config_path} introuvable, utilisation du mode legacy")
+                return {}
+        except Exception as e:
+            self.logger.error(f"Erreur lors du chargement de {risks_config_path}: {e}")
+            return {}
+
     def analyze(self, data: dict) -> Dict[str, List[Dict]]:
         """
-        Analyse complète de tous les risques
+        Analyse complète de tous les risques (v2.0)
+
+        Architecture:
+        1. Risques structurels (méthodes legacy, toujours actives)
+        2. Risques contextuels (détection dynamique via web, optionnelle)
+
         Retourne un dictionnaire catégorisé par niveau
         """
         self.logger.info("Analyse des risques patrimoniaux...")
 
         all_risks = []
+
+        # ====================================================================
+        # NIVEAU 1 : RISQUES STRUCTURELS (Legacy methods)
+        # ====================================================================
 
         # 1. Risques de concentration (section 3.2.5.2.1)
         self.logger.info("  → Risques de concentration")
@@ -67,6 +122,16 @@ class RiskAnalyzer:
         # 7. Risques de changes (section 3.2.5.2.7)
         self.logger.info("  → Risques de changes")
         all_risks.extend(self._analyze_currency_risks(data))
+
+        # ====================================================================
+        # NIVEAU 2 : RISQUES CONTEXTUELS (Dynamic detection)
+        # ====================================================================
+
+        if self.risk_settings.get("enable_contextual_detection", False):
+            self.logger.info("  → Risques contextuels (détection dynamique)")
+            contextual_risks = self._detect_contextual_risks(data)
+            all_risks.extend(contextual_risks)
+            self.logger.info(f"    ✓ {len(contextual_risks)} risques contextuels détectés")
 
         # Catégorisation par niveau
         risques = {
@@ -564,3 +629,240 @@ class RiskAnalyzer:
         risk_id = f"RISK_{self.risk_id_counter:03d}"
         self.risk_id_counter += 1
         return risk_id
+
+    # ========================================================================
+    # DÉTECTION CONTEXTUELLE DYNAMIQUE (v2.0)
+    # ========================================================================
+
+    def _detect_contextual_risks(self, data: dict) -> List[Dict[str, Any]]:
+        """
+        Détecte les risques contextuels émergents via recherche web
+        (Niveau 2 de l'architecture v2.0)
+
+        Cette méthode effectue des recherches sur l'actualité récente pour
+        identifier de nouveaux risques non prévus dans les règles structurelles.
+
+        Args:
+            data: Données du patrimoine normalisées
+
+        Returns:
+            Liste de risques contextuels détectés
+        """
+        contextual_risks = []
+
+        if not self.contextual_searches:
+            self.logger.info("    Aucune recherche contextuelle configurée")
+            return contextual_risks
+
+        # Parcourir toutes les recherches contextuelles configurées
+        for search_id, search_config in self.contextual_searches.items():
+            if not search_config.get("enabled", False):
+                continue
+
+            priority = search_config.get("priority", "medium")
+            description = search_config.get("description", "")
+            queries = search_config.get("queries", [])
+            context = search_config.get("analysis_context", "")
+
+            self.logger.info(f"    → Recherche contextuelle: {search_id} (priorité: {priority})")
+
+            # Exécuter la recherche web
+            search_results = self.web_researcher.search(
+                title=f"Contexte: {search_id}",
+                queries=queries,
+                context=context
+            )
+
+            if not search_results:
+                self.logger.info(f"      Aucun résultat pertinent pour {search_id}")
+                continue
+
+            # Analyser les résultats et générer des risques contextuels
+            risks = self._analyze_contextual_search_results(
+                search_id=search_id,
+                search_config=search_config,
+                search_results=search_results,
+                patrimoine_data=data
+            )
+
+            contextual_risks.extend(risks)
+            self.logger.info(f"      ✓ {len(risks)} risques détectés pour {search_id}")
+
+        return contextual_risks
+
+    def _analyze_contextual_search_results(
+        self,
+        search_id: str,
+        search_config: dict,
+        search_results: List[Dict],
+        patrimoine_data: dict
+    ) -> List[Dict[str, Any]]:
+        """
+        Analyse les résultats de recherche contextuelle pour générer des risques
+
+        Args:
+            search_id: Identifiant de la recherche
+            search_config: Configuration de la recherche
+            search_results: Résultats de la recherche web
+            patrimoine_data: Données du patrimoine
+
+        Returns:
+            Liste de risques générés depuis les résultats
+        """
+        risks = []
+        max_risks = self.risk_settings.get("max_contextual_risks_per_search", 3)
+
+        # Mapper search_id vers catégorie et niveau de risque appropriés
+        risk_mapping = self._get_contextual_risk_mapping(search_id, patrimoine_data)
+
+        if not risk_mapping:
+            return risks
+
+        # Générer un risque contextuel basé sur les résultats web
+        # On regroupe les sources pour créer un risque synthétique
+        if len(search_results) >= 2:  # Minimum 2 sources pour confirmer un risque
+            risk = {
+                "id": self._get_risk_id(),
+                "titre": risk_mapping["titre"],
+                "description": risk_mapping["description"],
+                "exposition_montant": risk_mapping.get("exposition_montant", 0),
+                "exposition_pct": risk_mapping.get("exposition_pct", 0),
+                "probabilite": risk_mapping["probabilite"],
+                "impact": risk_mapping["impact"],
+                "niveau": risk_mapping["niveau"],
+                "categorie": risk_mapping["categorie"],
+                "sources_web": search_results[:max_risks]  # Limiter les sources
+            }
+            risks.append(risk)
+
+        return risks
+
+    def _get_contextual_risk_mapping(
+        self,
+        search_id: str,
+        patrimoine_data: dict
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Mappe un search_id vers les propriétés du risque contextuel
+
+        Cette méthode analyse le patrimoine pour déterminer si le risque
+        contextuel est pertinent et génère les métadonnées appropriées.
+
+        Args:
+            search_id: Identifiant de la recherche contextuelle
+            patrimoine_data: Données du patrimoine
+
+        Returns:
+            Dictionnaire avec propriétés du risque ou None si non pertinent
+        """
+        total_patrimoine = (
+            patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0) +
+            patrimoine_data.get("patrimoine", {}).get("crypto", {}).get("total", 0) +
+            patrimoine_data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
+        )
+
+        # Mapping des recherches contextuelles vers risques
+        mappings = {
+            "actualite_economique_france": {
+                "titre": "Évolution réglementaire économique France",
+                "description": "Des évolutions réglementaires ou économiques récentes en France "
+                              "peuvent impacter l'épargne et les investissements. "
+                              "Consulter les sources web pour plus de détails.",
+                "probabilite": "Moyenne",
+                "impact": "Moyen",
+                "niveau": "Moyen",
+                "categorie": "Réglementaire - Contexte",
+                "exposition_montant": patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0),
+                "exposition_pct": 0
+            },
+            "risques_bancaires": {
+                "titre": "Risques système bancaire français",
+                "description": "Des signaux d'alerte concernant la stabilité du système bancaire "
+                              "ont été identifiés dans l'actualité récente. "
+                              "Une vigilance accrue est recommandée.",
+                "probabilite": "Faible",
+                "impact": "Élevé",
+                "niveau": "Élevé",
+                "categorie": "Concentration - Contexte",
+                "exposition_montant": patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0),
+                "exposition_pct": 0
+            },
+            "evolution_fiscalite": {
+                "titre": "Évolutions fiscales en cours",
+                "description": "Des modifications fiscales récentes ou en projet peuvent affecter "
+                              "l'épargne et les investissements. Voir sources pour détails.",
+                "probabilite": "Moyenne",
+                "impact": "Moyen",
+                "niveau": "Moyen",
+                "categorie": "Fiscal - Contexte",
+                "exposition_montant": total_patrimoine,
+                "exposition_pct": 100
+            },
+            "risques_geopolitiques": {
+                "titre": "Risques géopolitiques actuels",
+                "description": "Des tensions géopolitiques actuelles peuvent impacter les marchés "
+                              "financiers et la valorisation du patrimoine.",
+                "probabilite": "Moyenne",
+                "impact": "Moyen",
+                "niveau": "Faible",
+                "categorie": "Marché - Contexte",
+                "exposition_montant": total_patrimoine,
+                "exposition_pct": 0
+            },
+            "volatilite_marches": {
+                "titre": "Volatilité accrue des marchés",
+                "description": "Des signaux de volatilité accrue ou de risque de correction "
+                              "ont été identifiés sur les marchés financiers.",
+                "probabilite": "Moyenne",
+                "impact": "Moyen",
+                "niveau": "Moyen",
+                "categorie": "Marché - Contexte",
+                "exposition_montant": self._calculate_equity_exposure(patrimoine_data),
+                "exposition_pct": 0
+            },
+            "regulation_crypto": {
+                "titre": "Évolution réglementation crypto",
+                "description": "Des évolutions réglementaires concernant les cryptomonnaies "
+                              "peuvent impacter les détenteurs d'actifs numériques.",
+                "probabilite": "Moyenne",
+                "impact": "Moyen",
+                "niveau": "Faible",
+                "categorie": "Réglementaire - Crypto",
+                "exposition_montant": patrimoine_data.get("patrimoine", {}).get("crypto", {}).get("total", 0),
+                "exposition_pct": 0
+            }
+        }
+
+        risk_data = mappings.get(search_id)
+        if not risk_data:
+            return None
+
+        # Filtrer les risques non pertinents (exposition = 0)
+        if risk_data.get("exposition_montant", 0) == 0 and search_id in ["regulation_crypto"]:
+            return None  # Pas de crypto, pas de risque crypto
+
+        return risk_data
+
+    def _calculate_equity_exposure(self, data: dict) -> float:
+        """
+        Calcule l'exposition totale aux actions du patrimoine
+
+        Args:
+            data: Données du patrimoine
+
+        Returns:
+            Montant total investi en actions (€)
+        """
+        exposition_actions = 0
+
+        for etab in data.get("patrimoine", {}).get("financier", {}).get("etablissements", []):
+            for compte in etab.get("comptes", []):
+                if compte.get("type") in ["PEA", "PEA-PME", "CTO"]:
+                    exposition_actions += compte.get("montant", 0)
+                elif compte.get("type") == "Assurance-vie":
+                    # UC sauf fonds euro
+                    for fond in compte.get("fonds", []):
+                        if "euro" not in fond.get("nom", "").lower():
+                            exposition_actions += fond.get("montant", 0)
+
+        return exposition_actions

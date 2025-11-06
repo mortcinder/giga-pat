@@ -6,7 +6,7 @@ Générateur automatisé de rapports patrimoniaux professionnels avec analyse ap
 
 Transformer vos fichiers sources (CSV, PDF, Markdown) en un rapport patrimonial complet avec :
 - ✅ Analyse détaillée de la répartition des actifs
-- ✅ Identification des risques (concentration, réglementaire, fiscal, marché, liquidité, politique, changes)
+- ✅ **Identification des risques v2.0** (7 catégories + détection dynamique contextuelle)
 - ✅ Recommandations prioritisées et actionnables
 - ✅ Stress tests (crise bancaire, krach, perte emploi, crise immobilière...)
 - ✅ **Optimisation de portefeuille (Markowitz)** avec frontière efficiente et ratio de Sharpe
@@ -19,7 +19,7 @@ Transformer vos fichiers sources (CSV, PDF, Markdown) en un rapport patrimonial 
 
 ## 🎯 Fonctionnalités détaillées
 
-### Analyse des risques (7 catégories)
+### Analyse des risques (7 catégories + détection dynamique v2.0)
 1. **Concentration** : Détection des sur-expositions par établissement, juridiction ou classe d'actifs
 2. **Réglementaire** : Vérification Loi Sapin 2, garantie dépôts 100k€, plafonds PEA
 3. **Fiscal** : Analyse PFU, fiscalité AV, IFI
@@ -27,6 +27,18 @@ Transformer vos fichiers sources (CSV, PDF, Markdown) en un rapport patrimonial 
 5. **Liquidité** : Identification des actifs bloqués (AV, PER, immobilier)
 6. **Politique** : Risques d'instabilité, nationalisation
 7. **Changes** : Exposition aux devises étrangères (USD, crypto)
+
+**🆕 Détection dynamique v2.0** :
+- **Architecture hybride** : Risques structurels + risques contextuels
+- **Risques contextuels** : Détection automatique de risques émergents via recherche web
+  - Actualité économique France
+  - Risques bancaires systémiques
+  - Évolution fiscalité
+  - Risques géopolitiques
+  - Volatilité marchés
+  - Régulation crypto
+- **Configuration** : Activation/désactivation dans `config/risks.yaml`
+- **Performance** : +10-20s si activé (+6-12 recherches web)
 
 ### Recherches web intelligentes
 - Requêtes automatiques via Brave Search API
@@ -205,6 +217,31 @@ Tous les paramètres d'analyse et d'optimisation :
 ### 3. `config/research_prompts.yaml` (Prompts de recherche web)
 Templates de requêtes pour les recherches Brave Search API par catégorie de risque.
 
+### 4. `config/risks.yaml` (Configuration des risques v2.0 - 350 lignes) 🆕
+Système de détection des risques dynamique et configurable :
+- **risk_settings** : Activation/désactivation de la détection contextuelle
+- **structural_risks** : Définitions des 13 risques structurels (concentration, réglementaire, fiscal, etc.)
+- **contextual_searches** : Configuration des 6 recherches contextuelles pour détecter les risques émergents
+- **metadata** : Versioning et changelog
+
+**Activer/désactiver la détection contextuelle** :
+```yaml
+# config/risks.yaml
+risk_settings:
+  enable_contextual_detection: true  # false pour désactiver
+```
+
+**Ajouter une nouvelle recherche contextuelle** :
+```yaml
+contextual_searches:
+  nouvelle_reforme:
+    enabled: true
+    priority: "high"
+    queries:
+      - "nouvelle taxe patrimoine France 2026"
+      - "réforme taxation immobilière"
+```
+
 **Exemple de modification de profil** :
 ```yaml
 # Modifier le profil actif dans config.yaml
@@ -268,9 +305,10 @@ python tests/test_diversification_score.py      # Score diversification v1.1
 python tests/test_resilience_complete.py        # Score résilience complet
 python tests/test_resilience_all_labels.py      # Labels de résilience
 python tests/test_resilience_generator.py       # Injection HTML résilience
+python tests/test_risk_config.py                # Configuration des risques v2.0 🆕
 ```
 
-**Couverture** : Tous les composants critiques sont testés (normalizer, analyzer, generator, web research, scores, benchmarks).
+**Couverture** : Tous les composants critiques sont testés (normalizer, analyzer, generator, web research, scores, benchmarks, configuration des risques).
 
 ## 🔍 Résolution de problèmes
 
@@ -291,10 +329,23 @@ Usage personnel uniquement. Tous droits réservés.
 
 ---
 
-**Version** : 1.1.0
+**Version** : 2.0.0
 **Dernière mise à jour** : Novembre 2025
 
 ## 📝 Changelog
+
+### v2.0.0 (Novembre 2025) 🆕
+- ✨ **Système de détection des risques dynamique** : Architecture hybride à 3 niveaux
+  - Niveau 1 : Risques structurels (7 catégories, toujours actifs)
+  - Niveau 2 : Risques contextuels (6 recherches web configurables, optionnel)
+  - Niveau 3 : Analyse LLM (réservé pour évolution future)
+- ✨ **Configuration risks.yaml** : Externalisation complète des règles de détection
+  - 13 risques structurels configurables
+  - 6 recherches contextuelles (actualité économique, bancaire, fiscale, géopolitique, marchés, crypto)
+  - Activation/désactivation par catégorie
+- ✨ **Détection automatique** : Génération de risques si ≥2 sources web confirment
+- ✨ **Test de validation** : `tests/test_risk_config.py` pour vérifier la configuration
+- 📈 **Impact performance** : +10-20s si détection contextuelle activée
 
 ### v1.1.0 (Novembre 2025)
 - ✨ **Optimisation de portefeuille Markowitz** : Frontière efficiente, ratio de Sharpe, graphique PNG
