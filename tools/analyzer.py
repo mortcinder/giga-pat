@@ -851,8 +851,10 @@ class PatrimoineAnalyzer:
 
     def _calculate_growth_score(self, data: dict) -> dict:
         """
-        Score croissance (0-10) basé sur exposition actions
-        Version 2.0 : Retourne un dict avec score, label, et détails
+        Score croissance (0-10) basé sur exposition actions + cryptos pondérées
+        Version 2.1 : Intégration cryptomonnaies avec pondération partielle
+        - Actions/UC/PER : 100%
+        - Cryptomonnaies : 50% (croissance alternative, volatilité élevée)
         Adapté au profil investisseur (prudent, équilibré, dynamique)
         """
         # Calculer exposition actions
@@ -871,6 +873,14 @@ class PatrimoineAnalyzer:
                     for fond in compte.get("fonds", []):
                         if "euro" not in fond.get("nom", "").lower():
                             exposition_actions += fond.get("montant", 0)
+
+        # Ajouter les cryptomonnaies (pondération partielle - croissance alternative)
+        # Pondération 50% : reflète potentiel long terme sans surestimer
+        # Justification : absence de flux productifs, volatilité extrême
+        # Voir update/calculate_growth_score_(crypto).md pour la méthodologie
+        if "crypto" in data["patrimoine"]:
+            for plateforme in data["patrimoine"]["crypto"].get("plateformes", []):
+                exposition_actions += plateforme.get("total", 0) * 0.5
 
         if total > 0:
             pct_actions = (exposition_actions / total) * 100

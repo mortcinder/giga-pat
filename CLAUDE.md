@@ -111,7 +111,7 @@ sources/patrimoine.md + CSV/PDF files
     - **Resilience (v1.0)**: Returns dict with score, label
     - **Liquidité (v2.0)**: Returns dict with score, label, ratio liquidités/cible, adaptation profil (9-15 mois)
     - **Fiscalité (v2.0)**: Returns dict with score, label, enveloppes fiscales (PEA/CTO/AV/PER), bonus/pénalités
-    - **Croissance (v2.0)**: Returns dict with score, label, exposition actions (%), adaptation profil (30-85%)
+    - **Croissance (v2.1)**: Returns dict with score, label, exposition actions + cryptos pondérées 50% (%), adaptation profil (30-85%)
   - All scoring parameters externalized in `config/analysis.yaml`
   - Scores vary by active profile (e.g., growth optimal ranges differ for prudent vs. dynamique profiles)
 - **Important**: Pass through `profil` from input to output (added at line 44 of analyzer.py)
@@ -243,6 +243,11 @@ Analysis and optimization settings in `config/analysis.yaml`:
     - 3 bonuses: ≥5 asset classes (+1.0), ≥10 positions (+0.5), >15% international (+0.5)
     - 5 quality labels: "Excellente" (9-10), "Bonne" (7-9), "Modérée" (5-7), "Forte" (3-5), "Critique" (0-3)
     - Returns enriched dict with score, label, and detailed breakdown (see `analyzer.py:488-606`)
+  - **Growth score (v2.1)**: Exposure calculation with partial crypto weighting
+    - Actions/UC/PER: 100% (productive assets with cash flows)
+    - Cryptomonnaies: 50% (alternative growth, high volatility, no productive flows)
+    - Rationale: Recognizes long-term growth potential while accounting for speculative nature
+    - See `update/calculate_growth_score_(crypto).md` for methodology details
 - **Account classification**: Keywords and mapping to identify account types
 - **Risk justifications**: Text for risk level explanations
 - **Technical parameters**: Iterations, constraints, interpretation thresholds
@@ -291,7 +296,7 @@ The HTML template (`templates/rapport_template.html`) can be freely customized:
   - **Resilience** (v1.0): Shows stress tests impact and risk count
   - **Liquidité** (v2.0): Shows liquidités actuelles/cible, ratio, target months by profile, overliquidity alert
   - **Fiscalité** (v2.0): Shows enveloppes (PEA, CTO, AV, PER, cryptos), optimizations, bonus/penalties lists
-  - **Croissance** (v2.0): Shows exposition actions, %, profile, optimal range, contextualized interpretation
+  - **Croissance** (v2.1): Shows exposition actions + cryptos pondérées 50%, %, profile, optimal range, contextualized interpretation
 - All sections follow same design pattern: badge + collapsible details + metrics + interpretation
 - Generator automatically applies CSS classes to badges based on label text
 - Key generator functions:
