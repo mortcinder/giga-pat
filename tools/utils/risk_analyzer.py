@@ -668,7 +668,7 @@ class RiskAnalyzer:
 
             # Exécuter la recherche web
             search_results = self.web_researcher.search(
-                title=f"Contexte: {search_id}",
+                sujet=f"Contexte: {search_id}",
                 queries=queries,
                 context=context
             )
