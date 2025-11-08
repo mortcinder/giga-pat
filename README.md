@@ -84,29 +84,33 @@ Le système supporte **4 profils d'investisseur** avec des paramètres adaptés 
   - 🚨 Sur/sous-pondéré fort (≥10pts hors bornes)
 - **Badges colorés** : Identification visuelle des déséquilibres majeurs
 
-### Scores enrichis v2.0
-Les 5 scores (0-10) incluent désormais des **labels qualitatifs** et des **détails complets** :
+### Scores enrichis v3.0
+Les 5 scores (0-10) incluent désormais des **labels qualitatifs simplifiés** et des **détails complets** :
 
 1. **Diversification (v1.1)** : "Excellente", "Bonne", "Modérée", "Forte concentration", "Critique"
    - Composantes institutionnelles et juridictionnelles pondérées
    - 3 bonus : ≥5 classes d'actifs, ≥10 positions, >15% international
 
-2. **Résilience (v1.0)** : "Patrimoine robuste", "Patrimoine solide", "Vulnérabilités", "Vulnérable", "Critique"
+2. **Résilience (v1.0)** : "Robuste", "Solide", "Vulnérabilités", "Vulnérable", "Critique"
    - Impact des stress tests et nombre de risques critiques
 
 3. **Liquidité (v2.0)** : "Excellente", "Bonne", "Adéquate", "Faible", "Critique"
    - Ratio liquidités/cible adapté au profil (9-15 mois selon profil)
    - Alertes sur-liquidité et sous-liquidité
 
-4. **Fiscalité (v2.0)** : "Optimisation excellente", "Bonne", "Améliorable", "Perfectible", "Sous-optimale"
+4. **Fiscalité (v2.0)** : "Excellente", "Bonne", "Moyenne", "Perfectible", "Défavorable"
    - Analyse enveloppes fiscales (PEA, AV, PER, CTO, crypto)
    - Liste bonus/pénalités détaillée
 
-5. **Croissance (v2.0)** : "Potentiel exceptionnel", "Potentiel élevé", "Équilibré", "Modéré", "Limité"
+5. **Croissance (v2.0)** : "Exceptionnel", "Élevé", "Équilibré", "Modéré", "Limité"
    - Exposition actions avec contexte profil
    - Fourchette optimale personnalisée
 
-**Affichage** : Sections dépliables avec détails, métriques et interprétations contextualisées.
+**Affichage** (design épuré v3.0) :
+- Sections statiques avec bordure gauche grise (pas de collapsible)
+- Badges avec labels simplifiés (1-2 mots)
+- Notes formatées en listes avec libellés standardisés sur la même ligne
+- Parfait pour l'impression, plus concis et professionnel
 
 ### Profil investisseur personnalisé
 - Affichage du profil complet sur la page de couverture
@@ -347,6 +351,11 @@ Usage personnel uniquement. Tous droits réservés.
 - ✨ **Détection automatique** : Génération de risques si ≥2 sources web confirment
 - ✨ **Test de validation** : `tests/test_risk_config.py` pour vérifier la configuration
 - 📈 **Impact performance** : +10-20s si détection contextuelle activée
+- 🎨 **Design épuré v3.0** : Refonte complète de l'affichage des sections de scores
+  - Remplacement des sections `<details>` collapsibles par des blocs statiques
+  - Labels de badges simplifiés (1-2 mots au lieu de phrases complètes)
+  - Notes formatées en listes (`<ul>`) avec libellés standardisés
+  - Amélioration de la lisibilité pour l'impression
 
 ### v1.1.0 (Novembre 2025)
 - ✨ **Optimisation de portefeuille Markowitz** : Frontière efficiente, ratio de Sharpe, graphique PNG

@@ -292,14 +292,25 @@ The HTML template (`templates/rapport_template.html`) can be freely customized:
 - `.badge.mid`: Medium (gold-light background, gold-dark text)
 - `.badge.low`: Low/Normal (green-light background, green-dark text)
 
-**Enriched scores sections** (lines ~489-817 in template):
-- **5 scores** have detailed `<details>` collapsible sections with labels and badges:
+**Enriched scores sections** (lines ~1730-1818 in template):
+- **5 scores** have detailed static sections with labels and badges (simplified design v3.0):
   - **Diversification** (v1.1): Shows components, bonuses, metrics (nb classes, positions, % international)
   - **Resilience** (v1.0): Shows stress tests impact and risk count
   - **Liquidité** (v2.0): Shows liquidités actuelles/cible, ratio, target months by profile, overliquidity alert
   - **Fiscalité** (v2.0): Shows enveloppes (PEA, CTO, AV, PER, cryptos), optimizations, bonus/penalties lists
   - **Croissance** (v2.1): Shows exposition actions + cryptos pondérées 50%, %, profile, optimal range, contextualized interpretation
-- All sections follow same design pattern: badge + collapsible details + metrics + interpretation
+- All sections follow same design pattern: badge + 2-column grid metrics + note list
+- **Design pattern** (v3.0):
+  - `.syn-block` container with left gray border
+  - `.syn-head` with `<strong>` label + `.badge` with simplified label (e.g., "Excellente" not "Excellente diversification")
+  - `.syn-grid` for 2-column metrics display
+  - `.syn-note-list` (`<ul>`) for notes with standardized labels on same line as content
+- **Standardized note labels**:
+  - **Bonus :** (diversification, fiscalité)
+  - **Pénalités :** (fiscalité)
+  - **Alerte :** (liquidité - conditional)
+  - **Interprétation :** (croissance)
+  - **Méthodologie :** (all scores - always present)
 - Generator automatically applies CSS classes to badges based on label text
 - Key generator functions:
   - `_get_diversification_badge_class()`: Maps diversification labels to CSS classes
@@ -307,10 +318,10 @@ The HTML template (`templates/rapport_template.html`) can be freely customized:
   - `_get_liquidity_badge_class()`: Maps liquidity labels to CSS classes
   - `_get_fiscal_badge_class()`: Maps fiscal labels to CSS classes
   - `_get_growth_badge_class()`: Maps growth labels to CSS classes
-  - `_format_diversification_bonus_details()`: Formats bonus HTML list
-  - `_format_fiscal_bonuses()`: Formats fiscal bonuses HTML list
-  - `_format_fiscal_penalties()`: Formats fiscal penalties HTML list
-  - `_format_overliquidity_message()`: Conditional liquidity alert message
+  - `_format_diversification_bonus_details()`: Returns `<li>` items with standardized labels
+  - `_format_liquidity_complete_note()`: Returns `<li>` items (Alerte + Méthodologie)
+  - `_format_fiscal_complete_note()`: Returns `<li>` items (Bonus + Pénalités + Méthodologie)
+  - `_format_growth_complete_note()`: Returns `<li>` items (Interprétation + Méthodologie)
   - `_format_growth_optimal_range()`: Formats "X-Y%" range string
 
 **Asset classes table - Two-line structure**:
