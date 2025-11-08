@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Rapport Patrimonial — Synthèse harmonisée</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#fafbff;--text:#1e293b;--muted:#64748b;--blue:#1e3a8a;--deep:#0f172a;--gold:#fbbf24;--border:#e5e7eb;--radius:10px;--shadow:0 4px 16px rgba(15,23,42,.06);
+        --fs-base:11pt;--fs-sm:10pt;--fs-xs:9pt;--fw-med:500;--fw-bold:700;
+      }
+      html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:var(--fs-base) 'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;line-height:1.6}
+      main{padding:24px}
+      h1,h2,h3{color:var(--deep);margin:0 0 8px}
+      h1{font-size:24pt}
+      h2{font-size:16pt;border-left:4px solid var(--gold);padding-left:10px}
+      h3{font-size:12pt}
+
+      /* ---------- Synthèse (Option A sans <details>) ---------- */
+      .synthese{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+      .syn-intro{color:var(--muted);margin-bottom:8px}
+
+      .syn-block{margin:14px 0 18px;border-top:1px dashed var(--border);padding-top:12px}
+      .syn-head{display:flex;align-items:baseline;gap:10px;color:var(--deep);letter-spacing:.2px}
+      .syn-head .label{font-variant-caps:all-small-caps;font-weight:var(--fw-bold);letter-spacing:.8px}
+      .syn-head .badge{font-variant-caps:all-small-caps;padding:2px 8px;border-radius:999px;border:1px solid currentColor;font-weight:var(--fw-med);font-size:var(--fs-xs)}
+      .badge.low{color:#065f46;border-color:#bbf7d0;background:#ecfdf5}
+      .badge.mid{color:#92400e;border-color:#fed7aa;background:#fff7ed}
+      .badge.high,.badge.crit{color:#991b1b;border-color:#fecaca;background:#fee2e2}
+
+      .syn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-top:8px}
+      .syn-kv{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;font-size:var(--fs-sm)}
+      .syn-kv strong{color:var(--text)}
+
+      .syn-note{margin-top:8px;padding-left:10px;border-left:3px solid var(--gold);color:var(--muted);font-size:var(--fs-sm);font-style:italic}
+
+      /* Impression : sobriété, pas d'interaction nécessaire */
+      @media print{.synthese{break-inside:avoid;}}
+          /* Badges ÉCART BENCHMARK — compacts & homogènes */
+      .col-ecart{width:12ch;text-align:center}
+      .badge-ecart{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;font-weight:600;font-size:var(--fs-xs);line-height:1;border:1px solid currentColor;white-space:nowrap}
+      .badge-ecart .arrow{font-size:10px;line-height:1}
+      .badge-ecart.pos{color:#065f46;background:#ecfdf5;border-color:#bbf7d0}
+      .badge-ecart.neg{color:#991b1b;background:#fee2e2;border-color:#fecaca}
+      .badge-ecart.neu{color:#475569;background:#f1f5f9;border-color:#e5e7eb}
+
+      table{width:100%;border-collapse:collapse;margin:12px 0 18px}
+      thead tr{background:linear-gradient(135deg,var(--blue),var(--deep));border-bottom:2px solid var(--gold)}
+      thead th{color:#fff;text-transform:uppercase;padding:10px;font-size:var(--fs-xs)}
+      tbody td{border-bottom:1px solid var(--border);padding:8px}
+      tbody tr:nth-child(even){background:#f8faff}
+    </style>
+  </head>
+  <body>
+    <main>
+      <section id="classes_actifs" class="card">
+        <h2>2. Répartition par classes d'actifs</h2>
+        <p class="syn-intro">Répartition des montants par classe et écart vis‑à‑vis du benchmark de référence.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th>Montant</th>
+              <th>%</th>
+              <th class="col-ecart">ÉCART BENCHMARK</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Actions développées</td>
+              <td>237 194 €</td>
+              <td>67,4%</td>
+              <td class="col-ecart"><span class="badge-ecart pos" data-field="ecart_actions"><span class="arrow">▲</span> +2,6 pt</span></td>
+            </tr>
+            <tr>
+              <td>Obligations</td>
+              <td>45 000 €</td>
+              <td>12,8%</td>
+              <td class="col-ecart"><span class="badge-ecart neg" data-field="ecart_oblig"><span class="arrow">▼</span> −1,4 pt</span></td>
+            </tr>
+            <tr>
+              <td>Monétaire</td>
+              <td>13 000 €</td>
+              <td>3,7%</td>
+              <td class="col-ecart"><span class="badge-ecart neu" data-field="ecart_monet">≈ 0,0 pt</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="synthese" class="synthese">
+        <h2>7. Synthèse</h2>
+        <p class="syn-intro">Résumé des scores clés et des points d'attention. Présentation sobre, prête à être imprimée sans interactions.</p>
+
+        <!-- Diversification -->
+        <div class="syn-block">
+          <div class="syn-head">
+            <span class="label">Diversification</span>
+            <span class="badge low" data-field="div_label">Excellente</span>
+          </div>
+          <div class="syn-grid">
+            <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="div_score_final">10.0</span>/10</span></div>
+            <div class="syn-kv"><span><strong>Pondéré</strong></span><span><span data-field="div_score_weighted">8.8</span>/10</span></div>
+            <div class="syn-kv"><span>Institutionnel (60%)</span><span><span data-field="div_score_institutional">8.0</span>/10</span></div>
+            <div class="syn-kv"><span>Juridictionnel (40%)</span><span><span data-field="div_score_jurisdictional">10.0</span>/10</span></div>
+            <div class="syn-kv"><span>Bonus diversification</span><span>+<span data-field="div_bonus_total">1.5</span></span></div>
+            <div class="syn-kv"><span>Classes d’actifs</span><span data-field="div_nb_classes">7</span></div>
+            <div class="syn-kv"><span>Positions / comptes</span><span data-field="div_nb_positions">22</span></div>
+            <div class="syn-kv"><span>International</span><span><span data-field="div_pct_international">6.4</span>%</span></div>
+          </div>
+          <div class="syn-note" data-field="div_bonus_details">Bonus accordés pour la pluralité d’intermédiaires et la dispersion géographique.</div>
+        </div>
+
+        <!-- Résilience -->
+        <div class="syn-block">
+          <div class="syn-head">
+            <span class="label">Résilience</span>
+            <span class="badge mid" data-field="res_label">Correcte</span>
+          </div>
+          <div class="syn-grid">
+            <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="res_score_final">7.5</span>/10</span></div>
+            <div class="syn-kv"><span>Réserves × mois</span><span data-field="res_months">26</span></div>
+            <div class="syn-kv"><span>Exposition Sapin 2</span><span><span data-field="res_sapin">30.1</span>%</span></div>
+            <div class="syn-kv"><span>Stress bancaire</span><span data-field="res_stress_bank">-127 972 €</span></div>
+          </div>
+          <div class="syn-note" data-field="res_note">La dépendance à l’AV réduit la marge de manœuvre en crise ; repondération progressive recommandée.</div>
+        </div>
+
+        <!-- Liquidité -->
+        <div class="syn-block">
+          <div class="syn-head">
+            <span class="label">Liquidité</span>
+            <span class="badge low" data-field="liq_label">Bonne</span>
+          </div>
+          <div class="syn-grid">
+            <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="liq_score_final">6.5</span>/10</span></div>
+            <div class="syn-kv"><span>Monétaire dispo</span><span data-field="liq_cash">13 000 €</span></div>
+            <div class="syn-kv"><span>Délai moyen</span><span data-field="liq_delay">J+2</span></div>
+            <div class="syn-kv"><span>Immobilisé</span><span data-field="liq_locked">121 800 €</span></div>
+          </div>
+          <div class="syn-note" data-field="liq_note">Transférer une part des livrets vers support T‑Bills (Spiko) pour optimiser le couple rendement/liquidité.</div>
+        </div>
+
+        <!-- Fiscalité -->
+        <div class="syn-block">
+          <div class="syn-head">
+            <span class="label">Fiscalité</span>
+            <span class="badge mid" data-field="fis_label">À surveiller</span>
+          </div>
+          <div class="syn-grid">
+            <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="fis_score_final">7.0</span>/10</span></div>
+            <div class="syn-kv"><span>PFU / PEA</span><span data-field="fis_pfu_pea">optimisé</span></div>
+            <div class="syn-kv"><span>CTO</span><span data-field="fis_cto">à liquider</span></div>
+            <div class="syn-kv"><span>Impact annuel</span><span data-field="fis_impact">+889 €/an</span></div>
+          </div>
+          <div class="syn-note" data-field="fis_note">Prioriser PEA et enveloppes fiscalement efficientes ; arbitrer les positions CTO non stratégiques.</div>
+        </div>
+
+        <!-- Croissance -->
+        <div class="syn-block">
+          <div class="syn-head">
+            <span class="label">Croissance</span>
+            <span class="badge low" data-field="gro_label">Potentiel</span>
+          </div>
+          <div class="syn-grid">
+            <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="gro_score_final">8.5</span>/10</span></div>
+            <div class="syn-kv"><span><abbr title="Actions, PEA/PEA‑PME, UC">Exposition croissance</abbr></span><span data-field="gro_equity_expo">~67%</span></div>
+            <div class="syn-kv"><span>Cryptos</span><span data-field="gro_crypto">faible</span></div>
+            <div class="syn-kv"><span>Métaux précieux</span><span data-field="gro_pm">à renforcer</span></div>
+          </div>
+          <div class="syn-note" data-field="gro_note">Renforcer les moteurs de croissance tout en gardant le contrôle du risque (frontière efficiente / Markowitz).</div>
+        </div>
+
+      </section>
+    </main>
+  </body>
+</html>

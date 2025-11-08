@@ -362,11 +362,11 @@ scores:
 
     # Labels de qualité par tranche de score
     quality_labels:
-      - [9, 10, "Excellente diversification"]
-      - [7, 9, "Bonne diversification"]
-      - [5, 7, "Concentration modérée"]
-      - [3, 5, "Forte concentration"]
-      - [0, 3, "Concentration critique"]
+      - [9, 10, "Excellente"]
+      - [7, 9, "Bonne"]
+      - [5, 7, "Modérée"]
+      - [3, 5, "Forte"]
+      - [0, 3, "Critique"]
 
   # Score résilience (basé sur stress tests et risques)
   resilience:
@@ -380,11 +380,11 @@ scores:
 
     # Labels de qualité par tranche de score
     quality_labels:
-      - [9, 10, "Patrimoine résilient"]
-      - [7, 9, "Patrimoine solide"]
-      - [5, 7, "Patrimoine vulnérable"]
-      - [3, 5, "Patrimoine fragile"]
-      - [0, 3, "Patrimoine critique"]
+      - [9, 10, "Résilient"]
+      - [7, 9, "Solide"]
+      - [5, 7, "Vulnérable"]
+      - [3, 5, "Fragile"]
+      - [0, 3, "Critique"]
 
   # Score liquidité (basé sur liquidités disponibles, adapté au profil)
   liquidity:
@@ -421,11 +421,11 @@ scores:
 
     # Labels de qualité par tranche de score
     quality_labels:
-      - [9, 10, "Excellente liquidité"]
-      - [7, 9, "Bonne liquidité"]
-      - [5, 7, "Liquidité acceptable"]
-      - [3, 5, "Liquidité fragile"]
-      - [0, 3, "Liquidité critique"]
+      - [9, 10, "Excellente"]
+      - [7, 9, "Bonne"]
+      - [5, 7, "Acceptable"]
+      - [3, 5, "Fragile"]
+      - [0, 3, "Critique"]
 
   # Score fiscalité (basé sur optimisation fiscale)
   fiscal:
@@ -446,21 +446,21 @@ scores:
 
     # Labels de qualité par tranche de score
     quality_labels:
-      - [9, 10, "Optimisation fiscale excellente"]
-      - [7, 9, "Bonne structure fiscale"]
-      - [5, 7, "Structure fiscale moyenne"]
-      - [3, 5, "Structure sous-optimisée"]
-      - [0, 3, "Structure fiscale défavorable"]
+      - [9, 10, "Excellente"]
+      - [7, 9, "Bonne"]
+      - [5, 7, "Moyenne"]
+      - [3, 5, "Sous-optimisée"]
+      - [0, 3, "Défavorable"]
 
   # Score croissance (basé sur exposition actions, varie par profil)
   growth:
     # Labels de qualité (communs à tous les profils)
     quality_labels:
-      - [9, 10, "Excellent potentiel de croissance"]
-      - [7, 9, "Bon potentiel de croissance"]
-      - [5, 7, "Potentiel de croissance modéré"]
-      - [3, 5, "Potentiel de croissance limité"]
-      - [0, 3, "Potentiel de croissance très faible"]
+      - [9, 10, "Excellent"]
+      - [7, 9, "Bon"]
+      - [5, 7, "Modéré"]
+      - [3, 5, "Limité"]
+      - [0, 3, "Très faible"]
 
     # Profil default (similaire au profil dynamique)
     default:

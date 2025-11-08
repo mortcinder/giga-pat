@@ -477,344 +477,94 @@
             </ul>
 
             <!-- Détails score de diversification -->
-            <details class="diversification-details" style="margin: 1.5rem 0">
-                <summary
-                    style="
-                        cursor: pointer;
-                        font-weight: 600;
-                        color: var(--blue-dark);
-                        margin-bottom: 0.75rem;
-                    "
-                >
-                    Détails du score de diversification
-                    <span
-                        data-field="div_label"
-                        class="badge"
-                        style="margin-left: 0.5rem"
-                        >…</span
-                    >
-                </summary>
-                <ul
-                    style="
-                        padding-left: 1rem;
-                        border-left: 3px solid var(--blue-light);
-                    "
-                >
-                    <p style="margin-bottom: 0.5rem">
-                        <strong>Score final :</strong>
-                        <span data-field="div_score_final">0</span>/10
-                    </p>
-                    <p style="margin-bottom: 0.5rem">
-                        <strong>Composition du score :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            Score institutionnel (60%) :
-                            <span data-field="div_score_institutional">0</span
-                            >/10
-                        </li>
-                        <li>
-                            Score juridictionnel (40%) :
-                            <span data-field="div_score_jurisdictional">0</span
-                            >/10
-                        </li>
-                        <li>
-                            Score pondéré :
-                            <span data-field="div_score_weighted">0</span>/10
-                        </li>
-                        <li>
-                            Bonus de diversification : +<span
-                                data-field="div_bonus_total"
-                                >0</span
-                            >
-                        </li>
-                    </ul>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Métriques de diversification :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            Nombre de classes d'actifs :
-                            <span data-field="div_nb_classes">0</span>
-                        </li>
-                        <li>
-                            Nombre de positions/comptes :
-                            <span data-field="div_nb_positions">0</span>
-                        </li>
-                        <li>
-                            Exposition internationale :
-                            <span data-field="div_pct_international">0</span>%
-                        </li>
-                    </ul>
-                    <div data-field="div_bonus_details">
-                        <!-- Bonus details will be injected here if present -->
-                    </div>
-                </ul>
-            </details>
+            <div class="syn-block">
+                <div class="syn-head">
+                    <strong>Diversification</strong>
+                    <span class="badge" data-field="div_label">…</span>
+                </div>
+                <div class="syn-grid">
+                    <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="div_score_final">0</span>/10</span></div>
+                    <div class="syn-kv"><span><strong>Pondéré</strong></span><span><span data-field="div_score_weighted">0</span>/10</span></div>
+                    <div class="syn-kv"><span>Institutionnel (60%)</span><span><span data-field="div_score_institutional">0</span>/10</span></div>
+                    <div class="syn-kv"><span>Juridictionnel (40%)</span><span><span data-field="div_score_jurisdictional">0</span>/10</span></div>
+                    <div class="syn-kv"><span>Bonus diversification</span><span>+<span data-field="div_bonus_total">0</span></span></div>
+                    <div class="syn-kv"><span>Classes d'actifs</span><span data-field="div_nb_classes">0</span></div>
+                    <div class="syn-kv"><span>Positions / comptes</span><span data-field="div_nb_positions">0</span></div>
+                    <div class="syn-kv"><span>International</span><span><span data-field="div_pct_international">0</span>%</span></div>
+                </div>
+                <ul class="syn-note-list" data-field="div_bonus_details"></ul>
+            </div>
 
             <!-- Détails score de résilience -->
-            <details class="resilience-details" style="margin: 1.5rem 0">
-                <summary
-                    style="
-                        cursor: pointer;
-                        font-weight: 600;
-                        color: var(--blue-dark);
-                        margin-bottom: 0.75rem;
-                    "
-                >
-                    Détails du score de résilience
-                    <span
-                        data-field="res_label"
-                        class="badge"
-                        style="margin-left: 0.5rem"
-                        >…</span
-                    >
-                </summary>
-                <div
-                    style="
-                        padding-left: 1rem;
-                        border-left: 3px solid var(--blue-light);
-                    "
-                >
-                    <p style="margin-bottom: 0.5rem">
-                        <strong>Score final :</strong>
-                        <span data-field="res_score_final">0</span>/10
-                    </p>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Méthode de calcul :</strong>
-                    </p>
-                    <ul>
-                        <li>Score de base : 8.0/10</li>
-                        <li>Pénalité par stress test haute sévérité : -2.0</li>
-                        <li>Pénalité par stress test moyenne sévérité : -0.5</li>
-                        <li>Bonus si 0 risque critique : +1.0</li>
-                        <li>Malus si ≥3 risques critiques : -1.5</li>
-                    </ul>
-                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
-                        Le score de résilience mesure la robustesse du patrimoine face aux chocs exogènes (marché, taux, fiscalité, etc.).
-                    </p>
+            <div class="syn-block">
+                <div class="syn-head">
+                    <strong>Résilience</strong>
+                    <span class="badge" data-field="res_label">…</span>
                 </div>
-            </details>
+                <div class="syn-grid">
+                    <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="res_score_final">0</span>/10</span></div>
+                    <div class="syn-kv"><span>Score de base</span><span>8.0/10</span></div>
+                    <div class="syn-kv"><span>Pénalité haute sévérité</span><span>-2.0</span></div>
+                    <div class="syn-kv"><span>Pénalité moy. sévérité</span><span>-0.5</span></div>
+                    <div class="syn-kv"><span>Bonus 0 risque crit.</span><span>+1.0</span></div>
+                    <div class="syn-kv"><span>Malus ≥3 risques crit.</span><span>-1.5</span></div>
+                </div>
+                <ul class="syn-note-list">
+                    <li><strong>Méthodologie :</strong> Le score de résilience mesure la robustesse du patrimoine face aux chocs exogènes (marché, taux, fiscalité, etc.).</li>
+                </ul>
+            </div>
 
             <!-- Détails score de liquidité -->
-            <details style="margin-top: 1.25rem">
-                <summary
-                    style="
-                        cursor: pointer;
-                        font-weight: 600;
-                        color: var(--blue-dark);
-                        margin-bottom: 0.75rem;
-                    "
-                >
-                    Détails du score de liquidité
-                    <span
-                        data-field="liq_label"
-                        class="badge"
-                        style="margin-left: 0.5rem"
-                        >…</span
-                    >
-                </summary>
-                <div
-                    style="
-                        padding-left: 1rem;
-                        border-left: 3px solid var(--blue-light);
-                    "
-                >
-                    <p style="margin-bottom: 0.5rem">
-                        <strong>Score final :</strong>
-                        <span data-field="liq_score_final">0</span>/10
-                    </p>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Situation actuelle :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            Liquidités disponibles :
-                            <span data-field="liq_liquidite_actuelle">0 €</span>
-                        </li>
-                        <li>
-                            Liquidité cible (<span data-field="liq_target_months">12</span> mois de dépenses) :
-                            <span data-field="liq_liquidite_cible">0 €</span>
-                        </li>
-                        <li>
-                            Ratio liquidités/cible :
-                            <span data-field="liq_ratio">0.00</span>
-                        </li>
-                        <li>
-                            Dépenses mensuelles estimées :
-                            <span data-field="liq_depenses_mensuelles">0 €</span>
-                        </li>
-                    </ul>
-                    <div
-                        data-field="liq_overliquid_message"
-                        style="
-                            margin-top: 0.75rem;
-                            padding: 0.75rem;
-                            background-color: var(--gold-light);
-                            border-left: 4px solid var(--gold-dark);
-                            border-radius: 4px;
-                            font-size: 0.9rem;
-                        "
-                    ></div>
-                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
-                        Le score de liquidité mesure la capacité à faire face à 12 mois de dépenses sans revenus.
-                        La cible est adaptée au profil investisseur (prudent = 15 mois, équilibré = 12 mois, dynamique = 9 mois).
-                    </p>
+            <div class="syn-block">
+                <div class="syn-head">
+                    <strong>Liquidité</strong>
+                    <span class="badge" data-field="liq_label">…</span>
                 </div>
-            </details>
+                <div class="syn-grid">
+                    <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="liq_score_final">0</span>/10</span></div>
+                    <div class="syn-kv"><span>Liquidités disponibles</span><span data-field="liq_liquidite_actuelle">0 €</span></div>
+                    <div class="syn-kv"><span>Liquidité cible (<span data-field="liq_target_months">12</span> mois)</span><span data-field="liq_liquidite_cible">0 €</span></div>
+                    <div class="syn-kv"><span>Ratio liquidités/cible</span><span data-field="liq_ratio">0.00</span></div>
+                    <div class="syn-kv"><span>Dépenses mensuelles</span><span data-field="liq_depenses_mensuelles">0 €</span></div>
+                </div>
+                <ul class="syn-note-list" data-field="liq_note_complete"></ul>
+            </div>
 
             <!-- Détails score de fiscalité -->
-            <details style="margin-top: 1.25rem">
-                <summary
-                    style="
-                        cursor: pointer;
-                        font-weight: 600;
-                        color: var(--blue-dark);
-                        margin-bottom: 0.75rem;
-                    "
-                >
-                    Détails du score de fiscalité
-                    <span
-                        data-field="fisc_label"
-                        class="badge"
-                        style="margin-left: 0.5rem"
-                        >…</span
-                    >
-                </summary>
-                <div
-                    style="
-                        padding-left: 1rem;
-                        border-left: 3px solid var(--blue-light);
-                    "
-                >
-                    <p style="margin-bottom: 0.5rem">
-                        <strong>Score final :</strong>
-                        <span data-field="fisc_score_final">0</span>/10
-                    </p>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Répartition par enveloppe fiscale :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            PEA (fiscalement avantageux après 5 ans) :
-                            <span data-field="fisc_pea_total">0 €</span>
-                        </li>
-                        <li>
-                            CTO (fiscalité standard PFU 30%) :
-                            <span data-field="fisc_cto_total">0 €</span>
-                        </li>
-                        <li>
-                            Assurance-vie (succession optimisée) :
-                            <span data-field="fisc_av_total">0 €</span>
-                        </li>
-                        <li>
-                            PER (avantage fiscal à l'entrée) :
-                            <span data-field="fisc_per_total">0 €</span>
-                        </li>
-                        <li>
-                            Cryptomonnaies (fiscalité lourde) :
-                            <span data-field="fisc_crypto_total">0 €</span>
-                            (<span data-field="fisc_crypto_percentage">0%</span>)
-                        </li>
-                    </ul>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Optimisations détectées :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            PEA > CTO :
-                            <span data-field="fisc_pea_over_cto">Non</span>
-                        </li>
-                        <li>
-                            PER présent :
-                            <span data-field="fisc_has_per">Non</span>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Bonus appliqués :</strong>
-                    </p>
-                    <div data-field="fisc_bonuses"></div>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Pénalités appliquées :</strong>
-                    </p>
-                    <div data-field="fisc_penalties"></div>
-                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
-                        Le score de fiscalité mesure le degré d'optimisation fiscale structurelle du patrimoine.
-                        Il évalue si le portefeuille est logé dans les bonnes enveloppes (PEA, AV, PER) ou s'il expose
-                        inutilement le foyer à une fiscalité lourde (CTO, cryptos non optimisés).
-                    </p>
+            <div class="syn-block">
+                <div class="syn-head">
+                    <strong>Fiscalité</strong>
+                    <span class="badge" data-field="fisc_label">…</span>
                 </div>
-            </details>
+                <div class="syn-grid">
+                    <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="fisc_score_final">0</span>/10</span></div>
+                    <div class="syn-kv"><span>PEA (avantage après 5 ans)</span><span data-field="fisc_pea_total">0 €</span></div>
+                    <div class="syn-kv"><span>CTO (PFU 30%)</span><span data-field="fisc_cto_total">0 €</span></div>
+                    <div class="syn-kv"><span>Assurance-vie</span><span data-field="fisc_av_total">0 €</span></div>
+                    <div class="syn-kv"><span>PER</span><span data-field="fisc_per_total">0 €</span></div>
+                    <div class="syn-kv"><span>Cryptomonnaies</span><span><span data-field="fisc_crypto_total">0 €</span> (<span data-field="fisc_crypto_percentage">0%</span>)</span></div>
+                    <div class="syn-kv"><span>PEA > CTO</span><span data-field="fisc_pea_over_cto">Non</span></div>
+                    <div class="syn-kv"><span>PER présent</span><span data-field="fisc_has_per">Non</span></div>
+                </div>
+                <ul class="syn-note-list" data-field="fisc_note_complete"></ul>
+            </div>
 
             <!-- Détails score de croissance -->
-            <details style="margin-top: 1.25rem">
-                <summary
-                    style="
-                        cursor: pointer;
-                        font-weight: 600;
-                        color: var(--blue-dark);
-                        margin-bottom: 0.75rem;
-                    "
-                >
-                    Détails du score de croissance
-                    <span
-                        data-field="growth_label"
-                        class="badge"
-                        style="margin-left: 0.5rem"
-                        >…</span
-                    >
-                </summary>
-                <div
-                    style="
-                        padding-left: 1rem;
-                        border-left: 3px solid var(--blue-light);
-                    "
-                >
-                    <p style="margin-bottom: 0.5rem">
-                        <strong>Score final :</strong>
-                        <span data-field="growth_score_final">0</span>/10
-                    </p>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Exposition aux actions :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            Montant en actions :
-                            <span data-field="growth_exposition_actions">0 €</span>
-                        </li>
-                        <li>
-                            Patrimoine financier total :
-                            <span data-field="growth_patrimoine_financier">0 €</span>
-                        </li>
-                        <li>
-                            Pourcentage actions :
-                            <span data-field="growth_pct_actions">0%</span>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 0.75rem; margin-bottom: 0.5rem">
-                        <strong>Analyse par profil :</strong>
-                    </p>
-                    <ul>
-                        <li>
-                            Profil investisseur :
-                            <span data-field="growth_profil_actif">default</span>
-                        </li>
-                        <li>
-                            Plage optimale :
-                            <span data-field="growth_optimal_range">60-70%</span>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 0.75rem; padding: 0.75rem; background-color: var(--blue-light); border-left: 4px solid var(--blue-dark); border-radius: 4px;">
-                        <strong>Interprétation :</strong>
-                        <span data-field="growth_interpretation">…</span>
-                    </p>
-                    <p style="margin-top: 0.75rem; font-style: italic; color: var(--text-secondary);">
-                        Le score de croissance mesure le potentiel de rendement à long terme du patrimoine financier,
-                        basé sur l'exposition aux marchés actions. La plage optimale varie selon votre profil investisseur
-                        (prudent = 30-45%, équilibré = 50-65%, dynamique = 70-85%).
-                    </p>
+            <div class="syn-block">
+                <div class="syn-head">
+                    <strong>Croissance</strong>
+                    <span class="badge" data-field="growth_label">…</span>
                 </div>
-            </details>
+                <div class="syn-grid">
+                    <div class="syn-kv"><span><strong>Score final</strong></span><span><span data-field="growth_score_final">0</span>/10</span></div>
+                    <div class="syn-kv"><span>Montant en actions</span><span data-field="growth_exposition_actions">0 €</span></div>
+                    <div class="syn-kv"><span>Patrimoine financier</span><span data-field="growth_patrimoine_financier">0 €</span></div>
+                    <div class="syn-kv"><span>Pourcentage actions</span><span data-field="growth_pct_actions">0%</span></div>
+                    <div class="syn-kv"><span>Profil investisseur</span><span data-field="growth_profil_actif">default</span></div>
+                    <div class="syn-kv"><span>Plage optimale</span><span data-field="growth_optimal_range">60-70%</span></div>
+                </div>
+                <ul class="syn-note-list" data-field="growth_note_complete"></ul>
+            </div>
 
             <div class="chart-wrap">
                 <canvas id="radarChart" role="img"></canvas>

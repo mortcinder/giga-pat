@@ -115,7 +115,7 @@ class ReportGenerator:
             "liq_ratio": ("synthese.liquidity_details.details.ratio", lambda x: f"{x:.2f}"),
             "liq_target_months": ("synthese.liquidity_details.details.target_months", str),
             "liq_depenses_mensuelles": ("synthese.liquidity_details.details.depenses_mensuelles", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "liq_overliquid_message": (self._format_overliquidity_message, None),
+            "liq_note_complete": (self._format_liquidity_complete_note, None),
             # Détails score fiscal
             "fisc_score_final": ("synthese.fiscal_details.score", lambda x: f"{x:.1f}"),
             "fisc_label": ("synthese.fiscal_details.label", str),
@@ -127,8 +127,7 @@ class ReportGenerator:
             "fisc_crypto_percentage": ("synthese.fiscal_details.details.crypto_percentage", lambda x: f"{x:.1f}%"),
             "fisc_pea_over_cto": ("synthese.fiscal_details.details.pea_over_cto", lambda x: "Oui" if x else "Non"),
             "fisc_has_per": ("synthese.fiscal_details.details.has_per", lambda x: "Oui" if x else "Non"),
-            "fisc_bonuses": (self._format_fiscal_bonuses, None),
-            "fisc_penalties": (self._format_fiscal_penalties, None),
+            "fisc_note_complete": (self._format_fiscal_complete_note, None),
             # Détails score croissance
             "growth_score_final": ("synthese.growth_details.score", lambda x: f"{x:.1f}"),
             "growth_label": ("synthese.growth_details.label", str),
@@ -137,7 +136,7 @@ class ReportGenerator:
             "growth_pct_actions": ("synthese.growth_details.details.pct_actions", lambda x: f"{x:.1f}%"),
             "growth_profil_actif": ("synthese.growth_details.details.profil_actif", str),
             "growth_optimal_range": (self._format_growth_optimal_range, None),
-            "growth_interpretation": ("synthese.growth_details.details.interpretation", str),
+            "growth_note_complete": (self._format_growth_complete_note, None),
             # Alerte de concentration (conditionnel)
             "concentration_alert_content": (self._analyze_concentration_alert, None),
             # Optimisation Markowitz - Graphique
@@ -709,42 +708,40 @@ class ReportGenerator:
     def _format_diversification_bonus_details(self, data: dict) -> str:
         """
         Formate les détails des bonus de diversification
-        Retourne un HTML structuré avec <p> et <ul>
+        Retourne une liste HTML avec libellés standardisés
         """
         try:
             bonus_details = data.get("synthese", {}).get("diversification_details", {}).get("details", {}).get("bonus_details", {})
 
-            if not bonus_details:
-                return ""
+            items = []
 
-            html_parts = [
-                '<p style="margin-top: 0.75rem; margin-bottom: 0.5rem">',
-                '<strong>Bonus obtenus :</strong>',
-                '</p>',
-                '<ul>'
-            ]
+            # Bonus (si applicable)
+            if bonus_details:
+                text_parts = []
 
-            # Bonus classes d'actifs
-            if "classes_actifs" in bonus_details:
-                count = bonus_details["classes_actifs"].get("count", 0)
-                bonus = bonus_details["classes_actifs"].get("bonus", 0)
-                html_parts.append(f'<li>{count} classes d\'actifs : +{bonus:.1f} point(s)</li>')
+                if "classes_actifs" in bonus_details:
+                    count = bonus_details["classes_actifs"].get("count", 0)
+                    bonus = bonus_details["classes_actifs"].get("bonus", 0)
+                    text_parts.append(f"{count} classes d'actifs (+{bonus:.1f} pt)")
 
-            # Bonus positions
-            if "positions" in bonus_details:
-                count = bonus_details["positions"].get("count", 0)
-                bonus = bonus_details["positions"].get("bonus", 0)
-                html_parts.append(f'<li>{count} positions/comptes : +{bonus:.1f} point(s)</li>')
+                if "positions" in bonus_details:
+                    count = bonus_details["positions"].get("count", 0)
+                    bonus = bonus_details["positions"].get("bonus", 0)
+                    text_parts.append(f"{count} positions/comptes (+{bonus:.1f} pt)")
 
-            # Bonus international
-            if "international" in bonus_details:
-                pct = bonus_details["international"].get("pct", 0)
-                bonus = bonus_details["international"].get("bonus", 0)
-                html_parts.append(f'<li>Exposition internationale {pct:.1f}% : +{bonus:.1f} point(s)</li>')
+                if "international" in bonus_details:
+                    pct = bonus_details["international"].get("pct", 0)
+                    bonus = bonus_details["international"].get("bonus", 0)
+                    text_parts.append(f"exposition internationale {pct:.1f}% (+{bonus:.1f} pt)")
 
-            html_parts.append('</ul>')
+                if text_parts:
+                    items.append(f"<li><strong>Bonus :</strong> {', '.join(text_parts)}.</li>")
 
-            return "".join(html_parts)
+            # Méthodologie (toujours présent)
+            items.append("<li><strong>Méthodologie :</strong> Score de diversification calculé sur 2 composantes : institutionnelle (60%) et juridictionnelle (40%).</li>")
+
+            return "".join(items)
+
         except Exception as e:
             self.logger.warning(f"Erreur formatage bonus diversification: {e}")
             return ""
@@ -865,7 +862,7 @@ class ReportGenerator:
     def _format_fiscal_bonuses(self, data: dict) -> str:
         """
         Formate les bonus fiscaux appliqués
-        Retourne une liste HTML des bonus
+        Retourne un texte simple énumérant les bonus
         """
         try:
             fiscal_details = data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
@@ -874,29 +871,29 @@ class ReportGenerator:
 
             bonuses_applied = fiscal_details.get("bonuses_applied", {})
             if not bonuses_applied:
-                return "<p style='font-style: italic; color: var(--text-secondary);'>Aucun bonus appliqué</p>"
+                return "Aucun bonus appliqué."
 
-            html_parts = []
+            text_parts = []
 
             # Bonus PEA > CTO
             if "pea_over_cto" in bonuses_applied:
                 bonus = bonuses_applied["pea_over_cto"]
-                html_parts.append(f"<li>PEA > CTO (fiscalement avantageux) : +{bonus:.1f} point(s)</li>")
+                text_parts.append(f"PEA > CTO (+{bonus:.1f} pt)")
 
             # Bonus AV succession
             if "av_succession" in bonuses_applied:
                 bonus = bonuses_applied["av_succession"]
-                html_parts.append(f"<li>Assurance-vie (succession optimisée) : +{bonus:.1f} point(s)</li>")
+                text_parts.append(f"Assurance-vie succession (+{bonus:.1f} pt)")
 
             # Bonus PER
             if "per_present" in bonuses_applied:
                 bonus = bonuses_applied["per_present"]
-                html_parts.append(f"<li>PER présent (avantage fiscal à l'entrée) : +{bonus:.1f} point(s)</li>")
+                text_parts.append(f"PER présent (+{bonus:.1f} pt)")
 
-            if html_parts:
-                return "<ul>" + "".join(html_parts) + "</ul>"
+            if text_parts:
+                return "Bonus appliqués : " + ", ".join(text_parts) + "."
             else:
-                return "<p style='font-style: italic; color: var(--text-secondary);'>Aucun bonus appliqué</p>"
+                return "Aucun bonus appliqué."
 
         except Exception as e:
             self.logger.error(f"Erreur formatage bonus fiscaux: {e}")
@@ -905,7 +902,7 @@ class ReportGenerator:
     def _format_fiscal_penalties(self, data: dict) -> str:
         """
         Formate les pénalités fiscales appliquées
-        Retourne une liste HTML des pénalités
+        Retourne un texte simple énumérant les pénalités
         """
         try:
             fiscal_details = data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
@@ -914,20 +911,20 @@ class ReportGenerator:
 
             penalties_applied = fiscal_details.get("penalties_applied", {})
             if not penalties_applied:
-                return "<p style='font-style: italic; color: var(--text-secondary);'>Aucune pénalité appliquée</p>"
+                return "Aucune pénalité appliquée."
 
-            html_parts = []
+            text_parts = []
 
             # Pénalité cryptos élevés
             if "crypto_high" in penalties_applied:
                 penalty = penalties_applied["crypto_high"]
                 crypto_pct = fiscal_details.get("crypto_percentage", 0)
-                html_parts.append(f"<li>Cryptomonnaies élevées ({crypto_pct:.1f}% du patrimoine) : {penalty:.1f} point(s)</li>")
+                text_parts.append(f"Cryptomonnaies élevées {crypto_pct:.1f}% ({penalty:.1f} pt)")
 
-            if html_parts:
-                return "<ul>" + "".join(html_parts) + "</ul>"
+            if text_parts:
+                return "Pénalités appliquées : " + ", ".join(text_parts) + "."
             else:
-                return "<p style='font-style: italic; color: var(--text-secondary);'>Aucune pénalité appliquée</p>"
+                return "Aucune pénalité appliquée."
 
         except Exception as e:
             self.logger.error(f"Erreur formatage pénalités fiscales: {e}")
@@ -1017,6 +1014,106 @@ class ReportGenerator:
         else:
             # Par défaut: mid
             return "mid"
+
+    def _format_liquidity_complete_note(self, data: dict) -> str:
+        """
+        Formate la note complète de liquidité avec sections
+        Retourne une liste HTML avec libellés standardisés
+        """
+        try:
+            liquidity_details = data.get("synthese", {}).get("liquidity_details", {}).get("details", {})
+            if not liquidity_details:
+                return ""
+
+            items = []
+
+            # Alerte (si sur-liquidité détectée)
+            overliquid_msg = self._format_overliquidity_message(data)
+            if overliquid_msg:
+                items.append(f"<li><strong>Alerte :</strong> {overliquid_msg}</li>")
+
+            # Méthodologie (toujours présent)
+            target_months = liquidity_details.get("target_months", 12)
+            methodology = (
+                f"Le score de liquidité mesure la capacité à faire face à {target_months} mois de dépenses sans revenus. "
+                f"La cible est adaptée au profil investisseur (prudent = 15 mois, équilibré = 12 mois, dynamique = 9 mois)."
+            )
+            items.append(f"<li><strong>Méthodologie :</strong> {methodology}</li>")
+
+            return "".join(items)
+
+        except Exception as e:
+            self.logger.error(f"Erreur formatage note liquidité: {e}")
+            return ""
+
+    def _format_fiscal_complete_note(self, data: dict) -> str:
+        """
+        Formate la note complète de fiscalité avec sections
+        Fusionne bonus + pénalités + méthodologie
+        Retourne une liste HTML avec libellés standardisés
+        """
+        try:
+            fiscal_details = data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            if not fiscal_details:
+                return ""
+
+            items = []
+
+            # Bonus (si applicable)
+            bonuses = self._format_fiscal_bonuses(data)
+            if bonuses and bonuses != "Aucun bonus appliqué.":
+                items.append(f"<li><strong>Bonus :</strong> {bonuses}</li>")
+
+            # Pénalités (si applicable)
+            penalties = self._format_fiscal_penalties(data)
+            if penalties and penalties != "Aucune pénalité appliquée.":
+                items.append(f"<li><strong>Pénalités :</strong> {penalties}</li>")
+
+            # Méthodologie (toujours présent)
+            methodology = (
+                "Le score de fiscalité mesure le degré d'optimisation fiscale structurelle du patrimoine. "
+                "Il évalue si le portefeuille est logé dans les bonnes enveloppes (PEA, AV, PER) ou s'il expose "
+                "inutilement le foyer à une fiscalité lourde (CTO, cryptos non optimisés)."
+            )
+            items.append(f"<li><strong>Méthodologie :</strong> {methodology}</li>")
+
+            return "".join(items)
+
+        except Exception as e:
+            self.logger.error(f"Erreur formatage note fiscalité: {e}")
+            return ""
+
+    def _format_growth_complete_note(self, data: dict) -> str:
+        """
+        Formate la note complète de croissance avec sections
+        Fusionne interprétation + méthodologie
+        Retourne une liste HTML avec libellés standardisés
+        """
+        try:
+            growth_details = data.get("synthese", {}).get("growth_details", {}).get("details", {})
+            if not growth_details:
+                return ""
+
+            items = []
+
+            # Interprétation (si disponible)
+            interpretation = growth_details.get("interpretation", "")
+            if interpretation:
+                items.append(f"<li><strong>Interprétation :</strong> {interpretation}</li>")
+
+            # Méthodologie (toujours présent)
+            methodology = (
+                "Le score de croissance mesure le potentiel de rendement à long terme du patrimoine financier, "
+                "basé sur l'exposition aux marchés actions. La plage optimale varie selon votre profil investisseur "
+                "(prudent = 30-45%, équilibré = 50-65%, dynamique = 70-85%)."
+            )
+            items.append(f"<li><strong>Méthodologie :</strong> {methodology}</li>")
+
+            return "".join(items)
+
+        except Exception as e:
+            self.logger.error(f"Erreur formatage note croissance: {e}")
+            return ""
 
     def _synthesize_investor_profile(self, data: dict) -> str:
         """

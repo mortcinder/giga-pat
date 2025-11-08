@@ -660,6 +660,73 @@ footer {
 }
 
 /* =====================================================
+   6.1) Sections de synthèse des scores
+   ===================================================== */
+.syn-block {
+    margin: 14px 0 18px;
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+}
+
+.syn-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.syn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 18px;
+    margin-top: 8px;
+}
+
+.syn-kv {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: baseline;
+    font-size: var(--font-size-sm);
+}
+
+.syn-kv strong {
+    color: var(--text);
+}
+
+.syn-note-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+    border-left: 4px solid var(--gray-light);
+    padding-left: 12px;
+}
+
+.syn-note-list li {
+    padding: 8px 0;
+    border-bottom: var(--border-side-dashed);
+    color: var(--text);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+}
+
+.syn-note-list li:last-child {
+    border-bottom: none;
+}
+
+.syn-note-list strong {
+    color: var(--blue-dark);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Impression : sobriété, pas d'interaction nécessaire */
+@media print {
+    .syn-block {
+        break-inside: avoid;
+    }
+}
+
+/* =====================================================
    7) Responsif léger
    ===================================================== */
 @media (max-width: 1000px) {
