@@ -6,7 +6,77 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment. The system follows a strict 3-stage pipeline architecture with no user interaction during execution.
 
+**Version**: v2.0 (November 2025) - Architecture manifest-driven avec parsers pluggables
+
 **Note**: Since October 2025, PEA and PEA-PME files from Crédit Agricole use PDF format instead of CSV.
+
+## 🆕 What's New in v2.0 (November 2025)
+
+### **Major Changes**
+
+1. **Manifest-Driven Architecture**
+   - `patrimoine.md` ❌ → `manifest.json` ✅ as primary source
+   - Explicit compte → fichier → parser mapping
+   - JSON Schema validation (`config/manifest.schema.json`)
+
+2. **Pluggable Parsers System**
+   - Strategy Pattern for extensibility
+   - `tools/parsers/` with `BaseParser` interface
+   - Parser registry with fallback mechanism
+   - Easy addition of new établissements without modifying core code
+
+3. **Profil Investisseur as Source of Truth**
+   - `profil_risque` defined in `manifest.json` (not `config.yaml`)
+   - `config.yaml` → `active_profile_override` for tests only
+   - Analyzer dynamically selects profile from manifest
+
+4. **Migration Tools**
+   - `tools/generate_manifest.py` to convert v1 → v2
+   - Backward compatibility maintained (v1 backup in `tools/normalizer_v1_backup.py`)
+
+### **Migration Guide v1 → v2**
+
+```bash
+# 1. Generate manifest.json from existing patrimoine.md
+python tools/generate_manifest.py
+
+# 2. Review and adjust generated manifest.json
+#    - Check profil_risque is correct (dynamique/equilibre/prudent)
+#    - Verify all comptes are detected
+#    - Confirm parser strategies
+
+# 3. Test with new architecture
+python main.py
+
+# 4. If issues, rollback is available:
+#    - Restore normalizer_v1_backup.py → normalizer.py
+#    - Revert config.yaml changes
+```
+
+### **Key Files Changed**
+
+- `config/config.yaml`: `normalizer.input_file` → `"manifest.json"`, `active_profile_override: null`
+- `tools/normalizer.py`: Rewritten to use ParserRegistry (v1 backup available)
+- `tools/analyzer.py`: `_determine_active_profile()` method added
+- `config/manifest.schema.json`: JSON Schema for validation
+
+### **New Directory Structure**
+
+```
+tools/
+├── normalizer.py              # v2.0: Manifest-driven
+├── normalizer_v1_backup.py    # v1.0: Backup for rollback
+├── analyzer.py                # v2.0: Dynamic profile selection
+├── generate_manifest.py       # Migration script v1→v2
+└── parsers/                   # ✨ NEW: Pluggable parsers
+    ├── base_parser.py         # Abstract interface
+    ├── registry.py            # Parser registry + fallback
+    ├── credit_agricole/
+    │   ├── pea_v2025.py
+    │   └── av_v2_lignes.py
+    └── generic/
+        └── csv_flexible.py
+```
 
 ## Core Commands
 
@@ -16,6 +86,9 @@ python main.py
 
 # OR, if using Claude Code:
 /report
+
+# v2.0: Generate manifest.json from patrimoine.md (migration)
+python tools/generate_manifest.py
 
 # Test individual components
 python tests/test_normalizer.py   # Test stage 1: Data normalization
@@ -31,27 +104,126 @@ cp .env.example .env
 # Then edit .env and add your BRAVE_API_KEY
 ```
 
-## Architecture: 3-Stage Pipeline
+## Architecture: 3-Stage Pipeline (v2.0)
 
 The system transforms data through three independent stages, each with strict input/output contracts:
 
 ```
-sources/patrimoine.md + CSV/PDF files
+sources/manifest.json (v2.0) + CSV/PDF files
     ↓
-[Stage 1: Normalizer] → generated/patrimoine_input.json
+[Stage 1: Normalizer + Parsers Registry] → generated/patrimoine_input.json
     ↓
-[Stage 2: Analyzer] → generated/patrimoine_analysis.json
+[Stage 2: Analyzer (dynamic profile)] → generated/patrimoine_analysis.json
     ↓
 [Stage 3: Generator] → generated/rapport_YYYYMMDD_HHMMSS.html
 ```
 
-### Stage 1: Normalizer (`tools/normalizer.py`)
+**v2.0 Key Changes**:
+- ✅ `manifest.json` as orchestrator (replaces `patrimoine.md` for data)
+- ✅ Pluggable parsers via Strategy Pattern (`tools/parsers/`)
+- ✅ Dynamic profile selection from manifest (not hardcoded in config)
+- ✅ Parser fallback mechanism for robustness
 
-**Purpose**: Parse heterogeneous source files and output normalized JSON.
+### Stage 1: Normalizer (`tools/normalizer.py`) - v2.0
 
-**Key responsibilities**:
-- Parse `sources/patrimoine.md` as entry point
-- Extract data from referenced CSV files (via `tools/utils/file_parser.py`)
+**Purpose**: Read manifest.json, parse files via appropriate parsers, output normalized JSON.
+
+**v2.0 Architecture**:
+```python
+PatrimoineNormalizer:
+  ↓
+1. Load manifest.json
+  ↓
+2. Validate structure (profil_risque required)
+  ↓
+3. For each compte in manifest:
+   - Get parser_strategy (e.g., "credit_agricole.pea.v2025")
+   - Retrieve parser from ParserRegistry
+   - Parse file with fallback support
+   - Validate parsed data
+  ↓
+4. Group comptes by établissement
+  ↓
+5. Enrich with metadata (etablissements_financiers.json)
+  ↓
+6. Output patrimoine_input.json
+```
+
+**v2.0 Pluggable Parsers System**:
+- **BaseParser** interface (`tools/parsers/base_parser.py`): Abstract class defining contract
+  - `strategy_name`: Unique identifier (e.g., "credit_agricole.pea.v2025")
+  - `can_parse()`: Confidence score (0.0-1.0) for auto-detection
+  - `parse()`: Main parsing logic, returns normalized dict
+  - `validate()`: Post-parse validation, returns list of anomalies
+
+- **ParserRegistry** (`tools/parsers/registry.py`): Central registry managing all parsers
+  - `register()`: Register new parser class
+  - `get_parser()`: Retrieve parser by strategy name
+  - `auto_detect()`: Find compatible parsers by confidence score
+  - `parse_with_fallback()`: Try parsers in order until success
+
+- **Available Parsers**:
+  - `credit_agricole.pea.v2025`: PEA/PEA-PME format web multipage (Oct 2025+)
+  - `credit_agricole.av.v2_lignes`: Assurance-vie format 2 lignes par fonds
+  - `generic.csv.flexible`: CSV générique avec mapping colonnes flexible
+
+**Adding a New Parser** (e.g., Boursobank PEA):
+```python
+# 1. Create tools/parsers/boursobank/pea_v2025.py
+from ..base_parser import BaseParser, ParsingError
+import pdfplumber
+
+class BoursobankPEA2025Parser(BaseParser):
+    @property
+    def strategy_name(self) -> str:
+        return "boursobank.pea.v2025"
+
+    @property
+    def supported_formats(self) -> List[str]:
+        return ["pdf"]
+
+    def can_parse(self, filepath: str, metadata: dict) -> float:
+        if metadata.get("etablissement") != "boursobank":
+            return 0.0
+        # Check PDF content for Boursobank-specific patterns
+        with pdfplumber.open(filepath) as pdf:
+            text = pdf.pages[0].extract_text().lower()
+            if "boursobank" in text and "pea" in text:
+                return 0.9
+        return 0.0
+
+    def parse(self, filepath: str, metadata: dict) -> dict:
+        # Implement parsing logic specific to Boursobank format
+        ...
+
+    def validate(self, parsed_data: dict) -> List[str]:
+        # Validate parsed data
+        ...
+
+# 2. Register in tools/normalizer.py __init__()
+from tools.parsers.boursobank import BoursobankPEA2025Parser
+self.parser_registry.register(BoursobankPEA2025Parser)
+
+# 3. Update manifest.json
+{
+  "id": "bob_pea_001",
+  "etablissement": "boursobank",
+  "type_compte": "PEA",
+  "source_file": "[BOB] - PEA.pdf",
+  "parser_strategy": "boursobank.pea.v2025",
+  "fallback_parsers": ["generic.csv.flexible"]
+}
+```
+
+**v1.0 Legacy (deprecated)**:
+- Monolithic parsing in `normalizer.py` (lines 807-953 for PEA, 738-798 for AV)
+- Hardcoded for Crédit Agricole formats only
+- No extensibility without modifying core code
+- Backup available in `tools/normalizer_v1_backup.py`
+
+**Key responsibilities** (v2.0):
+- Load and validate `sources/manifest.json`
+- Instantiate appropriate parsers from registry
 - Extract data from PDF files using `pdfplumber` (bank statements, insurance contracts)
 - Handle French number formats (comma as decimal separator)
 - Calculate investor age from birthdate

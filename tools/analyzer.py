@@ -64,14 +64,10 @@ class PatrimoineAnalyzer:
             with open(config_path, "r", encoding="utf-8") as f:
                 self.analysis_config = yaml.safe_load(f)
 
-            # Extraire le profil actif
-            self.active_profile = analysis_config.get("active_profile", "default")
-
             self.logger.info(f"Configuration d'analyse chargée depuis: {config_path}")
-            self.logger.info(f"Profil actif: {self.active_profile}")
 
-            # Initialiser le calculateur d'écart benchmark
-            self.benchmark_calculator = BenchmarkGapCalculator(self.analysis_config, self.active_profile)
+            # Note: active_profile sera déterminé dynamiquement dans analyze()
+            # à partir des données d'entrée (v2.0: profil_risque du manifest)
 
         except Exception as e:
             self.logger.error(f"Erreur lors du chargement de la configuration: {e}")
@@ -83,26 +79,77 @@ class PatrimoineAnalyzer:
             "account_classification": {"keywords": {}, "mapping": {}, "special_institutions": {}, "fonds_euro_keywords": []},
             "risk_justifications": {},
             "benchmarks": {"default": {}},
-            "scores": {}
+            "scores": {},
+            "profiles": {"default": {}}
         }
-        self.active_profile = "default"
-        # Initialiser le calculateur avec config par défaut
-        self.benchmark_calculator = BenchmarkGapCalculator(self.analysis_config, self.active_profile)
+        # Note: active_profile sera déterminé dans analyze()
+
+    def _determine_active_profile(self, profil_data: dict) -> str:
+        """
+        Détermine le profil actif à utiliser pour l'analyse (v2.0).
+
+        Ordre de priorité:
+        1. config.yaml → active_profile_override (si défini et non null)
+        2. patrimoine_input.json → profil.investissement.profil_risque (défaut)
+
+        Args:
+            profil_data: Dictionnaire profil depuis patrimoine_input.json
+
+        Returns:
+            Nom du profil actif (ex: "dynamique")
+        """
+        # Check override dans config
+        override = self.config.get("analysis", {}).get("active_profile_override")
+
+        if override:
+            self.logger.warning(
+                f"⚠️  OVERRIDE : Utilisation du profil '{override}' (config.yaml) "
+                f"au lieu de '{profil_data.get('investissement', {}).get('profil_risque')}' (manifest.json)"
+            )
+            return override
+
+        # Sinon, utiliser le profil du manifest
+        profil_risque = profil_data.get("investissement", {}).get("profil_risque")
+
+        if not profil_risque:
+            self.logger.error("Profil investisseur manquant dans patrimoine_input.json")
+            self.logger.warning("Utilisation du profil 'default' par défaut")
+            return "default"
+
+        # Valider que le profil existe dans analysis.yaml
+        valid_profiles = list(self.analysis_config.get("profiles", {}).keys())
+        if profil_risque not in valid_profiles:
+            self.logger.error(
+                f"Profil '{profil_risque}' inconnu. Profils disponibles: {valid_profiles}"
+            )
+            self.logger.warning("Utilisation du profil 'default' par défaut")
+            return "default"
+
+        self.logger.info(f"Profil d'analyse sélectionné : {profil_risque}")
+        return profil_risque
 
     def analyze(self, input_data: dict) -> dict:
-        """Point d'entrée principal d'analyse"""
-        self.logger.info("Début analyse...")
-        
+        """Point d'entrée principal d'analyse (v2.0)"""
+        self.logger.info("Début analyse (v2.0)...")
+
+        # Déterminer profil actif depuis les données d'entrée
+        profil_data = input_data.get("profil", {})
+        self.active_profile = self._determine_active_profile(profil_data)
+
+        # Initialiser le calculateur d'écart benchmark avec le profil actif
+        self.benchmark_calculator = BenchmarkGapCalculator(self.analysis_config, self.active_profile)
+
         start_time = datetime.now()
-        
+
         analysis = {
             "meta": {
-                "version": "1.0.0",
+                "version": "2.0.0",
                 "generated_at": datetime.now().isoformat(),
                 "analysis_duration_seconds": 0,
                 "web_searches_count": 0
             },
-            "profil": input_data.get("profil", {}),  # Inclure le profil investisseur
+            "profil": profil_data,  # Inclure le profil investisseur
+            "active_profile": self.active_profile,  # v2.0: Traçabilité du profil utilisé
             "synthese": {},
             "repartition": {},
             "risques": {},
@@ -111,7 +158,7 @@ class PatrimoineAnalyzer:
             "optimisation_portefeuille": {},
             "recherches_web": []
         }
-        
+
         # 1. Calcul répartitions
         self.logger.info("Analyse répartition...")
         analysis["repartition"] = self._analyze_repartition(input_data)
