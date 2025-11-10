@@ -7,9 +7,10 @@ import html
 import json
 import logging
 import re
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Dict
+
 from bs4 import BeautifulSoup
 
 
@@ -94,47 +95,131 @@ class ReportGenerator:
             "priorites": ("synthese.priorites", str),
             "synthese_commentaire": (self._generate_synthese_commentaire, None),
             # Détails score diversification
-            "div_score_final": ("synthese.diversification_details.score", lambda x: f"{x:.1f}"),
+            "div_score_final": (
+                "synthese.diversification_details.score",
+                lambda x: f"{x:.1f}",
+            ),
             "div_label": ("synthese.diversification_details.label", str),
-            "div_score_institutional": ("synthese.diversification_details.details.score_institutional", lambda x: f"{x:.1f}"),
-            "div_score_jurisdictional": ("synthese.diversification_details.details.score_jurisdictional", lambda x: f"{x:.1f}"),
-            "div_score_weighted": ("synthese.diversification_details.details.score_weighted", lambda x: f"{x:.1f}"),
-            "div_bonus_total": ("synthese.diversification_details.details.bonus_total", lambda x: f"{x:.1f}"),
-            "div_nb_classes": ("synthese.diversification_details.details.nb_classes_actifs", str),
-            "div_nb_positions": ("synthese.diversification_details.details.nb_positions", str),
-            "div_pct_international": ("synthese.diversification_details.details.pct_international", lambda x: f"{x:.1f}"),
+            "div_score_institutional": (
+                "synthese.diversification_details.details.score_institutional",
+                lambda x: f"{x:.1f}",
+            ),
+            "div_score_jurisdictional": (
+                "synthese.diversification_details.details.score_jurisdictional",
+                lambda x: f"{x:.1f}",
+            ),
+            "div_score_weighted": (
+                "synthese.diversification_details.details.score_weighted",
+                lambda x: f"{x:.1f}",
+            ),
+            "div_bonus_total": (
+                "synthese.diversification_details.details.bonus_total",
+                lambda x: f"{x:.1f}",
+            ),
+            "div_nb_classes": (
+                "synthese.diversification_details.details.nb_classes_actifs",
+                str,
+            ),
+            "div_nb_positions": (
+                "synthese.diversification_details.details.nb_positions",
+                str,
+            ),
+            "div_pct_international": (
+                "synthese.diversification_details.details.pct_international",
+                lambda x: f"{x:.1f}",
+            ),
             "div_bonus_details": (self._format_diversification_bonus_details, None),
             # Détails score résilience
-            "res_score_final": ("synthese.resilience_details.score", lambda x: f"{x:.1f}"),
+            "res_score_final": (
+                "synthese.resilience_details.score",
+                lambda x: f"{x:.1f}",
+            ),
             "res_label": ("synthese.resilience_details.label", str),
             # Détails score liquidité
-            "liq_score_final": ("synthese.liquidity_details.score", lambda x: f"{x:.1f}"),
+            "liq_score_final": (
+                "synthese.liquidity_details.score",
+                lambda x: f"{x:.1f}",
+            ),
             "liq_label": ("synthese.liquidity_details.label", str),
-            "liq_liquidite_actuelle": ("synthese.liquidity_details.details.liquidite_actuelle", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "liq_liquidite_cible": ("synthese.liquidity_details.details.liquidite_cible", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "liq_ratio": ("synthese.liquidity_details.details.ratio", lambda x: f"{x:.2f}"),
-            "liq_target_months": ("synthese.liquidity_details.details.target_months", str),
-            "liq_depenses_mensuelles": ("synthese.liquidity_details.details.depenses_mensuelles", lambda x: f"{x:,.0f} €".replace(",", " ")),
+            "liq_liquidite_actuelle": (
+                "synthese.liquidity_details.details.liquidite_actuelle",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "liq_liquidite_cible": (
+                "synthese.liquidity_details.details.liquidite_cible",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "liq_ratio": (
+                "synthese.liquidity_details.details.ratio",
+                lambda x: f"{x:.2f}",
+            ),
+            "liq_target_months": (
+                "synthese.liquidity_details.details.target_months",
+                str,
+            ),
+            "liq_depenses_mensuelles": (
+                "synthese.liquidity_details.details.depenses_mensuelles",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
             "liq_note_complete": (self._format_liquidity_complete_note, None),
             # Détails score fiscal
             "fisc_score_final": ("synthese.fiscal_details.score", lambda x: f"{x:.1f}"),
             "fisc_label": ("synthese.fiscal_details.label", str),
-            "fisc_pea_total": ("synthese.fiscal_details.details.pea_total", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "fisc_cto_total": ("synthese.fiscal_details.details.cto_total", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "fisc_av_total": ("synthese.fiscal_details.details.av_total", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "fisc_per_total": ("synthese.fiscal_details.details.per_total", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "fisc_crypto_total": ("synthese.fiscal_details.details.crypto_total", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "fisc_crypto_percentage": ("synthese.fiscal_details.details.crypto_percentage", lambda x: f"{x:.1f}%"),
-            "fisc_pea_over_cto": ("synthese.fiscal_details.details.pea_over_cto", lambda x: "Oui" if x else "Non"),
-            "fisc_has_per": ("synthese.fiscal_details.details.has_per", lambda x: "Oui" if x else "Non"),
+            "fisc_pea_total": (
+                "synthese.fiscal_details.details.pea_total",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "fisc_cto_total": (
+                "synthese.fiscal_details.details.cto_total",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "fisc_av_total": (
+                "synthese.fiscal_details.details.av_total",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "fisc_per_total": (
+                "synthese.fiscal_details.details.per_total",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "fisc_crypto_total": (
+                "synthese.fiscal_details.details.crypto_total",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "fisc_crypto_percentage": (
+                "synthese.fiscal_details.details.crypto_percentage",
+                lambda x: f"{x:.1f}%",
+            ),
+            "fisc_pea_over_cto": (
+                "synthese.fiscal_details.details.pea_over_cto",
+                lambda x: "Oui" if x else "Non",
+            ),
+            "fisc_has_per": (
+                "synthese.fiscal_details.details.has_per",
+                lambda x: "Oui" if x else "Non",
+            ),
             "fisc_note_complete": (self._format_fiscal_complete_note, None),
             # Détails score croissance
-            "growth_score_final": ("synthese.growth_details.score", lambda x: f"{x:.1f}"),
+            "growth_score_final": (
+                "synthese.growth_details.score",
+                lambda x: f"{x:.1f}",
+            ),
             "growth_label": ("synthese.growth_details.label", str),
-            "growth_exposition_actions": ("synthese.growth_details.details.exposition_actions", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "growth_patrimoine_financier": ("synthese.growth_details.details.patrimoine_financier", lambda x: f"{x:,.0f} €".replace(",", " ")),
-            "growth_pct_actions": ("synthese.growth_details.details.pct_actions", lambda x: f"{x:.1f}%"),
-            "growth_profil_actif": ("synthese.growth_details.details.profil_actif", str),
+            "growth_exposition_actions": (
+                "synthese.growth_details.details.exposition_actions",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "growth_patrimoine_financier": (
+                "synthese.growth_details.details.patrimoine_financier",
+                lambda x: f"{x:,.0f} €".replace(",", " "),
+            ),
+            "growth_pct_actions": (
+                "synthese.growth_details.details.pct_actions",
+                lambda x: f"{x:.1f}%",
+            ),
+            "growth_profil_actif": (
+                "synthese.growth_details.details.profil_actif",
+                str,
+            ),
             "growth_optimal_range": (self._format_growth_optimal_range, None),
             "growth_note_complete": (self._format_growth_complete_note, None),
             # Alerte de concentration (conditionnel)
@@ -176,6 +261,8 @@ class ReportGenerator:
                 "optimisation_portefeuille.interpretation",
                 str,
             ),
+            # Méthodologie benchmark
+            "benchmark_methodology_content": (self._format_benchmark_methodology, None),
         }
 
         for field_name, (json_path_or_func, formatter) in mappings.items():
@@ -221,7 +308,11 @@ class ReportGenerator:
             badge_class = self._get_diversification_badge_class(label_text)
 
             if badge_el.has_attr("class"):
-                badge_classes = [c for c in badge_el["class"] if c not in ["high", "mid", "low", "crit"]]
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
                 badge_classes.append(badge_class)
                 badge_el["class"] = badge_classes
             else:
@@ -234,7 +325,11 @@ class ReportGenerator:
             badge_class = self._get_resilience_badge_class(label_text)
 
             if badge_el.has_attr("class"):
-                badge_classes = [c for c in badge_el["class"] if c not in ["high", "mid", "low", "crit"]]
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
                 badge_classes.append(badge_class)
                 badge_el["class"] = badge_classes
             else:
@@ -247,7 +342,11 @@ class ReportGenerator:
             badge_class = self._get_liquidity_badge_class(label_text)
 
             if badge_el.has_attr("class"):
-                badge_classes = [c for c in badge_el["class"] if c not in ["high", "mid", "low", "crit"]]
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
                 badge_classes.append(badge_class)
                 badge_el["class"] = badge_classes
             else:
@@ -260,7 +359,11 @@ class ReportGenerator:
             badge_class = self._get_fiscal_badge_class(label_text)
 
             if badge_el.has_attr("class"):
-                badge_classes = [c for c in badge_el["class"] if c not in ["high", "mid", "low", "crit"]]
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
                 badge_classes.append(badge_class)
                 badge_el["class"] = badge_classes
             else:
@@ -273,7 +376,11 @@ class ReportGenerator:
             badge_class = self._get_growth_badge_class(label_text)
 
             if badge_el.has_attr("class"):
-                badge_classes = [c for c in badge_el["class"] if c not in ["high", "mid", "low", "crit"]]
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
                 badge_classes.append(badge_class)
                 badge_el["class"] = badge_classes
             else:
@@ -412,35 +519,32 @@ class ReportGenerator:
             )
             self._set_field(new_row, "class_pct", f"{actif.get('pourcentage', 0)} %")
 
-            # Colonne écart benchmark
+            # Colonne écart benchmark (structure à deux niveaux comme "Classe d'actifs")
             benchmark_gap = actif.get("benchmark_gap", {})
-            gap_message = benchmark_gap.get("message", "N/A")
-            gap_niveau = benchmark_gap.get("niveau", "normal")
-            gap_status = benchmark_gap.get("status", "pas_de_benchmark")
+            gap_message_badge = benchmark_gap.get("message_badge", "N/A")
+            gap_message_context = benchmark_gap.get("message_context", "")
+            gap_niveau = benchmark_gap.get("niveau", "dans_la_cible")
 
-            # Message textuel
-            self._set_field(new_row, "class_gap_message", gap_message)
-
-            # Badge (uniquement si niveau attention ou alerte)
-            badge_span = new_row.find("span", attrs={"data-field": "class_gap_badge"})
-            if badge_span:
-                if gap_niveau in ["attention", "alerte"]:
-                    # Déterminer la classe CSS du badge selon le status
-                    if "fort" in gap_status:
-                        badge_class = "crit"  # Rouge foncé
-                        badge_text = "Alerte"
-                    elif gap_niveau == "alerte":
-                        badge_class = "high"  # Rouge clair
-                        badge_text = "Attention"
-                    else:
-                        badge_class = "mid"  # Orange
-                        badge_text = "À surveiller"
-
-                    badge_span["class"] = ["badge", badge_class]
-                    badge_span.string = badge_text
+            # Niveau 1 (primaire) : Badge avec écart (ex: "▲ +131%", "▼ -50%", "Cible")
+            badge_primary = new_row.find("span", attrs={"data-field": "class_gap_badge_primary"})
+            if badge_primary:
+                # Déterminer la classe CSS selon le niveau
+                if gap_niveau == "dans_la_cible":
+                    badge_class = "low"  # Vert (dans la cible)
+                elif gap_niveau == "attention":
+                    badge_class = "mid"  # Orange (attention)
+                elif gap_niveau == "alerte":
+                    badge_class = "high"  # Rouge (alerte)
                 else:
-                    # Pas de badge si niveau normal
-                    badge_span.decompose()
+                    badge_class = "neutral"  # Bleu (par défaut)
+
+                badge_primary["class"] = ["badge", badge_class]
+                badge_primary.string = gap_message_badge
+
+            # Niveau 2 (secondaire) : Contexte (ex: "38.5% vs 77.5%")
+            context_span = new_row.find("span", attrs={"data-field": "class_gap_context"})
+            if context_span:
+                context_span.string = gap_message_context
 
             tbody.append(new_row)
 
@@ -711,7 +815,12 @@ class ReportGenerator:
         Retourne une liste HTML avec libellés standardisés
         """
         try:
-            bonus_details = data.get("synthese", {}).get("diversification_details", {}).get("details", {}).get("bonus_details", {})
+            bonus_details = (
+                data.get("synthese", {})
+                .get("diversification_details", {})
+                .get("details", {})
+                .get("bonus_details", {})
+            )
 
             items = []
 
@@ -732,13 +841,19 @@ class ReportGenerator:
                 if "international" in bonus_details:
                     pct = bonus_details["international"].get("pct", 0)
                     bonus = bonus_details["international"].get("bonus", 0)
-                    text_parts.append(f"exposition internationale {pct:.1f}% (+{bonus:.1f} pt)")
+                    text_parts.append(
+                        f"exposition internationale {pct:.1f}% (+{bonus:.1f} pt)"
+                    )
 
                 if text_parts:
-                    items.append(f"<li><strong>Bonus :</strong> {', '.join(text_parts)}.</li>")
+                    items.append(
+                        f"<li><strong>Bonus :</strong> {', '.join(text_parts)}.</li>"
+                    )
 
             # Méthodologie (toujours présent)
-            items.append("<li><strong>Méthodologie :</strong> Score de diversification calculé sur 2 composantes : institutionnelle (60%) et juridictionnelle (40%).</li>")
+            items.append(
+                "<li><strong>Méthodologie :</strong> Score de diversification calculé sur 2 composantes : institutionnelle (60%) et juridictionnelle (40%).</li>"
+            )
 
             return "".join(items)
 
@@ -865,7 +980,9 @@ class ReportGenerator:
         Retourne un texte simple énumérant les bonus
         """
         try:
-            fiscal_details = data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            fiscal_details = (
+                data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            )
             if not fiscal_details:
                 return ""
 
@@ -905,7 +1022,9 @@ class ReportGenerator:
         Retourne un texte simple énumérant les pénalités
         """
         try:
-            fiscal_details = data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            fiscal_details = (
+                data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            )
             if not fiscal_details:
                 return ""
 
@@ -919,7 +1038,9 @@ class ReportGenerator:
             if "crypto_high" in penalties_applied:
                 penalty = penalties_applied["crypto_high"]
                 crypto_pct = fiscal_details.get("crypto_percentage", 0)
-                text_parts.append(f"Cryptomonnaies élevées {crypto_pct:.1f}% ({penalty:.1f} pt)")
+                text_parts.append(
+                    f"Cryptomonnaies élevées {crypto_pct:.1f}% ({penalty:.1f} pt)"
+                )
 
             if text_parts:
                 return "Pénalités appliquées : " + ", ".join(text_parts) + "."
@@ -957,7 +1078,9 @@ class ReportGenerator:
         Retourne une chaîne formatée "X-Y%"
         """
         try:
-            growth_details = data.get("synthese", {}).get("growth_details", {}).get("details", {})
+            growth_details = (
+                data.get("synthese", {}).get("growth_details", {}).get("details", {})
+            )
             if not growth_details:
                 return "N/A"
 
@@ -974,7 +1097,9 @@ class ReportGenerator:
         Retourne un message d'alerte si sur-liquidité détectée
         """
         try:
-            liquidity_details = data.get("synthese", {}).get("liquidity_details", {}).get("details", {})
+            liquidity_details = (
+                data.get("synthese", {}).get("liquidity_details", {}).get("details", {})
+            )
             if not liquidity_details:
                 return ""
 
@@ -1021,7 +1146,9 @@ class ReportGenerator:
         Retourne une liste HTML avec libellés standardisés
         """
         try:
-            liquidity_details = data.get("synthese", {}).get("liquidity_details", {}).get("details", {})
+            liquidity_details = (
+                data.get("synthese", {}).get("liquidity_details", {}).get("details", {})
+            )
             if not liquidity_details:
                 return ""
 
@@ -1053,7 +1180,9 @@ class ReportGenerator:
         Retourne une liste HTML avec libellés standardisés
         """
         try:
-            fiscal_details = data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            fiscal_details = (
+                data.get("synthese", {}).get("fiscal_details", {}).get("details", {})
+            )
             if not fiscal_details:
                 return ""
 
@@ -1090,7 +1219,9 @@ class ReportGenerator:
         Retourne une liste HTML avec libellés standardisés
         """
         try:
-            growth_details = data.get("synthese", {}).get("growth_details", {}).get("details", {})
+            growth_details = (
+                data.get("synthese", {}).get("growth_details", {}).get("details", {})
+            )
             if not growth_details:
                 return ""
 
@@ -1099,7 +1230,9 @@ class ReportGenerator:
             # Interprétation (si disponible)
             interpretation = growth_details.get("interpretation", "")
             if interpretation:
-                items.append(f"<li><strong>Interprétation :</strong> {interpretation}</li>")
+                items.append(
+                    f"<li><strong>Interprétation :</strong> {interpretation}</li>"
+                )
 
             # Méthodologie (toujours présent)
             methodology = (
@@ -1136,16 +1269,23 @@ class ReportGenerator:
         revenu = profil.get("revenu_mensuel_net", 0)
 
         # Récupérer le profil actif depuis les détails de croissance (source: config/analysis.yaml)
-        profil_actif_technique = data.get("synthese", {}).get("growth_details", {}).get("details", {}).get("profil_actif", "")
+        profil_actif_technique = (
+            data.get("synthese", {})
+            .get("growth_details", {})
+            .get("details", {})
+            .get("profil_actif", "")
+        )
 
         # Mapper le profil technique vers un label français
         profile_labels = {
             "default": "Équilibré",
             "dynamique": "Dynamique",
             "equilibre": "Équilibré",
-            "prudent": "Prudent"
+            "prudent": "Prudent",
         }
-        type_inv = profile_labels.get(profil_actif_technique, profil_actif_technique.capitalize())
+        type_inv = profile_labels.get(
+            profil_actif_technique, profil_actif_technique.capitalize()
+        )
 
         # Construire la synthèse
         parts = []
@@ -1380,3 +1520,94 @@ class ReportGenerator:
                 ]
             )
             return alert_items
+
+    def _get_active_profile_display(self, data: dict) -> str:
+        """
+        Retourne le nom affiché du profil actif
+
+        Args:
+            data: Données d'analyse complètes
+
+        Returns:
+            Nom du profil (ex: "Dynamique", "Équilibré", "Prudent")
+        """
+        # Le profil actif est stocké dans config
+        active_profile = self.config.get("analysis", {}).get(
+            "active_profile", "default"
+        )
+
+        # Mapping des noms de profils
+        profile_names = {
+            "dynamique": "Dynamique",
+            "equilibre": "Équilibré",
+            "prudent": "Prudent",
+            "default": "Équilibré",
+        }
+
+        return profile_names.get(active_profile, "Équilibré")
+
+    def _format_benchmark_methodology(self, data: dict) -> str:
+        """
+        Génère le contenu HTML de la méthodologie benchmark
+        Structure en 2 colonnes comme .markowitz-methodology
+
+        Args:
+            data: Données d'analyse complètes
+
+        Returns:
+            HTML formaté en 2 colonnes avec listes
+        """
+        active_profile = self.config.get("analysis", {}).get(
+            "active_profile", "default"
+        )
+        profile_display = self._get_active_profile_display(data)
+
+        # Charger les benchmarks du profil actif
+        analysis_config_path = Path("config") / "analysis.yaml"
+        benchmark_items = []
+
+        if analysis_config_path.exists():
+            import yaml
+
+            with open(analysis_config_path, "r", encoding="utf-8") as f:
+                analysis_config = yaml.safe_load(f)
+
+            benchmarks = analysis_config.get("benchmarks", {}).get(active_profile, {})
+
+            # Construire les items de liste pour les benchmarks
+            for classe, ranges in benchmarks.items():
+                min_val = ranges.get("min", 0)
+                target_val = ranges.get("target", 0)
+                max_val = ranges.get("max", 0)
+                benchmark_items.append(
+                    f"<li><strong>{classe} :</strong> {min_val}% - {max_val}% → cible {target_val}%</li>"
+                )
+
+        # Structure HTML en 2 colonnes (comme Markowitz)
+        methodology_html = f"""
+        <div class="methodology-content">
+            <div class="methods">
+                <h4>Méthodologie</h4>
+                <ul>
+                    <li><strong>Comparaison :</strong> Allocation réelle vs. recommandations profil {profile_display}</li>
+                    <li><strong>Badge neutre (≈ 0.0 pp) :</strong> Écart &lt; 0.3 pp de la cible</li>
+                    <li><strong>Badge vert (▲ +X pp) :</strong> Sur-pondération de X points de pourcentage</li>
+                    <li><strong>Badge rouge (▼ −X pp) :</strong> Sous-pondération de X points de pourcentage</li>
+                    <li><strong>Seuil "dans la cible" :</strong> ±1.0 pp (norme professionnelle gestion active)</li>
+                    <li><strong>Seuil "attention" :</strong> Hors fourchette min-max, écart &lt; 10 pp</li>
+                    <li><strong>Seuil "alerte" :</strong> Écart ≥ 10 pp au-delà des limites</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Allocations cibles ({profile_display})</h4>
+                <ul>
+                    {"".join(benchmark_items) if benchmark_items else "<li><em>Benchmarks non disponibles</em></li>"}
+                </ul>
+            </div>
+            <p>
+                <small class="muted">Sources : Vanguard, T. Rowe Price, Nalo (pratiques roboadvisors). Seuil ±1.0 pp pour suivi précis sans rééquilibrages excessifs.</small>
+            </p>
+        </div>
+        """
+
+        return methodology_html

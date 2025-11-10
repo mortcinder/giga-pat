@@ -15,6 +15,7 @@
     /* Couleurs principales */
     --bg: #ffffff;
     --text: #334155;
+    --text-light: #475569;
     --muted: #64748b;
     --blue: #1e3a8a;
     --blue-dark: #0f172a;
@@ -29,6 +30,11 @@
     --green: #477f50;
     --green-dark: #1f3b25;
     --green-light: #ebfaef;
+    --navy: #2c7a7b;
+    --sky: #1e3a8a;
+    --amber: #0ea5e9;
+    --forest: #d97706;
+    --teal: #059669;
 
     /* Tons UI */
     --line: #eef6ff;
@@ -45,6 +51,11 @@
     --border-side-dashed: 1px dashed #e5e7eb;
     --shadow-card: 0 6px 18px rgba(16, 24, 40, 0.06);
     --shadow-cover: 0 10px 30px rgba(2, 6, 23, 0.18);
+    --border-navy: 4px solid var(--navy);    /* Diversification - Turquoise */
+    --border-sky: 4px solid var(--sky);      /* Résilience - Bleu marine */
+    --border-amber: 4px solid var(--amber);  /* Liquidité - Bleu océan */
+    --border-forest: 4px solid var(--forest); /* Fiscalité - Ambre */
+    --border-teal: 4px solid var(--teal);    /* Croissance - Vert forêt */
 
     /* Espacements */
     --padding-page: 24px;
@@ -621,7 +632,7 @@ table .badge {
 .methodology-content li {
     padding: 5px 0;
     border-bottom: var(--border-side-dashed);
-    color: #475569;
+    color: var(--text-light);
     font-size: var(--font-size-sm);
 }
 .methodology-content li:last-child {
@@ -660,19 +671,75 @@ footer {
 }
 
 /* =====================================================
-   6.1) Sections de synthèse des scores
+   6.1) Card unifiée des scores avec barres verticales
    ===================================================== */
-.syn-block {
-    margin: 14px 0 18px;
-    border-top: 1px dashed var(--line);
-    padding-top: 12px;
+
+/* Wrapper global de la card (style "Méthodologie et limites") */
+.scores-unified-card {
+    margin-top: 32px;
+    background: var(--subtle);
+    border: var(--border-gray);
+    border-left: var(--border-side-gray);
+    border-radius: var(--border-radius);
+    padding: var(--padding-card);
+    box-shadow: var(--shadow-card);
 }
 
-.syn-head {
+.scores-unified-card > h3 {
+    font-size: var(--font-size-md);
+    color: var(--blue-dark);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 16px 0;
+}
+
+/* Conteneur des 5 sections de scores */
+.scores-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Section individuelle avec barre verticale colorée à gauche */
+.score-section {
+    position: relative;
+    padding-left: 16px;
+    border-left: 4px solid var(--gray-light);
+    border-radius: 2px;
+}
+
+/* Barres verticales colorées par score */
+.score-section.diversification {
+    border-left-color: var(--navy);
+}
+
+.score-section.resilience {
+    border-left-color: var(--sky);
+}
+
+.score-section.liquidite {
+    border-left-color: var(--amber);
+}
+
+.score-section.fiscalite {
+    border-left-color: var(--forest);
+}
+
+.score-section.croissance {
+    border-left-color: var(--teal);
+}
+
+/* Titre du score avec badge */
+.score-title {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.score-title strong {
+    font-size: var(--font-size-md);
+    color: var(--blue);
+    font-weight: var(--font-weight-bold);
 }
 
 .syn-grid {
@@ -688,24 +755,23 @@ footer {
     gap: 8px;
     align-items: baseline;
     font-size: var(--font-size-sm);
+    border-bottom: var(--border-side-dashed);
 }
 
 .syn-kv strong {
-    color: var(--text);
+    color: var(--text-light);
 }
 
 .syn-note-list {
     list-style: none;
     padding: 0;
     margin: 12px 0 0 0;
-    border-left: 4px solid var(--gray-light);
-    padding-left: 12px;
 }
 
 .syn-note-list li {
     padding: 8px 0;
     border-bottom: var(--border-side-dashed);
-    color: var(--text);
+    color: var(--text-light);
     font-size: var(--font-size-sm);
     line-height: 1.6;
 }
@@ -719,8 +785,14 @@ footer {
     font-weight: var(--font-weight-bold);
 }
 
-/* Impression : sobriété, pas d'interaction nécessaire */
+/* Impression : éviter coupures dans les scores */
 @media print {
+    .scores-unified-card {
+        break-inside: avoid;
+    }
+    .score-section {
+        break-inside: avoid;
+    }
     .syn-block {
         break-inside: avoid;
     }
@@ -808,6 +880,19 @@ footer {
     display: block;
     margin-top: 2px;
     color: var(--muted); /* style actuel */
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
+/* Structure deux niveaux pour colonne Écart benchmark (5ème colonne) */
+#actifs table td:nth-child(5) .cell-primary {
+    display: block;
+    /* Le badge reste inline, mais le span parent est en block pour forcer le retour à la ligne */
+}
+#actifs table td:nth-child(5) .cell-secondary {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
     font-size: var(--font-size-sm);
     line-height: 1.5;
 }

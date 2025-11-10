@@ -78,11 +78,16 @@ Le système supporte **4 profils d'investisseur** avec des paramètres adaptés 
 ### Benchmark gap (écarts d'allocation)
 - **Comparaison automatique** : Allocation actuelle vs cibles du profil sélectionné
 - **Colonne dédiée** : "Écart benchmark" dans le tableau des classes d'actifs
+- **Affichage à deux niveaux** :
+  - Ligne 1 : Badge coloré avec écart en points de pourcentage (pp)
+    - Exemples : `▼ −39.0 pp`, `▲ +9.8 pp`, `Cible`
+  - Ligne 2 : Contexte avec valeur réelle vs cible (ex: `38.5% vs 77.5%`)
 - **5 niveaux de statut** :
-  - ✅ Dans la cible (±2pts)
-  - ⚠️ Sur/sous-pondéré modéré (<10pts hors bornes)
-  - 🚨 Sur/sous-pondéré fort (≥10pts hors bornes)
-- **Badges colorés** : Identification visuelle des déséquilibres majeurs
+  - ✅ Dans la cible (±0.3 pp)
+  - ⚠️ Sur/sous-pondéré modéré (<10 pp hors bornes)
+  - 🚨 Sur/sous-pondéré fort (≥10 pp hors bornes)
+- **Badges colorés** : Vert (cible), orange (attention), rouge (alerte)
+- **Nomenclature "pp"** : Standard professionnel pour "points de pourcentage" (norme Eurostat)
 
 ### Scores enrichis v3.0
 Les 5 scores (0-10) incluent désormais des **labels qualitatifs simplifiés** et des **détails complets** :

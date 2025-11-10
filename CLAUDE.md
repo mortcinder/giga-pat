@@ -337,11 +337,30 @@ The HTML template (`templates/rapport_template.html`) can be freely customized:
 - `class_name_secondary`: Account detail (parsed from `etablissement` field)
 - Separate column `class_etablissement` for establishment name
 - Generator uses regex `r'^(.+?)\s*\((.+)\)$'` to parse "Establishment (Detail)" format
-- **"Écart benchmark" column** (lines 158, 180-183 in template):
-  - `class_gap_message`: Descriptive message from `benchmark_gap.message`
-  - `class_gap_badge`: Optional badge (only shown if `niveau` is `attention` or `alerte`)
-  - Badge classes: `.crit` (strong deviation), `.high` (alert), `.mid` (watch)
-  - Generator logic in `_inject_classes_actifs()` (lines 306-335)
+
+**"Écart benchmark" column - Two-line structure**:
+- The "Écart benchmark" column also uses two-line structure (identical to "Classe d'actifs")
+- Template structure:
+  ```html
+  <td class="center">
+    <span class="cell-primary" data-field="class_gap_badge_primary">…</span>
+    <span class="cell-secondary" data-field="class_gap_context">…</span>
+  </td>
+  ```
+- **Line 1 (primary)**: Colored badge with gap in percentage points
+  - Example: `▼ −39.0 pp` (red badge for alert)
+  - Example: `▲ +9.8 pp` (orange badge for attention)
+  - Example: `Cible` (green badge for on target)
+- **Line 2 (secondary)**: Context text with actual value vs target
+  - Format: `{actual}% vs {target}%`
+  - Example: `38.5% vs 77.5%`
+  - Displayed in smaller gray text (`.cell-secondary`)
+- Badge classes: `.low` (on target), `.mid` (attention), `.high` (alert)
+- **Nomenclature**: "pp" (percentage points) is the professional standard abbreviation
+  - Used by Eurostat in official publications
+  - Referenced in financial dictionaries
+  - No singular/plural confusion (unlike "pt"/"pts")
+- Generator logic in `_inject_classes_actifs()` (lines 522-548)
 
 **Cover page customization**:
 - `subtitle-profile` uses special CSS: lowercase, small-caps, italic (lines 118-131)

@@ -23,28 +23,28 @@
 
 technical:
   optimization:
-    num_portfolios: 100          # Points pour tracer la frontière efficiente
-    max_iterations: 1000         # Itérations max de l'optimiseur
-    weight_bounds: [0, 1]        # Contraintes min/max sur les poids (0-100%)
-    min_weight_display: 0.01     # Seuil pour afficher dans les résultats (1%)
+    num_portfolios: 100 # Points pour tracer la frontière efficiente
+    max_iterations: 1000 # Itérations max de l'optimiseur
+    weight_bounds: [0, 1] # Contraintes min/max sur les poids (0-100%)
+    min_weight_display: 0.01 # Seuil pour afficher dans les résultats (1%)
 
   charting:
-    figure_size: [10, 6]         # Taille du graphique en pouces
-    dpi: 100                     # Résolution
+    figure_size: [10, 6] # Taille du graphique en pouces
+    dpi: 100 # Résolution
     colors:
-      efficient_frontier: "#1e3a8a"      # Bleu foncé
-      inefficient_frontier: "#1e3a8a"    # Bleu foncé (pointillé)
-      current_portfolio: "#b22023"       # Rouge
-      optimal_portfolio: "#fbbf24"       # Jaune
-      risk_free_line: "gray"             # Ligne taux sans risque
+      efficient_frontier: "#1e3a8a" # Bleu foncé
+      inefficient_frontier: "#1e3a8a" # Bleu foncé (pointillé)
+      current_portfolio: "#b22023" # Rouge
+      optimal_portfolio: "#fbbf24" # Jaune
+      risk_free_line: "gray" # Ligne taux sans risque
     marker_size: 133
     line_width: 2.5
     line_width_inefficient: 1.5
 
 interpretation_thresholds:
-  strong_improvement: 0.5      # Différence Sharpe > 0.5 = forte amélioration
-  moderate_improvement: 0.2    # Différence Sharpe > 0.2 = amélioration modérée
-  near_optimal: -0.1           # Différence Sharpe > -0.1 = proche optimum
+  strong_improvement: 0.5 # Différence Sharpe > 0.5 = forte amélioration
+  moderate_improvement: 0.2 # Différence Sharpe > 0.2 = amélioration modérée
+  near_optimal: -0.1 # Différence Sharpe > -0.1 = proche optimum
 
 # ============================================================================
 # CLASSIFICATION DES ACTIFS
@@ -53,7 +53,6 @@ interpretation_thresholds:
 # à partir des tickers et noms de fonds
 
 asset_classification:
-
   # Tickers pour identifier les classes d'actifs
   tickers:
     actions_monde:
@@ -339,8 +338,8 @@ scores:
   diversification:
     # Pondérations des composantes (doivent totaliser 1.0)
     weights:
-      institutional: 0.6        # Poids de la diversification institutionnelle
-      jurisdictional: 0.4       # Poids de la diversification juridictionnelle
+      institutional: 0.6 # Poids de la diversification institutionnelle
+      jurisdictional: 0.4 # Poids de la diversification juridictionnelle
 
     # Score de base pour chaque composante
     base_score: 10.0
@@ -348,16 +347,16 @@ scores:
     # Pénalités pour concentration établissement (score institutionnel)
     penalties:
       establishment_concentration:
-        threshold_70: -3.0      # Pénalité si > 70%
-        threshold_50: -2.0      # Pénalité si > 50%
-        threshold_30: -0.5      # Pénalité si > 30%
+        threshold_70: -3.0 # Pénalité si > 70%
+        threshold_50: -2.0 # Pénalité si > 50%
+        threshold_30: -0.5 # Pénalité si > 30%
       jurisdiction_concentration:
-        threshold_85: -2.0      # Pénalité si > 85%
+        threshold_85: -2.0 # Pénalité si > 85%
 
     # Bonus pour diversification intra-portefeuille
     bonuses:
-      asset_classes_5plus: 1.0  # Bonus si ≥ 5 classes d'actifs distinctes
-      positions_10plus: 0.5     # Bonus si ≥ 10 positions/comptes individuels
+      asset_classes_5plus: 1.0 # Bonus si ≥ 5 classes d'actifs distinctes
+      positions_10plus: 0.5 # Bonus si ≥ 10 positions/comptes individuels
       international_15plus: 0.5 # Bonus si exposition internationale > 15%
 
     # Labels de qualité par tranche de score
@@ -375,8 +374,8 @@ scores:
       Haute: -2.0
       Moyenne: -0.5
     critical_risks_bonus:
-      zero_risks: 1.0           # Bonus si 0 risque critique
-      three_or_more: -1.5       # Malus si ≥3 risques critiques
+      zero_risks: 1.0 # Bonus si 0 risque critique
+      three_or_more: -1.5 # Malus si ≥3 risques critiques
 
     # Labels de qualité par tranche de score
     quality_labels:
@@ -395,29 +394,29 @@ scores:
       - "compte"
 
     # Ratio dépenses/revenu (estimation)
-    expenses_to_income_ratio: 0.7    # 70% du revenu = dépenses
+    expenses_to_income_ratio: 0.7 # 70% du revenu = dépenses
 
     # Cibles en mois de dépenses par profil investisseur
     target_months_by_profile:
-      default: 12           # Profil standard : 12 mois
-      dynamique: 9          # Profil dynamique : 9 mois (plus agressif)
-      equilibre: 12         # Profil équilibré : 12 mois
-      prudent: 15           # Profil prudent : 15 mois (plus conservateur)
+      default: 12 # Profil standard : 12 mois
+      dynamique: 9 # Profil dynamique : 9 mois (plus agressif)
+      equilibre: 12 # Profil équilibré : 12 mois
+      prudent: 15 # Profil prudent : 15 mois (plus conservateur)
 
     # Seuil de sur-liquidité (pénalisation si dépassé)
-    overliquidity_threshold: 1.5    # >150% de la cible = sur-liquidité
+    overliquidity_threshold: 1.5 # >150% de la cible = sur-liquidité
 
     # Barème de scoring (ratio liquidités/cible → score)
     thresholds:
       # Format: [ratio_min, score]
-      - [1.5, 9]      # ratio > 1.5 → score 9 (sur-liquidité légère)
-      - [1.0, 10]     # ratio >= 1.0 → score 10 (optimal)
-      - [0.75, 8]     # ratio >= 0.75 → score 8 (solide)
-      - [0.5, 6]      # ratio >= 0.5 → score 6 (acceptable)
-      - [0.25, 4]     # ratio >= 0.25 → score 4 (fragile)
-      - [0, 2]        # ratio < 0.25 → score 2 (insuffisant)
+      - [1.5, 9] # ratio > 1.5 → score 9 (sur-liquidité légère)
+      - [1.0, 10] # ratio >= 1.0 → score 10 (optimal)
+      - [0.75, 8] # ratio >= 0.75 → score 8 (solide)
+      - [0.5, 6] # ratio >= 0.5 → score 6 (acceptable)
+      - [0.25, 4] # ratio >= 0.25 → score 4 (fragile)
+      - [0, 2] # ratio < 0.25 → score 2 (insuffisant)
 
-    default_score: 5      # Score par défaut si impossible à calculer
+    default_score: 5 # Score par défaut si impossible à calculer
 
     # Labels de qualité par tranche de score
     quality_labels:
@@ -433,16 +432,16 @@ scores:
 
     # Bonus pour optimisation fiscale
     bonuses:
-      pea_over_cto: 1.5        # Bonus si PEA > CTO (fiscalement avantageux)
-      av_threshold: 50000      # Seuil AV pour bonus succession
-      av_bonus: 0.5            # Bonus AV succession
-      per_present: 1.0         # Bonus si PER présent (avantage fiscal à l'entrée)
-      per_threshold: 5000      # Seuil minimum PER pour obtenir le bonus
+      pea_over_cto: 1.5 # Bonus si PEA > CTO (fiscalement avantageux)
+      av_threshold: 50000 # Seuil AV pour bonus succession
+      av_bonus: 0.5 # Bonus AV succession
+      per_present: 1.0 # Bonus si PER présent (avantage fiscal à l'entrée)
+      per_threshold: 5000 # Seuil minimum PER pour obtenir le bonus
 
     # Pénalités pour exposition fiscale défavorable
     penalties:
-      crypto_high_threshold: 15   # Pénalité si crypto > 15% du patrimoine total
-      crypto_high_penalty: -0.5   # Pénalité cryptos élevés (fiscalité lourde)
+      crypto_high_threshold: 15 # Pénalité si crypto > 15% du patrimoine total
+      crypto_high_penalty: -0.5 # Pénalité cryptos élevés (fiscalité lourde)
 
     # Labels de qualité par tranche de score
     quality_labels:
@@ -456,22 +455,22 @@ scores:
   growth:
     # Labels de qualité (communs à tous les profils)
     quality_labels:
-      - [9, 10, "Excellent"]
-      - [7, 9, "Bon"]
-      - [5, 7, "Modéré"]
-      - [3, 5, "Limité"]
+      - [9, 10, "Excellente"]
+      - [7, 9, "Bonne"]
+      - [5, 7, "Modérée"]
+      - [3, 5, "Limitée"]
       - [0, 3, "Très faible"]
 
     # Profil default (similaire au profil dynamique)
     default:
-      optimal_range: [60, 70]        # Score 10
-      good_ranges:                   # Score 8
+      optimal_range: [60, 70] # Score 10
+      good_ranges: # Score 8
         - [50, 60]
         - [70, 80]
-      medium_ranges:                 # Score 6
+      medium_ranges: # Score 6
         - [40, 50]
         - [80, 90]
-      fallback_score: 4              # Autre
+      fallback_score: 4 # Autre
 
     # Profil dynamique (jeune, exposition actions élevée)
     dynamique:
@@ -511,62 +510,61 @@ scores:
 # Différentes hypothèses de marché selon le profil de risque
 
 profiles:
-
   # --------------------------------------------------------------------------
   # PROFIL PAR DÉFAUT (données historiques long terme)
   # --------------------------------------------------------------------------
   default:
     description: "Statistiques historiques moyennes long terme (20-30 ans)"
     market_parameters:
-      risk_free_rate: 0.03  # OAT 10 ans France ~3%
+      risk_free_rate: 0.03 # OAT 10 ans France ~3%
 
     asset_statistics:
       actions_monde:
-        rendement: 0.08      # MSCI World historique
+        rendement: 0.08 # MSCI World historique
         volatilite: 0.15
 
       actions_europe:
-        rendement: 0.07      # Euro Stoxx historique
+        rendement: 0.07 # Euro Stoxx historique
         volatilite: 0.16
 
       actions_usa:
-        rendement: 0.09      # S&P 500 historique
+        rendement: 0.09 # S&P 500 historique
         volatilite: 0.15
 
       actions_emergents:
-        rendement: 0.10      # MSCI Emerging Markets
+        rendement: 0.10 # MSCI Emerging Markets
         volatilite: 0.22
 
       obligations_etat:
-        rendement: 0.035     # OAT/Bund
+        rendement: 0.035 # OAT/Bund
         volatilite: 0.05
 
       obligations_corp:
-        rendement: 0.045     # Corporate IG
+        rendement: 0.045 # Corporate IG
         volatilite: 0.07
 
       livrets:
-        rendement: 0.03      # Livret A
+        rendement: 0.03 # Livret A
         volatilite: 0.001
 
       fonds_euro:
-        rendement: 0.025     # Fonds euro assurance-vie
+        rendement: 0.025 # Fonds euro assurance-vie
         volatilite: 0.01
 
       crypto:
-        rendement: 0.15      # Bitcoin/crypto (très volatile)
+        rendement: 0.15 # Bitcoin/crypto (très volatile)
         volatilite: 0.60
 
       or:
-        rendement: 0.04      # Or physique
+        rendement: 0.04 # Or physique
         volatilite: 0.16
 
       immobilier:
-        rendement: 0.06      # SCPI/Immobilier
+        rendement: 0.06 # SCPI/Immobilier
         volatilite: 0.12
 
       autre:
-        rendement: 0.05      # Par défaut
+        rendement: 0.05 # Par défaut
         volatilite: 0.10
 
     correlations:
@@ -604,28 +602,28 @@ profiles:
     asset_statistics:
       # Hypothèses plus optimistes sur les actions
       actions_monde:
-        rendement: 0.09      # +1% vs default
+        rendement: 0.09 # +1% vs default
         volatilite: 0.15
 
       actions_europe:
-        rendement: 0.08      # +1% vs default
+        rendement: 0.08 # +1% vs default
         volatilite: 0.16
 
       actions_usa:
-        rendement: 0.10      # +1% vs default
+        rendement: 0.10 # +1% vs default
         volatilite: 0.15
 
       actions_emergents:
-        rendement: 0.12      # +2% vs default (fort potentiel)
+        rendement: 0.12 # +2% vs default (fort potentiel)
         volatilite: 0.22
 
       # Obligations moins attractives (taux bas actuels)
       obligations_etat:
-        rendement: 0.025     # -1% vs default
+        rendement: 0.025 # -1% vs default
         volatilite: 0.05
 
       obligations_corp:
-        rendement: 0.035     # -1% vs default
+        rendement: 0.035 # -1% vs default
         volatilite: 0.07
 
       livrets:
@@ -633,11 +631,11 @@ profiles:
         volatilite: 0.001
 
       fonds_euro:
-        rendement: 0.02      # -0.5% vs default
+        rendement: 0.02 # -0.5% vs default
         volatilite: 0.01
 
       crypto:
-        rendement: 0.20      # +5% (plus optimiste, horizon long)
+        rendement: 0.20 # +5% (plus optimiste, horizon long)
         volatilite: 0.60
 
       or:
@@ -645,7 +643,7 @@ profiles:
         volatilite: 0.16
 
       immobilier:
-        rendement: 0.07      # +1% vs default
+        rendement: 0.07 # +1% vs default
         volatilite: 0.12
 
       autre:
@@ -682,27 +680,27 @@ profiles:
     asset_statistics:
       # Mix entre actions et obligations
       actions_monde:
-        rendement: 0.075     # Entre default et dynamique
+        rendement: 0.075 # Entre default et dynamique
         volatilite: 0.15
 
       actions_europe:
-        rendement: 0.07      # = default
+        rendement: 0.07 # = default
         volatilite: 0.16
 
       actions_usa:
-        rendement: 0.085     # Entre default et dynamique
+        rendement: 0.085 # Entre default et dynamique
         volatilite: 0.15
 
       actions_emergents:
-        rendement: 0.09      # Moins agressif que dynamique
+        rendement: 0.09 # Moins agressif que dynamique
         volatilite: 0.22
 
       obligations_etat:
-        rendement: 0.035     # = default
+        rendement: 0.035 # = default
         volatilite: 0.05
 
       obligations_corp:
-        rendement: 0.045     # = default
+        rendement: 0.045 # = default
         volatilite: 0.07
 
       livrets:
@@ -710,11 +708,11 @@ profiles:
         volatilite: 0.001
 
       fonds_euro:
-        rendement: 0.025     # = default
+        rendement: 0.025 # = default
         volatilite: 0.01
 
       crypto:
-        rendement: 0.12      # Moins optimiste que dynamique
+        rendement: 0.12 # Moins optimiste que dynamique
         volatilite: 0.60
 
       or:
@@ -722,7 +720,7 @@ profiles:
         volatilite: 0.16
 
       immobilier:
-        rendement: 0.06      # = default
+        rendement: 0.06 # = default
         volatilite: 0.12
 
       autre:
@@ -759,28 +757,28 @@ profiles:
     asset_statistics:
       # Actions moins attractives (risque à limiter)
       actions_monde:
-        rendement: 0.07      # -1% vs default
+        rendement: 0.07 # -1% vs default
         volatilite: 0.15
 
       actions_europe:
-        rendement: 0.06      # -1% vs default
+        rendement: 0.06 # -1% vs default
         volatilite: 0.16
 
       actions_usa:
-        rendement: 0.08      # -1% vs default
+        rendement: 0.08 # -1% vs default
         volatilite: 0.15
 
       actions_emergents:
-        rendement: 0.08      # -2% vs default (trop risqué)
+        rendement: 0.08 # -2% vs default (trop risqué)
         volatilite: 0.22
 
       # Obligations plus attractives (sécurité)
       obligations_etat:
-        rendement: 0.04      # +0.5% vs default (valeur refuge)
+        rendement: 0.04 # +0.5% vs default (valeur refuge)
         volatilite: 0.05
 
       obligations_corp:
-        rendement: 0.05      # +0.5% vs default
+        rendement: 0.05 # +0.5% vs default
         volatilite: 0.07
 
       livrets:
@@ -788,19 +786,19 @@ profiles:
         volatilite: 0.001
 
       fonds_euro:
-        rendement: 0.03      # +0.5% (plus attractif pour capital sûr)
+        rendement: 0.03 # +0.5% (plus attractif pour capital sûr)
         volatilite: 0.01
 
       crypto:
-        rendement: 0.10      # -5% vs default (trop volatile)
+        rendement: 0.10 # -5% vs default (trop volatile)
         volatilite: 0.60
 
       or:
-        rendement: 0.045     # +0.5% (valeur refuge)
+        rendement: 0.045 # +0.5% (valeur refuge)
         volatilite: 0.16
 
       immobilier:
-        rendement: 0.055     # Légèrement réduit
+        rendement: 0.055 # Légèrement réduit
         volatilite: 0.12
 
       autre:

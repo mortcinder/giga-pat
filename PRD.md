@@ -505,12 +505,13 @@ Analyser le patrimoine en profondeur avec recherches web exhaustives et génére
 - **Agrégation automatique** : Les actifs multiples d'un même type dans un établissement sont agrégés en une seule ligne (ex: tous les fonds UC de l'AV → une ligne "Actions AV - UC")
 - **Calcul d'écart aux benchmarks** : Comparaison de l'allocation réelle avec les benchmarks cibles par profil d'investisseur (`tools/utils/benchmark_gap.py`)
   - **Cibles médianes** : Chaque classe d'actifs a une fourchette `{min, target, max}` selon le profil
-  - **Écart calculé** : Différence en points de pourcentage par rapport à la cible médiane
+  - **Écart calculé** : Différence en points de pourcentage (abréviation : **pp**) par rapport à la cible médiane
   - **5 niveaux de status** :
-    - `dans_la_cible` : Écart ≤ 2 pts de la cible (normal)
-    - `sous_pondere_modere` / `sur_pondere_modere` : Hors fourchette < 10 pts (attention)
-    - `sous_pondere_fort` / `sur_pondere_fort` : Hors fourchette ≥ 10 pts (alerte)
-  - **Affichage** : Message descriptif + badge CSS coloré si écart significatif
+    - `dans_la_cible` : Écart ≤ 2 pp de la cible (normal)
+    - `sous_pondere_modere` / `sur_pondere_modere` : Hors fourchette < 10 pp (attention)
+    - `sous_pondere_fort` / `sur_pondere_fort` : Hors fourchette ≥ 10 pp (alerte)
+  - **Affichage** : Structure à deux niveaux (ligne 1 : badge avec écart, ligne 2 : contexte valeur réelle vs cible)
+  - **Nomenclature** : "pp" est l'abréviation standard recommandée pour "points de pourcentage" (norme Eurostat/finance)
 
 **Classification des types de comptes** (ligne 216-245 de `analyzer.py`) :
 
@@ -1162,8 +1163,8 @@ Le template utilise des attributs `data-field` :
 | `class_etablissement` | `repartition.par_classe_actifs[].etablissement` (nom) | Nom établissement |
 | `class_amount` | `repartition.par_classe_actifs[].montant` | Format : `58 100 €` |
 | `class_pct` | `repartition.par_classe_actifs[].pourcentage` | Format : `13.9 %` |
-| `class_gap_message` | `repartition.par_classe_actifs[].benchmark_gap.message` | Message écart benchmark |
-| `class_gap_badge` | `repartition.par_classe_actifs[].benchmark_gap` | Badge CSS (si niveau ≠ normal) |
+| `class_gap_badge_primary` | `repartition.par_classe_actifs[].benchmark_gap.message_badge` | Badge avec écart (ligne 1, ex: "▼ −39.0 pp", "Cible") |
+| `class_gap_context` | `repartition.par_classe_actifs[].benchmark_gap.message_context` | Contexte valeur vs cible (ligne 2, ex: "38.5% vs 77.5%") |
 | `div_score_final` | `synthese.diversification_details.score` | Format : `8.5` |
 | `div_label` | `synthese.diversification_details.label` | Badge coloré avec label qualité |
 | `div_score_institutional` | `synthese.diversification_details.details.score_institutional` | Format : `7.5` |
@@ -1188,6 +1189,41 @@ Le champ `etablissement` dans les données JSON contient le format `"Établissem
 - Extraire le nom de l'établissement → `class_etablissement`
 - Extraire le détail du compte → `class_name_secondary`
 - Le type d'actif provient directement de `type_actif` → `class_name_primary`
+
+**Structure spéciale - Colonne "Écart benchmark"** :
+La colonne "Écart benchmark" utilise également une structure à deux lignes (identique à "Classe d'actifs") :
+- **Ligne 1 (primaire)** : Badge coloré avec l'écart en points de pourcentage
+  - Exemple : `▼ −39.0 pp` (badge rouge pour alerte)
+  - Exemple : `▲ +9.8 pp` (badge orange pour attention)
+  - Exemple : `Cible` (badge vert pour dans la cible)
+- **Ligne 2 (secondaire)** : Contexte textuel avec valeur réelle vs cible
+  - Format : `{valeur_reelle}% vs {cible}%`
+  - Exemple : `38.5% vs 77.5%`
+  - Affichage en gris plus petit (`.cell-secondary`)
+
+**Structure HTML** :
+```html
+<td class="center">
+  <span class="cell-primary" data-field="class_gap_badge_primary">
+    <!-- Badge injecté ici avec classes .badge .low/.mid/.high -->
+  </span>
+  <span class="cell-secondary" data-field="class_gap_context">
+    <!-- Contexte injecté ici -->
+  </span>
+</td>
+```
+
+**Classes CSS de badges** :
+- `.badge.low` : Vert (dans la cible, écart < 0.3 pp)
+- `.badge.mid` : Orange (attention, hors fourchette < 10 pp)
+- `.badge.high` : Rouge (alerte, hors fourchette ≥ 10 pp)
+
+**Nomenclature "pp"** :
+L'abréviation "pp" (points de pourcentage) est le standard professionnel recommandé :
+- Utilisée par Eurostat dans les publications officielles
+- Référencée dans les dictionnaires financiers
+- Pas de confusion singulier/pluriel (contrairement à "pt"/"pts")
+- Non-ambiguë dans les rapports internationaux
 
 #### 3.3.6 Gestion du graphique radar
 

@@ -381,9 +381,31 @@ class PatrimoineAnalyzer:
         # Trier par montant décroissant
         actifs_detailles.sort(key=lambda x: x["montant"], reverse=True)
 
-        # Enrichir avec les données d'écart benchmark
+        # Enrichir avec les données d'écart benchmark (calculé sur totaux agrégés par type)
         if self.benchmark_calculator:
-            actifs_detailles = self.benchmark_calculator.calculate_all_gaps(actifs_detailles)
+            # Agréger par type d'actif pour calculer les gaps
+            actifs_agreges = self._aggregate_by_asset_type(actifs_detailles)
+            actifs_avec_gaps = self.benchmark_calculator.calculate_all_gaps(actifs_agreges)
+
+            # Créer un dictionnaire de lookup pour les gaps par type
+            gaps_par_type = {
+                item["type_actif"]: item["benchmark_gap"]
+                for item in actifs_avec_gaps
+            }
+
+            # Assigner le gap agrégé à toutes les lignes du même type
+            for actif in actifs_detailles:
+                actif["benchmark_gap"] = gaps_par_type.get(
+                    actif["type_actif"],
+                    {
+                        "ecart_pct": 0.0,
+                        "ecart_borne": 0.0,
+                        "status": "pas_de_benchmark",
+                        "niveau": "normal",
+                        "message": "Pas de benchmark défini",
+                        "message_badge": "N/A"
+                    }
+                )
 
         repartition["par_classe_actifs"] = actifs_detailles
 
@@ -426,6 +448,32 @@ class PatrimoineAnalyzer:
         repartition["par_juridiction"].sort(key=lambda x: x["montant"], reverse=True)
 
         return repartition
+
+    def _aggregate_by_asset_type(self, actifs_detailles: list) -> list:
+        """
+        Agrège les actifs par type_actif pour le calcul des benchmarks
+
+        Args:
+            actifs_detailles: Liste détaillée des actifs avec type_actif et pourcentage
+
+        Returns:
+            Liste d'actifs agrégés par type avec montant et pourcentage totaux
+        """
+        actifs_par_type = {}
+
+        for actif in actifs_detailles:
+            type_actif = actif["type_actif"]
+            if type_actif in actifs_par_type:
+                actifs_par_type[type_actif]["montant"] += actif["montant"]
+                actifs_par_type[type_actif]["pourcentage"] += actif["pourcentage"]
+            else:
+                actifs_par_type[type_actif] = {
+                    "type_actif": type_actif,
+                    "montant": actif["montant"],
+                    "pourcentage": actif["pourcentage"]
+                }
+
+        return list(actifs_par_type.values())
 
     def _generate_synthese(self, analysis: dict, input_data: dict) -> Dict[str, Any]:
         """

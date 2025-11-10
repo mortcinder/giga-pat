@@ -45,7 +45,8 @@ class BenchmarkGapCalculator:
                 - status: "dans_la_cible", "sous_pondere_modere", "sur_pondere_modere",
                          "sous_pondere_fort", "sur_pondere_fort"
                 - niveau: "normal", "attention", "alerte"
-                - message: Description textuelle
+                - message: Description textuelle (détaillée, pour la card méthodologie)
+                - message_badge: Message concis pour badge (ex: "▲ +2.6 pt", "≈ 0.0 pt")
         """
         benchmark = self.benchmarks.get(classe)
 
@@ -56,7 +57,9 @@ class BenchmarkGapCalculator:
                 "ecart_borne": 0.0,
                 "status": "pas_de_benchmark",
                 "niveau": "normal",
-                "message": "Pas de benchmark défini"
+                "message": "Pas de benchmark défini",
+                "message_badge": "N/A",
+                "message_context": ""
             }
 
         min_pct = benchmark.get("min", 0)
@@ -79,12 +82,20 @@ class BenchmarkGapCalculator:
             ecart_cible, ecart_borne, min_pct, target_pct, max_pct, classe
         )
 
+        # Générer le message badge concis (uniquement l'écart relatif)
+        message_badge = self._format_badge_message(ecart_cible, ecart_borne, target_pct, poids_reel)
+
+        # Générer le message contextuel (valeur réelle vs cible)
+        message_context = self._format_context_message(poids_reel, target_pct)
+
         return {
             "ecart_pct": round(ecart_cible, 2),
             "ecart_borne": round(ecart_borne, 2),
             "status": status,
             "niveau": niveau,
-            "message": message
+            "message": message,
+            "message_badge": message_badge,
+            "message_context": message_context
         }
 
     def _determine_status(
@@ -98,29 +109,31 @@ class BenchmarkGapCalculator:
     ) -> tuple[str, str, str]:
         """
         Détermine le status, niveau et message selon l'écart
+        Utilise 3 niveaux normalisés: "dans_la_cible", "attention", "alerte"
 
         Returns:
             (status, niveau, message)
         """
         # Dans la fourchette acceptable
         if ecart_borne == 0:
-            if abs(ecart_cible) <= 2.0:
+            # Seuil réduit à ±1.0 pt pour être plus précis (norme professionnelle)
+            if abs(ecart_cible) <= 1.0:
                 return (
                     "dans_la_cible",
-                    "normal",
+                    "dans_la_cible",
                     f"Dans la cible ({target_pct}%)"
                 )
             elif ecart_cible < 0:
                 return (
                     "sous_pondere_modere",
-                    "normal",
-                    f"Légèrement sous-pondéré ({abs(ecart_cible):.1f} pts sous la cible)"
+                    "dans_la_cible",
+                    f"Légèrement sous-pondéré ({abs(ecart_cible):.1f} pts sous la cible {target_pct}%)"
                 )
             else:
                 return (
                     "sur_pondere_modere",
-                    "normal",
-                    f"Légèrement sur-pondéré ({ecart_cible:.1f} pts au-dessus de la cible)"
+                    "dans_la_cible",
+                    f"Légèrement sur-pondéré ({ecart_cible:.1f} pts au-dessus de la cible {target_pct}%)"
                 )
 
         # Hors de la fourchette
@@ -152,6 +165,44 @@ class BenchmarkGapCalculator:
                     "attention",
                     f"Sur-pondéré ({ecart_borne:.1f} pts au-dessus du maximum {max_pct}%)"
                 )
+
+    def _format_badge_message(self, ecart_cible: float, ecart_borne: float, target_pct: float, poids_reel: float) -> str:
+        """
+        Formate le message concis pour le badge (écart absolu en points de pourcentage)
+
+        Args:
+            ecart_cible: Écart par rapport à la cible (en pts)
+            ecart_borne: Écart par rapport aux bornes (en pts)
+            target_pct: Cible du benchmark (ex: 77.5%)
+            poids_reel: Poids réel de l'actif (ex: 38.5%)
+
+        Returns:
+            Message formaté pour badge (ex: "▲ +2.6 pp", "▼ -39.0 pp", "Cible")
+        """
+        # Seuil très faible pour "dans la cible"
+        if abs(ecart_cible) < 0.3:
+            return "Cible"
+
+        # Flèche selon le signe
+        fleche = "▲" if ecart_cible > 0 else "▼"
+
+        # Format avec signe explicite (+ ou -) et une décimale
+        signe = "+" if ecart_cible > 0 else "−"  # Note: utilise le signe moins unicode (−) pour cohérence visuelle
+
+        return f"{fleche} {signe}{abs(ecart_cible):.1f} pp"
+
+    def _format_context_message(self, poids_reel: float, target_pct: float) -> str:
+        """
+        Formate le message contextuel à afficher en dessous du badge
+
+        Args:
+            poids_reel: Poids réel de l'actif (ex: 38.5%)
+            target_pct: Cible du benchmark (ex: 77.5%)
+
+        Returns:
+            Message contextuel (ex: "38.5% vs 77.5%")
+        """
+        return f"{poids_reel:.1f}% vs {target_pct}%"
 
     def calculate_all_gaps(self, repartition_classes: list) -> list:
         """
