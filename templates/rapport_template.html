@@ -796,22 +796,22 @@
                                     label: "Score Patrimonial",
                                     data: [8, 7.5, 6.5, 7, 8.5],
                                     fill: true,
-                                    backgroundColor: "rgba(30,64,175,0.14)",
-                                    borderColor: "#1e3a8a",
+                                    backgroundColor: "rgba(51, 65, 85, 0.1)", // var(--text-alpha),
+                                    borderColor: "#334155", // var(--text),
                                     borderWidth: 2,
                                     pointBackgroundColor: [
-                                        "#2c7a7b", // Diversification - Turquoise profond
-                                        "#1e3a8a", // Résilience - Bleu marine
-                                        "#0ea5e9", // Liquidité - Bleu océan
-                                        "#d97706", // Fiscalité - Ambre chaleureux
-                                        "#059669", // Croissance - Vert forêt
+                                        "#5c6c88", // var(--slate), // Diversification - Bleu ardoise
+                                        "#8b6b4f", // var(--taupe), // Résilience - Brun taupe
+                                        "#5e4b6a", // var(--plum), // Liquidité - Prune désaturée
+                                        "#a1aab5", // var(--silver), // Fiscalité - Argent bleuté
+                                        "#b46f5b", // var(--copper), // Croissance - Cuivre rosé
                                     ],
                                     pointBorderColor: [
-                                        "#2c7a7b",
-                                        "#1e3a8a",
-                                        "#0ea5e9",
-                                        "#d97706",
-                                        "#059669",
+                                        "#3e4a60", // var(--slate-dark), // Diversification - Bleu ardoise
+                                        "#5d4732", // var(--taupe-dark), // Résilience - Brun taupe
+                                        "#3e3248", // var(--plum-dark), // Liquidité - Prune désaturée
+                                        "#707781", // var(--silver-dark), // Fiscalité - Argent bleuté
+                                        "#7e4a3a", // var(--copper-dark), // Croissance - Cuivre rosé
                                     ],
                                     pointRadius: 6,
                                     pointBorderWidth: 2,
@@ -822,13 +822,13 @@
                             animation: { duration: 700 },
                             scales: {
                                 r: {
-                                    angleLines: { color: "#eef6ff" },
-                                    grid: { color: "#eef6ff" },
+                                    angleLines: { color: "#ececef" }, // var(--gray-light)
+                                    grid: { color: "#ececef" }, // var(--gray-light)
                                     suggestedMin: 0,
                                     suggestedMax: 10,
                                     ticks: { display: false },
                                     pointLabels: {
-                                        color: "#0f172a",
+                                        color: "#64748b", // var(--muted),
                                         font: { size: 12 },
                                     },
                                 },
@@ -840,8 +840,8 @@
             }
 
             /* Example tiny helper to populate fields quickly if you test in browser
-       window.fill = function(data){ Object.keys(data).forEach(k=>{ const el=document.querySelector('[data-field="'+k+'"]').innerText=data[k] }) }
-    */
+               window.fill = function(data){ Object.keys(data).forEach(k=>{ const el=document.querySelector('[data-field="'+k+'"]').innerText=data[k] }) }
+            */
         </script>
     </body>
 </html>

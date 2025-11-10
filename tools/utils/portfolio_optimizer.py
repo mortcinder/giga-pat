@@ -4,17 +4,19 @@ Version simplifiée avec estimations statistiques (sans API externe)
 """
 
 import logging
-import numpy as np
-import matplotlib
-import yaml
 import os
 
+import matplotlib
+import numpy as np
+import yaml
+
 matplotlib.use("Agg")  # Backend non-interactif pour génération serveur
-import matplotlib.pyplot as plt
-from scipy.optimize import minimize
-from typing import Dict, List, Tuple, Any
 import base64
 from io import BytesIO
+from typing import Any, Dict, List, Tuple
+
+import matplotlib.pyplot as plt
+from scipy.optimize import minimize
 
 
 class PortfolioOptimizer:
@@ -79,8 +81,8 @@ class PortfolioOptimizer:
                     "dpi": 100,
                     "colors": {
                         "efficient_frontier": "#1e3a8a",
-                        "current_portfolio": "#b22023",
-                        "optimal_portfolio": "#fbbf24",
+                        "current_portfolio": "#b23a3a",
+                        "optimal_portfolio": "#b29965",
                     },
                     "marker_size": 133,
                     "line_width": 2.5,
@@ -543,9 +545,7 @@ class PortfolioOptimizer:
         n_assets = len(mean_returns)
 
         # Charger les paramètres depuis la configuration
-        opt_config = (
-            self.optimizer_config.get("technical", {}).get("optimization", {})
-        )
+        opt_config = self.optimizer_config.get("technical", {}).get("optimization", {})
         max_iter = opt_config.get("max_iterations", 1000)
         weight_bounds = opt_config.get("weight_bounds", [0, 1])
 
@@ -574,9 +574,7 @@ class PortfolioOptimizer:
         n_assets = len(mean_returns)
 
         # Charger les paramètres depuis la configuration
-        opt_config = (
-            self.optimizer_config.get("technical", {}).get("optimization", {})
-        )
+        opt_config = self.optimizer_config.get("technical", {}).get("optimization", {})
         max_iter = opt_config.get("max_iterations", 1000)
         weight_bounds = opt_config.get("weight_bounds", [0, 1])
 
@@ -609,9 +607,7 @@ class PortfolioOptimizer:
         n_assets = len(mean_returns)
 
         # Charger les paramètres depuis la configuration
-        opt_config = (
-            self.optimizer_config.get("technical", {}).get("optimization", {})
-        )
+        opt_config = self.optimizer_config.get("technical", {}).get("optimization", {})
         max_iter = opt_config.get("max_iterations", 1000)
         weight_bounds = opt_config.get("weight_bounds", [0, 1])
 
@@ -691,12 +687,12 @@ class PortfolioOptimizer:
         ax.scatter(
             current["volatility"] * 100,
             current["return"] * 100,
-            color=colors.get("current_portfolio", "#b22023"),
+            color=colors.get("current_portfolio", "#b23a3a"),
             marker="o",
             s=marker_size,
             label=f"Portefeuille actuel (Sharpe: {current['sharpe']:.2f})",
             zorder=5,
-            edgecolors="#7f1517",
+            edgecolors="#7a1e1e",
             linewidths=2,
         )
 
@@ -704,12 +700,12 @@ class PortfolioOptimizer:
         ax.scatter(
             optimal["volatility"] * 100,
             optimal["return"] * 100,
-            color=colors.get("optimal_portfolio", "#fbbf24"),
+            color=colors.get("optimal_portfolio", "#b29965"),
             marker="o",
             s=marker_size,
             label=f"Portefeuille optimal (Sharpe: {optimal['sharpe']:.2f})",
             zorder=5,
-            edgecolors="#cc9b1d",
+            edgecolors="#7f683b",
             linewidths=2,
         )
 

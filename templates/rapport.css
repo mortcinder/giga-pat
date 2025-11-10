@@ -16,25 +16,37 @@
     --bg: #ffffff;
     --text: #334155;
     --text-light: #475569;
+    --text-alpha: rgba(51, 65, 85, 0.1);
     --muted: #64748b;
-    --blue: #1e3a8a;
-    --blue-dark: #0f172a;
-    --blue-light: #eef2ff;
-    --gold: #fbbf24;
-    --gold-dark: #cc9b1d;
-    --gold-light: #fffcf0;
+    --blue: #0e1823;
+    --blue-dark: #070c14;
+    --blue-light: #dde2f2;
+    --gold: #b29965;
+    --gold-dark: #7f683b;
+    --gold-dark-alpha: rgba(127, 104, 59, 0.38);
+    --gold-light: #e9d9b5;
     --gray-light: #ececef;
-    --red: #dc2626;
-    --red-dark: #b91c1c;
-    --red-light: #fff6f5;
+    --red: #b23a3a;
+    --red-dark: #7a1e1e;
+    --red-light: #f3d5d2;
     --green: #477f50;
-    --green-dark: #1f3b25;
-    --green-light: #ebfaef;
-    --navy: #2c7a7b;
-    --sky: #1e3a8a;
-    --amber: #0ea5e9;
-    --forest: #d97706;
-    --teal: #059669;
+    --green-dark: #305c38;
+    --green-light: #cfe3d2;
+    --slate: #5c6c88; /* Diversification - Bleu ardoise */
+    --slate-dark: #3e4a60;
+    --slate-light: #d8dee9;
+    --taupe: #8b6b4f; /* Résilience - Brun taupe */
+    --taupe-dark: #5d4732;
+    --taupe-light: #d9c3ad;
+    --plum: #5e4b6a; /* Liquidité - Prune désaturée */
+    --plum-dark: #3e3248;
+    --plum-light: #dcd1e1;
+    --silver: #a1aab5; /* Fiscalité - Argent bleuté */
+    --silver-dark: #707781;
+    --silver-light: #e8ebee;
+    --copper: #b46f5b; /* Croissance - Vert forêt */
+    --copper-dark: #7e4a3a;
+    --copper-light: #e6c1b4;
 
     /* Tons UI */
     --line: #eef6ff;
@@ -51,11 +63,11 @@
     --border-side-dashed: 1px dashed #e5e7eb;
     --shadow-card: 0 6px 18px rgba(16, 24, 40, 0.06);
     --shadow-cover: 0 10px 30px rgba(2, 6, 23, 0.18);
-    --border-navy: 4px solid var(--navy);    /* Diversification - Turquoise */
-    --border-sky: 4px solid var(--sky);      /* Résilience - Bleu marine */
-    --border-amber: 4px solid var(--amber);  /* Liquidité - Bleu océan */
-    --border-forest: 4px solid var(--forest); /* Fiscalité - Ambre */
-    --border-teal: 4px solid var(--teal);    /* Croissance - Vert forêt */
+    --border-slate: 4px solid var(--slate);
+    --border-taupe: 4px solid var(--taupe);
+    --border-plum: 4px solid var(--plum);
+    --border-silver: 4px solid var(--silver);
+    --border-copper: 4px solid var(--copper);
 
     /* Espacements */
     --padding-page: 24px;
@@ -311,7 +323,7 @@ table .badge {
     inset: 0;
     background: radial-gradient(
         circle at 35% 35%,
-        rgba(251, 191, 36, 0.18),
+        var(--gold-dark-alpha),
         transparent 40%
     );
 }
@@ -322,15 +334,13 @@ table .badge {
     font-weight: var(--font-weight-bold);
     margin: 0;
     line-height: 1;
-    background: linear-gradient(90deg, #fcd34d, #fbbf24);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 3px 16px rgba(15, 23, 42, 0.28);
+    color: var(--gold);
+    text-shadow: 0 3px 16px var(--gold-dark);
 }
 .cover .subtitle-profile {
     z-index: 2;
     margin-top: 8px;
-    color: rgba(222, 211, 177, 0.78);
+    color: var(--gold);
     font-size: var(--font-size-md);
 }
 .cover .subtitle {
@@ -339,8 +349,8 @@ table .badge {
     flex-wrap: wrap;
     justify-content: center;
     gap: 6px 14px;
-    font-size: var(--font-size-sm);
-    color: rgba(222, 211, 177, 1);
+    font-size: var(--font-size-md);
+    color: var(--gold);
     text-transform: lowercase;
     font-variant-caps: all-small-caps;
     font-weight: var(--font-weight-regular);
@@ -561,7 +571,7 @@ table .badge {
 .markowitz-chart .chart-caption {
     margin-top: 8px;
     font-size: var(--font-size-sm);
-    color: #6b7280;
+    color: var(--muted);
     font-style: italic;
 }
 
@@ -709,23 +719,23 @@ footer {
 
 /* Barres verticales colorées par score */
 .score-section.diversification {
-    border-left-color: var(--navy);
+    border-left-color: var(--slate);
 }
 
 .score-section.resilience {
-    border-left-color: var(--sky);
+    border-left-color: var(--taupe);
 }
 
 .score-section.liquidite {
-    border-left-color: var(--amber);
+    border-left-color: var(--plum);
 }
 
 .score-section.fiscalite {
-    border-left-color: var(--forest);
+    border-left-color: var(--silver);
 }
 
 .score-section.croissance {
-    border-left-color: var(--teal);
+    border-left-color: var(--copper);
 }
 
 /* Titre du score avec badge */

@@ -32,11 +32,11 @@ technical:
     figure_size: [10, 6] # Taille du graphique en pouces
     dpi: 100 # Résolution
     colors:
-      efficient_frontier: "#1e3a8a" # Bleu foncé
-      inefficient_frontier: "#1e3a8a" # Bleu foncé (pointillé)
-      current_portfolio: "#b22023" # Rouge
-      optimal_portfolio: "#fbbf24" # Jaune
-      risk_free_line: "gray" # Ligne taux sans risque
+      efficient_frontier: "#334155" # Gris bleuté // var(--text)
+      inefficient_frontier: "#475569" # Gris bleuté clair (pointillé) // var(--text-light)
+      current_portfolio: "#b23a3a" # Rouge foncé // var(--red)
+      optimal_portfolio: "#b29965" # Gold // var(--gold)
+      risk_free_line: "#64748b" # Ligne taux sans risque // var(--muted)
     marker_size: 133
     line_width: 2.5
     line_width_inefficient: 1.5
