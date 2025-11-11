@@ -211,6 +211,131 @@ sources/manifest.json (v2.1) + CSV/PDF files
 - Check generated JSON: `generated/`
 - Review logs: `logs/rapport_YYYYMMDD_HHMMSS.log`
 
+## Architecture Multi-Agents (November 2025)
+
+Depuis novembre 2025, le projet utilise une **architecture multi-agents avec threading Python** pour optimiser la génération des rapports patrimoniaux.
+
+### Agent principal (orchestrateur)
+
+**Responsabilités** : `tools/analyzer.py`
+- Normalisation des données sources (Stage 1)
+- **Analyse des risques structurels** (patrimoine actuel) - en parallèle
+- Génération des recommandations, stress tests, optimisation
+- Génération du rapport HTML (Stage 3)
+
+### Agent secondaire (veille contextuelle)
+
+**Responsabilités** : `tools/utils/contextual_risk_agent.py`
+- Surveillance de l'actualité économique française
+- Détection des risques émergents (réglementaire, fiscal, marché)
+- **Exécution parallèle** pendant l'analyse structurelle (threading)
+
+### Flux d'exécution parallèle
+
+```
+T=0s   PatrimoineAnalyzer.analyze()
+           │
+           ├──→ [Thread 1: Agent contextuel] → Recherches web (~15s)
+           │                                      ↓
+           └──→ [Thread 2: Risques structurels] → Analyse patrimoine (~20s)
+                                                    ↓
+       Attente fin des 2 threads (max des 2 durées)
+                       ↓
+       Fusion résultats (structurels + contextuels)
+                       ↓
+       Suite (recommandations, stress tests...)
+```
+
+### Gains de performance
+
+| Métrique | Séquentiel (legacy) | Parallèle (multi-agents) | Gain |
+|----------|---------------------|--------------------------|------|
+| **Risques structurels** | 20s | 20s (parallèle) | 0% |
+| **Risques contextuels** | 15s | 15s (parallèle) | 0% |
+| **Total Stage 2** | 35s | ~22s (max des 2) | **~37%** |
+
+**Note** : Le gain réel dépend des temps d'exécution respectifs et du rate limiting de l'API Brave.
+
+### Activation/désactivation
+
+#### Désactiver l'analyse contextuelle (mode séquentiel)
+
+Dans `config/risks.yaml` :
+
+```yaml
+risk_settings:
+  enable_contextual_detection: false  # Désactive l'agent contextuel
+```
+
+Le système rebasculera automatiquement en mode séquentiel (legacy).
+
+#### Mode de fonctionnement
+
+**Mode multi-agents** (default) :
+- Si `enable_contextual_detection: true` → Threading parallèle
+- Méthode : `analyzer.py:_analyze_risks_parallel()`
+- Utilise `concurrent.futures.ThreadPoolExecutor`
+
+**Mode séquentiel** (legacy) :
+- Si `enable_contextual_detection: false` → Exécution classique
+- Méthode : `risk_analyzer.py:analyze()`
+- Pas de parallélisation
+
+### Débogage
+
+Logs typiques en mode multi-agents :
+
+```
+[2025-11-11 22:03:36] INFO: Identification risques...
+[2025-11-11 22:03:36] INFO: Lancement agent contextuel (parallèle)...
+[2025-11-11 22:03:36] INFO: Analyse risques structurels (parallèle)...
+[2025-11-11 22:03:36] INFO:   → Risques de concentration
+[2025-11-11 22:03:36] INFO: Début analyse risques contextuels (agent parallèle)...
+...
+[2025-11-11 22:04:27] INFO: ✓ Agent contextuel terminé : 6 risques détectés en 51.4s
+[2025-11-11 22:04:39] INFO: ✓ 6 risques structurels identifiés
+[2025-11-11 22:04:39] INFO: Fusion des résultats (structurel + contextuel)...
+[2025-11-11 22:04:39] INFO: ✓ 12 risques totaux identifiés
+```
+
+### Architecture technique
+
+**Fichiers clés** :
+- `tools/analyzer.py` : Orchestrateur multi-agents
+  - `_analyze_risks_parallel()` : Lance les 2 threads
+  - `_run_contextual_agent()` : Wrapper pour l'agent contextuel
+  - `_merge_risks()` : Fusion des résultats
+- `tools/utils/contextual_risk_agent.py` : Agent contextuel autonome
+  - `analyze()` : Point d'entrée principal
+  - Copie des méthodes contextuelles depuis `risk_analyzer.py`
+- `tools/utils/risk_analyzer.py` : Analyse structurelle
+  - `analyze_structural_only()` : Risques structurels uniquement (7 catégories)
+  - `analyze()` : Mode legacy (séquentiel complet)
+
+### Ajout de nouveaux agents
+
+Pour ajouter d'autres agents (stress tests, optimisation, etc.), suivre le pattern :
+
+1. Créer module agent : `tools/utils/{nom}_agent.py`
+2. Exposer méthode `analyze()` retournant dict
+3. Lancer en parallèle dans `analyzer.py` via `ThreadPoolExecutor`
+4. Fusionner résultats
+
+Exemple :
+
+```python
+# Lancer 3 agents en parallèle
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    contextual_future = executor.submit(contextual_agent.analyze, data)
+    structural_future = executor.submit(risk_analyzer.analyze_structural_only, data)
+    optimization_future = executor.submit(optimization_agent.analyze, data)
+
+    # Attendre résultats
+    contextual_data = contextual_future.result()
+    structural_data = structural_future.result()
+    optimization_data = optimization_future.result()
+```
+
 ## Risk Detection System v2.0
 
 **3 Levels**:

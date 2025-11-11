@@ -146,6 +146,69 @@ class RiskAnalyzer:
 
         return risques
 
+    def analyze_structural_only(self, data: dict) -> Dict[str, List[Dict]]:
+        """
+        Analyse UNIQUEMENT les risques structurels (patrimoine actuel).
+        Les risques contextuels sont délégués à l'agent dédié (ContextualRiskAgent).
+
+        Cette méthode est utilisée dans l'architecture multi-agents pour permettre
+        l'exécution parallèle de l'analyse structurelle et contextuelle.
+
+        Args:
+            data: Données du patrimoine normalisées
+
+        Returns:
+            Dictionnaire des risques catégorisés par niveau
+        """
+        self.logger.info("Analyse des risques structurels...")
+
+        all_risks = []
+
+        # ====================================================================
+        # RISQUES STRUCTURELS (7 catégories)
+        # ====================================================================
+
+        # 1. Risques de concentration (section 3.2.5.2.1)
+        self.logger.info("  → Risques de concentration")
+        all_risks.extend(self._analyze_concentration_risks(data))
+
+        # 2. Risques réglementaires (section 3.2.5.2.2)
+        self.logger.info("  → Risques réglementaires")
+        all_risks.extend(self._analyze_regulatory_risks(data))
+
+        # 3. Risques fiscaux (section 3.2.5.2.3)
+        self.logger.info("  → Risques fiscaux")
+        all_risks.extend(self._analyze_fiscal_risks(data))
+
+        # 4. Risques de marché (section 3.2.5.2.4)
+        self.logger.info("  → Risques de marché")
+        all_risks.extend(self._analyze_market_risks(data))
+
+        # 5. Risques de liquidité (section 3.2.5.2.5)
+        self.logger.info("  → Risques de liquidité")
+        all_risks.extend(self._analyze_liquidity_risks(data))
+
+        # 6. Risques politiques (section 3.2.5.2.6)
+        self.logger.info("  → Risques politiques")
+        all_risks.extend(self._analyze_political_risks(data))
+
+        # 7. Risques de changes (section 3.2.5.2.7)
+        self.logger.info("  → Risques de changes")
+        all_risks.extend(self._analyze_currency_risks(data))
+
+        # Catégorisation par niveau
+        risques = {
+            "critiques": [r for r in all_risks if r["niveau"] == "Critique"],
+            "eleves": [r for r in all_risks if r["niveau"] == "Élevé"],
+            "moyens": [r for r in all_risks if r["niveau"] == "Moyen"],
+            "faibles": [r for r in all_risks if r["niveau"] == "Faible"]
+        }
+
+        self.logger.info(f"✓ {len(all_risks)} risques structurels identifiés : {len(risques['critiques'])} critiques, "
+                        f"{len(risques['eleves'])} élevés, {len(risques['moyens'])} moyens, {len(risques['faibles'])} faibles")
+
+        return risques
+
     def _analyze_concentration_risks(self, data: dict) -> List[Dict[str, Any]]:
         """Analyse risques de concentration (établissement, juridiction, classe)"""
         risks = []
