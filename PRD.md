@@ -85,6 +85,7 @@ patrimoine-analyzer/
 │
 ├── sources/                           # 📥 INPUTS : Fichiers sources (utilisateur)
 │   ├── patrimoine.md                  # Point d'entrée principal
+│   ├── manifest.json                  # Orchestrateur v2.0+ (profil + comptes)
 │   ├── [CA] - PEA.pdf
 │   ├── [CA] - PEA-PME.pdf
 │   ├── [CA] - AV.pdf
@@ -92,7 +93,11 @@ patrimoine-analyzer/
 │   ├── [BFB] - CTO.pdf
 │   ├── [BOB] - PER.pdf
 │   ├── [CRYP] - BTC + ETH + VRO.csv
-│   ├── [BIT] - BTC.csv
+│   ├── Bitstack/                      # Fichiers multi-années (v2.1+)
+│   │   ├── [BIT] - 2022.csv
+│   │   ├── [BIT] - 2023.csv
+│   │   ├── [BIT] - 2024.csv
+│   │   └── [BIT] - 2025.csv
 │   └── ... (autres fichiers référencés)
 │
 ├── templates/                         # 📄 TEMPLATES : Modèles HTML
@@ -103,6 +108,10 @@ patrimoine-analyzer/
 │   ├── patrimoine_input.json         # JSON normalisé (étape 1)
 │   ├── patrimoine_analysis.json      # JSON analyse complète (étape 2)
 │   ├── rapport_20251021_143022.html  # Rapport HTML final (étape 3)
+│   ├── cache/                         # Cache parser (v2.1+)
+│   │   ├── bitstack_2022.json
+│   │   ├── bitstack_2023.json
+│   │   └── bitstack_2024.json
 │   └── ... (historique)
 │
 ├── tools/                             # 🛠️ OUTILS : Scripts Python
@@ -110,10 +119,22 @@ patrimoine-analyzer/
 │   ├── normalizer.py                  # [1] Normalisation
 │   ├── analyzer.py                    # [2] Analyse + Web Research
 │   ├── generator.py                   # [3] Génération HTML
+│   ├── cache_manager.py               # Cache système (v2.1+)
+│   ├── crypto_price_api.py            # API prix crypto (CoinGecko)
+│   ├── parsers/                       # Parsers pluggables (v2.0+)
+│   │   ├── base_parser.py
+│   │   ├── registry.py
+│   │   ├── bitstack/                  # Parser Bitstack (v2.1+)
+│   │   │   └── transaction_history.py
+│   │   ├── credit_agricole/
+│   │   │   ├── pea_v2025.py
+│   │   │   └── av_v2_lignes.py
+│   │   └── generic/
+│   │       └── csv_flexible.py
 │   └── utils/
 │       ├── __init__.py
 │       ├── file_parser.py             # Parsing CSV/PDF/JSON
-│       ├── web_research.py            # Recherches web (Anthropic)
+│       ├── web_research.py            # Recherches web (Brave API)
 │       ├── risk_analyzer.py           # Analyse de risques
 │       ├── recommendations.py         # Génération recommandations
 │       ├── stress_tester.py           # Stress tests
@@ -1966,9 +1987,224 @@ for attempt in range(max_retries):
 
 ---
 
-## 15. Spécifications détaillées - Calcul score de priorité
+## 15. Spécifications détaillées - Parsing multi-fichiers avec cache (v2.1+)
 
-### 15.1 Formule de calcul
+### 15.1 Vue d'ensemble
+
+Le système de parsing multi-fichiers avec cache permet de gérer des actifs dont les données sont réparties sur plusieurs fichiers (un par année), avec optimisation par mise en cache des années passées.
+
+**Cas d'usage** : Transactions crypto Bitstack réparties sur 4 fichiers CSV (2022.csv, 2023.csv, 2024.csv, 2025.csv)
+
+### 15.2 Configuration dans manifest.json
+
+```json
+{
+  "id": "bitstack_btc_002",
+  "custodian": "bitstack",
+  "custodian_name": "Bitstack",
+  "custody_type": "custodial_platform",
+  "type_actif": "Bitcoin",
+  "currency": "EUR",
+  "source_pattern": "Bitstack/[BIT] - *.csv",
+  "parser_strategy": "bitstack.transaction_history.v2025",
+  "cache_historical_years": true,
+  "fallback_parsers": []
+}
+```
+
+**Nouveaux champs** :
+- `source_pattern` : Pattern glob pour matcher plusieurs fichiers (supporte sous-répertoires)
+- `cache_historical_years` : Active le cache pour les années < année courante
+
+### 15.3 Système de cache (`tools/cache_manager.py`)
+
+**Fonctionnalités** :
+- Cache automatique basé sur MD5 du fichier source
+- Invalidation si le fichier source change
+- Stockage JSON dans `generated/cache/`
+- Logique intelligente : cache si `year < current_year`
+
+**API principale** :
+
+```python
+class CacheManager:
+    def get_cache_key(self, custodian: str, filename: str) -> str:
+        """Génère clé cache depuis custodian + année extraite du filename"""
+
+    def should_cache_year(self, year: int) -> bool:
+        """True si year < datetime.now().year"""
+
+    def is_cached(self, cache_key: str, file_path: str) -> bool:
+        """Vérifie si cache existe ET hash MD5 inchangé"""
+
+    def save_to_cache(self, cache_key: str, file_path: str, data: Any, metadata: dict):
+        """Sauvegarde données + hash + metadata"""
+
+    def load_from_cache(self, cache_key: str) -> Optional[dict]:
+        """Charge données depuis cache"""
+```
+
+**Structure fichier cache** :
+
+```json
+{
+  "metadata": {
+    "year": 2022,
+    "custodian": "bitstack",
+    "cached_at": "2025-11-11T16:00:00Z",
+    "file_hash": "a1b2c3d4..."
+  },
+  "data": [
+    {"nom": "Bitcoin 2022", "quantite": 0.00062009, ...}
+  ]
+}
+```
+
+### 15.4 Pattern matching avec caractères spéciaux
+
+**Problème** : `glob("[BIT] - *.csv")` échoue car `[BIT]` est interprété comme classe de caractères.
+
+**Solution** : Fonction `_matches_pattern()` dans normalizer.py
+
+```python
+def _matches_pattern(self, filename: str, pattern: str) -> bool:
+    """Match avec regex, échappe les caractères spéciaux"""
+    escaped = re.escape(pattern)  # [BIT] → \[BIT\]
+    regex_pattern = escaped.replace(r'\*', '.*')  # \* → .*
+    return re.fullmatch(regex_pattern, filename) is not None
+```
+
+### 15.5 Parsing multi-fichiers (`normalizer._parse_compte_multi_files()`)
+
+**Workflow** :
+
+1. **Découverte fichiers** : Liste fichiers matchant `source_pattern`
+2. **Pour chaque fichier** :
+   - Extraire année depuis nom fichier (regex `\d{4}`)
+   - Si `cache_historical_years=true` ET `year < current_year` :
+     - Vérifier cache valide (hash MD5)
+     - Si oui : charger depuis cache
+     - Sinon : parser + sauvegarder dans cache
+   - Si année courante OU cache désactivé : parser toujours
+3. **Consolidation** : Agréger toutes les positions
+
+**Logs** :
+
+```
+[2025-11-11 16:40:19] INFO:   Parsing crypto bitstack_btc_002...
+[2025-11-11 16:40:19] INFO:     Trouvé 4 fichier(s) pour Bitstack/[BIT] - *.csv
+[2025-11-11 16:40:19] INFO: ✓ Cache valide trouvé pour bitstack_2022
+[2025-11-11 16:40:19] INFO:       ✓ [BIT] - 2022.csv (depuis cache)
+[2025-11-11 16:40:19] INFO: ✓ Cache valide trouvé pour bitstack_2023
+[2025-11-11 16:40:19] INFO:       ✓ [BIT] - 2023.csv (depuis cache)
+[2025-11-11 16:40:19] INFO: ✓ Cache valide trouvé pour bitstack_2024
+[2025-11-11 16:40:19] INFO:       ✓ [BIT] - 2024.csv (depuis cache)
+[2025-11-11 16:40:19] INFO:       Parsing [BIT] - 2025.csv...
+[2025-11-11 16:40:19] INFO:     ✓ 4 position(s) parsée(s)
+```
+
+### 15.6 Conversion crypto vers EUR (`tools/crypto_price_api.py`)
+
+**API** : CoinGecko (gratuite, pas de clé requise)
+
+```python
+class CryptoPriceAPI:
+    def get_btc_price_eur(self) -> Optional[float]:
+        """Récupère prix BTC/EUR actuel"""
+        url = f"{self.base_url}/simple/price?ids=bitcoin&vs_currencies=eur"
+
+    def convert_btc_to_eur(self, btc_amount: float) -> Optional[float]:
+        """Convertit montant BTC en EUR"""
+        price = self.get_btc_price_eur()
+        return btc_amount * price if price else None
+```
+
+**Intégration dans normalizer** :
+
+```python
+# Dans _integrate_crypto()
+for pos in positions:
+    if pos.get('devise') == 'BTC':
+        btc_qty = pos.get('quantite', 0)
+        eur_value = self.crypto_api.convert_btc_to_eur(btc_qty)
+        if eur_value:
+            montant += eur_value
+            self.logger.info(f"✓ {btc_qty} BTC converti en {eur_value:.2f} EUR")
+```
+
+### 15.7 Parser Bitstack (`tools/parsers/bitstack/transaction_history.py`)
+
+**Types de transactions** :
+- **Échange** : Achat BTC avec EUR (`Montant reçu` en BTC)
+- **Retrait** : Envoi BTC vers wallet externe (`Montant envoyé` en BTC)
+- **Dépôt** : Réception BTC (`Montant reçu` en BTC)
+
+**Calcul solde** : `balance = achats + dépôts - retraits`
+
+**Format sortie** :
+
+```python
+{
+    'type_compte': 'Crypto',
+    'positions': [{
+        'nom': 'Bitcoin 2022',
+        'type': 'BTC',
+        'quantite': 0.00062009,
+        'devise': 'BTC',
+        'metadata': {
+            'year': '2022',
+            'transaction_count': 32,
+            'btc_balance': '0.00062009'
+        }
+    }]
+}
+```
+
+### 15.8 Performance
+
+**Sans cache** (premier run) :
+- 4 fichiers parsés : ~0.5s
+- ~300 transactions traitées
+
+**Avec cache** (runs suivants) :
+- 3 fichiers depuis cache : <0.01s
+- 1 fichier parsé (année courante) : ~0.1s
+- **Gain : 80% de temps** ⚡
+
+### 15.9 Ajout d'un nouveau fichier
+
+1. Déposer `[BIT] - 2026.csv` dans `sources/Bitstack/`
+2. Relancer `python main.py`
+3. Résultat :
+   - 2022-2024 : chargés depuis cache
+   - 2025 : rechargé (année courante change)
+   - 2026 : parsé (nouveau fichier)
+
+**Pas de modification de code nécessaire !**
+
+### 15.10 Invalidation cache
+
+**Automatique** : Le cache est invalidé si le fichier source change (hash MD5 différent)
+
+**Manuelle** :
+
+```bash
+# Invalider une année spécifique
+python3 << 'EOF'
+from tools.cache_manager import CacheManager
+cache = CacheManager()
+cache.invalidate_cache("bitstack_2022")
+EOF
+
+# Vider tout le cache
+rm -rf generated/cache/
+```
+
+---
+
+## 16. Spécifications détaillées - Calcul score de priorité
+
+### 16.1 Formule de calcul
 
 ```python
 def _calculate_priority_score(self, reco: dict, risque: dict) -> float:

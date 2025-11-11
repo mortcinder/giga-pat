@@ -1,16 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/patrimoine-analyzer/manifest.schema.json",
-  "title": "Patrimoine Analyzer Manifest",
-  "description": "Schéma de validation pour manifest.json (v2.0) - Point d'entrée unique pour définir profil investisseur et comptes",
+  "title": "Patrimoine Analyzer Manifest v2.1",
+  "description": "Schéma de validation pour manifest.json (v2.1) - Architecture homogène avec custodian unifié et sections manuelles",
   "type": "object",
-  "required": ["version", "profil_investisseur", "comptes"],
+  "required": ["version", "profil_investisseur", "patrimoine"],
   "properties": {
     "version": {
       "description": "Version du schéma manifest",
       "type": "string",
-      "pattern": "^2\\.0\\.\\d+$",
-      "examples": ["2.0.0"]
+      "pattern": "^2\\.(0|1)\\.\\d+$",
+      "examples": ["2.1.0", "2.0.0"]
     },
     "generated_at": {
       "description": "Date de génération du manifest (ISO 8601)",
@@ -25,18 +25,9 @@
         "identite": {
           "type": "object",
           "properties": {
-            "prenom": {
-              "type": "string",
-              "minLength": 1
-            },
-            "nom": {
-              "type": "string",
-              "minLength": 1
-            },
-            "genre": {
-              "type": "string",
-              "enum": ["Homme", "Femme", "Autre"]
-            },
+            "prenom": { "type": "string", "minLength": 1 },
+            "nom": { "type": "string", "minLength": 1 },
+            "genre": { "type": "string", "enum": ["Homme", "Femme", "Autre"] },
             "date_naissance": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -44,13 +35,17 @@
             },
             "situation_familiale": {
               "type": "string",
-              "enum": ["Célibataire", "Marié(e)", "Pacsé(e)", "Divorcé(e)", "Veuf(ve)", "Union libre"]
+              "enum": [
+                "Célibataire",
+                "Marié",
+                "Marié(e)",
+                "Pacsé(e)",
+                "Divorcé(e)",
+                "Veuf(ve)",
+                "Union libre"
+              ]
             },
-            "enfants": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 20
-            }
+            "enfants": { "type": "integer", "minimum": 0, "maximum": 20 }
           },
           "additionalProperties": true
         },
@@ -59,12 +54,18 @@
           "properties": {
             "statut": {
               "type": "string",
-              "enum": ["Salarié", "Fonctionnaire", "Indépendant", "Chef d'entreprise", "Retraité", "Étudiant", "Sans emploi"]
+              "enum": [
+                "Actif",
+                "Salarié",
+                "Fonctionnaire",
+                "Indépendant",
+                "Chef d'entreprise",
+                "Retraité",
+                "Étudiant",
+                "Sans emploi"
+              ]
             },
-            "profession": {
-              "type": "string",
-              "minLength": 1
-            },
+            "profession": { "type": "string", "minLength": 1 },
             "revenu_mensuel_net": {
               "type": "integer",
               "minimum": 0,
@@ -80,7 +81,7 @@
             "profil_risque": {
               "type": "string",
               "enum": ["dynamique", "equilibre", "prudent", "default"],
-              "description": "Profil de risque utilisé pour l'analyse (source de vérité v2.0)"
+              "description": "Profil de risque (source de vérité v2.1)"
             },
             "horizon": {
               "type": "string",
@@ -90,7 +91,14 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["croissance", "revenus", "preservation_capital", "retraite", "transmission", "projet_immobilier"]
+                "enum": [
+                  "croissance",
+                  "revenus",
+                  "preservation_capital",
+                  "retraite",
+                  "transmission",
+                  "projet_immobilier"
+                ]
               },
               "uniqueItems": true
             }
@@ -100,118 +108,269 @@
       },
       "additionalProperties": false
     },
-    "comptes": {
-      "description": "Liste des comptes financiers à parser",
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": ["id", "etablissement", "type_compte", "source_file", "parser_strategy"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z0-9_]+$",
-            "description": "Identifiant unique du compte (snake_case)",
-            "examples": ["ca_pea_001", "dgo_cto_001"]
-          },
-          "etablissement": {
-            "type": "string",
-            "pattern": "^[a-z_]+$",
-            "description": "Code établissement normalisé (snake_case)",
-            "examples": ["credit_agricole", "boursobank", "degiro"]
-          },
-          "type_compte": {
-            "type": "string",
-            "description": "Type de compte",
-            "examples": ["PEA", "PEA-PME", "Assurance-vie", "CTO", "PER", "Livret"]
-          },
-          "source_file": {
-            "type": "string",
-            "pattern": "\\.(csv|pdf|json)$",
-            "description": "Nom du fichier source (doit exister dans sources/)",
-            "examples": ["[CA] - PEA.pdf", "[DGO] - CTO.csv"]
-          },
-          "parser_strategy": {
-            "type": "string",
-            "pattern": "^[a-z_]+\\.[a-z_]+\\.[a-z0-9_]+$",
-            "description": "Stratégie de parsing (format: etablissement.type.version)",
-            "examples": ["credit_agricole.pea.v2025", "generic.csv.flexible"]
-          },
-          "fallback_parsers": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^[a-z_]+\\.[a-z_]+\\.[a-z0-9_]+$"
-            },
-            "description": "Parsers de fallback (essayés si parser_strategy échoue)",
-            "uniqueItems": true
-          },
-          "metadata": {
-            "type": "object",
-            "description": "Métadonnées optionnelles pour le parsing",
-            "properties": {
-              "date_releve": {
-                "type": "string",
-                "format": "date"
-              },
-              "format_version": {
-                "type": "string"
-              },
-              "checksum": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": true
+    "patrimoine": {
+      "description": "Ensemble des actifs du patrimoine (v2.1)",
+      "type": "object",
+      "properties": {
+        "comptes_titres": {
+          "description": "Comptes titres à parser (PEA, CTO, AV, PER, etc.)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/compte_avec_parser"
           }
         },
-        "additionalProperties": false
-      }
-    },
-    "crypto": {
-      "description": "Comptes crypto (optionnel)",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "plateforme", "source_file"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z0-9_]+$"
-          },
-          "plateforme": {
-            "type": "string",
-            "examples": ["ledger", "bitstack", "aave"]
-          },
-          "source_file": {
-            "type": "string"
-          },
-          "parser_strategy": {
-            "type": "string"
+        "liquidites": {
+          "description": "Comptes de liquidités (saisie manuelle)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/actif_manuel"
+          }
+        },
+        "obligations": {
+          "description": "Obligations (T-Bonds, etc.)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/obligation"
+          }
+        },
+        "crypto": {
+          "description": "Cryptomonnaies (custodial, self-custody, DeFi)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/actif_crypto"
+          }
+        },
+        "metaux_precieux": {
+          "description": "Métaux précieux (or, argent, platine)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/actif_manuel"
+          }
+        },
+        "immobilier": {
+          "description": "Biens immobiliers",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/bien_immobilier"
           }
         }
-      }
-    },
-    "immobilier": {
-      "description": "Biens immobiliers (optionnel)",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "type", "source_file"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z0-9_]+$"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["Résidence principale", "Résidence secondaire", "Investissement locatif", "SCPI"]
-          },
-          "source_file": {
-            "type": "string"
-          }
-        }
-      }
+      },
+      "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "definitions": {
+    "compte_avec_parser": {
+      "type": "object",
+      "required": [
+        "id",
+        "custodian",
+        "custodian_name",
+        "custody_type",
+        "type_compte",
+        "source_file",
+        "parser_strategy"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "description": "Identifiant unique (format: {custodian}_{type}_{seq})",
+          "examples": ["ca_pea_001", "dgo_cto_005"]
+        },
+        "custodian": {
+          "type": "string",
+          "pattern": "^[a-z_]+$",
+          "description": "Code custodian normalisé (snake_case)",
+          "examples": ["credit_agricole", "boursobank", "degiro"]
+        },
+        "custodian_name": {
+          "type": "string",
+          "description": "Nom complet lisible du custodian",
+          "examples": ["Crédit Agricole", "BoursoBank", "Degiro"]
+        },
+        "custody_type": {
+          "type": "string",
+          "enum": [
+            "institutional",
+            "custodial_platform",
+            "self_custody",
+            "defi",
+            "direct_ownership"
+          ],
+          "description": "Type de garde"
+        },
+        "type_compte": {
+          "type": "string",
+          "description": "Type de compte",
+          "examples": ["PEA", "PEA-PME", "Assurance-vie", "CTO", "PER"]
+        },
+        "source_file": {
+          "type": "string",
+          "pattern": "\\.(csv|pdf|json)$",
+          "description": "Fichier source à parser",
+          "examples": ["[CA] - PEA.pdf", "[DGO] - CTO.csv"]
+        },
+        "parser_strategy": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_]+\\.[a-z0-9_]+$",
+          "description": "Stratégie de parsing (format: namespace.type.version)",
+          "examples": ["credit_agricole.pea.v2025", "generic.csv.flexible"]
+        },
+        "fallback_parsers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z_]+\\.[a-z_]+\\.[a-z0-9_]+$"
+          },
+          "description": "Parsers de fallback",
+          "uniqueItems": true
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Métadonnées optionnelles",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "actif_manuel": {
+      "type": "object",
+      "required": [
+        "id",
+        "custodian",
+        "custodian_name",
+        "custody_type",
+        "type_compte",
+        "currency",
+        "montant"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "custodian": { "type": "string", "pattern": "^[a-z_]+$" },
+        "custodian_name": { "type": "string" },
+        "custody_type": {
+          "type": "string",
+          "enum": [
+            "institutional",
+            "custodial_platform",
+            "self_custody",
+            "direct_ownership"
+          ]
+        },
+        "type_compte": { "type": "string" },
+        "type_actif": { "type": "string" },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "examples": ["EUR", "USD"]
+        },
+        "montant": { "type": "number", "minimum": 0 },
+        "montant_eur_equivalent": { "type": "number", "minimum": 0 },
+        "metadata": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    "obligation": {
+      "type": "object",
+      "required": [
+        "id",
+        "custodian",
+        "custodian_name",
+        "custody_type",
+        "type_actif",
+        "comptes"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "custodian": { "type": "string", "pattern": "^[a-z_]+$" },
+        "custodian_name": { "type": "string" },
+        "custody_type": {
+          "type": "string",
+          "enum": ["custodial_platform", "institutional"]
+        },
+        "type_actif": {
+          "type": "string",
+          "examples": ["T-Bonds", "Obligations d'État"]
+        },
+        "comptes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["currency", "montant"],
+            "properties": {
+              "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+              "montant": { "type": "number", "minimum": 0 },
+              "montant_eur_equivalent": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "actif_crypto": {
+      "type": "object",
+      "required": [
+        "id",
+        "custodian",
+        "custodian_name",
+        "custody_type",
+        "type_actif",
+        "currency"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "custodian": { "type": "string", "pattern": "^[a-z_]+$" },
+        "custodian_name": { "type": "string" },
+        "custody_type": {
+          "type": "string",
+          "enum": ["custodial_platform", "self_custody", "defi"]
+        },
+        "type_actif": {
+          "type": "string",
+          "examples": ["BTC", "Crypto multi-actifs"]
+        },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "montant": { "type": "number", "minimum": 0 },
+        "montant_eur_equivalent": { "type": "number", "minimum": 0 },
+        "source_file": { "type": "string", "pattern": "\\.(csv|pdf|json)$" },
+        "parser_strategy": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    "bien_immobilier": {
+      "type": "object",
+      "required": [
+        "id",
+        "custodian",
+        "custodian_name",
+        "custody_type",
+        "type_bien",
+        "adresse",
+        "currency"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "custodian": { "type": "string", "pattern": "^[a-z_]+$" },
+        "custodian_name": { "type": "string" },
+        "custody_type": { "type": "string", "enum": ["direct_ownership"] },
+        "type_bien": {
+          "type": "string",
+          "examples": ["Appartement", "Maison", "Studio", "SCPI"]
+        },
+        "adresse": { "type": "string" },
+        "surface_m2": { "type": "number", "minimum": 0 },
+        "prix_acquisition": { "type": "number", "minimum": 0 },
+        "valeur_actuelle": { "type": "number", "minimum": 0 },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "default": "EUR"
+        },
+        "metadata": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    }
+  }
 }
