@@ -1,8 +1,25 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 1.0.0
-**Date** : Octobre 2025
+**Version** : 2.0.0
+**Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
+
+## 🆕 Version 2.0 (Novembre 2025)
+
+Cette version introduit une architecture **manifest-driven** avec **parsers pluggables** pour améliorer la robustesse et l'extensibilité du système de parsing.
+
+### Changements majeurs v2.0 :
+- ✅ `manifest.json` remplace `patrimoine.md` comme orchestrateur
+- ✅ Architecture pluggable avec Strategy Pattern (`tools/parsers/`)
+- ✅ Profil investisseur comme source de vérité (profil_risque dans manifest)
+- ✅ JSON Schema validation (`config/manifest.schema.json`)
+- ✅ Fallback automatique entre parsers
+- ✅ Migration automatique v1→v2 via `tools/generate_manifest.py`
+
+### Compatibilité :
+- ✅ Backup v1.0 disponible : `tools/normalizer_v1_backup.py`
+- ✅ Rollback possible en cas de besoin
+- ✅ Tests existants compatibles
 
 ---
 
@@ -27,24 +44,31 @@
 
 Créer un système automatisé permettant de générer régulièrement des rapports patrimoniaux détaillés et professionnels à partir de fichiers sources (CSV, PDF, Markdown), en passant par une phase d'analyse approfondie avec recherches web.
 
-### 1.2 Workflow global
+### 1.2 Workflow global (v2.0)
 
 ```
-patrimoine.md (+ fichiers CSV/PDF)
+manifest.json (v2.0) + CSV/PDF files
     ↓
-[1. Normalisation] → patrimoine_input.json (structure normalisée)
+[1. Normalisation + Parsers Registry] → patrimoine_input.json (structure normalisée)
     ↓
 [2. Analyse approfondie + Web Research] → patrimoine_analysis.json
     ↓
 [3. Génération HTML] → rapport_YYYYMMDD_HHMMSS.html
 ```
 
-### 1.3 Principe directeur
+**v2.0 Architecture** :
+- Source primaire : `manifest.json` (profil investisseur + mappings compte→fichier→parser)
+- Parsers pluggables : `tools/parsers/` avec BaseParser interface
+- Fallback automatique : Si un parser échoue, essaie les alternatives
+- Migration v1→v2 : `python tools/generate_manifest.py`
 
-- **Un seul point d'entrée** : `patrimoine.md` (+ références aux fichiers sources)
+### 1.3 Principe directeur (v2.0)
+
+- **Un seul point d'entrée** : `manifest.json` (v2.0) - orchestrateur avec profil + comptes
 - **Une seule commande** : `python main.py` - aucune interaction durant l'exécution
 - **Séparation stricte** : Les outils ne modifient JAMAIS les fichiers templates ou sources
 - **Historisation** : Chaque rapport est daté et conservé
+- **Extensibilité** : Ajout de nouveaux établissements sans modifier le code core
 
 ---
 
