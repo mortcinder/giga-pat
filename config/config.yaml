@@ -1,6 +1,6 @@
 project:
   name: "Patrimoine Analyzer"
-  version: "1.0.0"
+  version: "2.0.0"  # Architecture manifest-driven + parsers pluggables
 
 paths:
   sources: "sources/"
@@ -9,9 +9,12 @@ paths:
   logs: "logs/"
 
 normalizer:
-  input_file: "patrimoine.md"
+  input_file: "manifest.json"  # v2.0: manifest.json remplace patrimoine.md
   output_file: "patrimoine_input.json"
   date_format: "ISO8601"
+
+  # Migration v1→v2: Utiliser tools/generate_manifest.py pour générer manifest.json
+  # depuis patrimoine.md existant
 
 analyzer:
   input_file: "patrimoine_input.json"
@@ -41,5 +44,9 @@ logging:
   date_format: "%Y-%m-%d %H:%M:%S"
 
 analysis:
-  config_file: "analysis.yaml" # Fichier de configuration pour l'analyse
-  active_profile: "dynamique" # Profil à utiliser : default, dynamique, equilibre, prudent
+  config_file: "analysis.yaml"  # Fichier de configuration pour l'analyse
+
+  # v2.0: Le profil est maintenant défini dans manifest.json → profil_investisseur.investissement.profil_risque
+  # active_profile_override permet de forcer un profil (pour tests uniquement)
+  # Si null ou absent, le profil du manifest est utilisé (comportement recommandé)
+  active_profile_override: null  # null = utiliser manifest.json, ou "dynamique"/"equilibre"/"prudent" pour override

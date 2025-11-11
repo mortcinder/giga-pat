@@ -64,14 +64,10 @@ class PatrimoineAnalyzer:
             with open(config_path, "r", encoding="utf-8") as f:
                 self.analysis_config = yaml.safe_load(f)
 
-            # Extraire le profil actif
-            self.active_profile = analysis_config.get("active_profile", "default")
-
             self.logger.info(f"Configuration d'analyse chargée depuis: {config_path}")
-            self.logger.info(f"Profil actif: {self.active_profile}")
 
-            # Initialiser le calculateur d'écart benchmark
-            self.benchmark_calculator = BenchmarkGapCalculator(self.analysis_config, self.active_profile)
+            # Note: active_profile sera déterminé dynamiquement dans analyze()
+            # à partir des données d'entrée (v2.0: profil_risque du manifest)
 
         except Exception as e:
             self.logger.error(f"Erreur lors du chargement de la configuration: {e}")
@@ -83,26 +79,129 @@ class PatrimoineAnalyzer:
             "account_classification": {"keywords": {}, "mapping": {}, "special_institutions": {}, "fonds_euro_keywords": []},
             "risk_justifications": {},
             "benchmarks": {"default": {}},
-            "scores": {}
+            "scores": {},
+            "profiles": {"default": {}}
         }
-        self.active_profile = "default"
-        # Initialiser le calculateur avec config par défaut
-        self.benchmark_calculator = BenchmarkGapCalculator(self.analysis_config, self.active_profile)
+        # Note: active_profile sera déterminé dans analyze()
+
+    def _determine_active_profile(self, profil_data: dict) -> str:
+        """
+        Détermine le profil actif à utiliser pour l'analyse (v2.0).
+
+        Ordre de priorité:
+        1. config.yaml → active_profile_override (si défini et non null)
+        2. patrimoine_input.json → profil.investissement.profil_risque (défaut)
+
+        Args:
+            profil_data: Dictionnaire profil depuis patrimoine_input.json
+
+        Returns:
+            Nom du profil actif (ex: "dynamique")
+        """
+        # Check override dans config
+        override = self.config.get("analysis", {}).get("active_profile_override")
+
+        if override:
+            self.logger.warning(
+                f"⚠️  OVERRIDE : Utilisation du profil '{override}' (config.yaml) "
+                f"au lieu de '{profil_data.get('investissement', {}).get('profil_risque')}' (manifest.json)"
+            )
+            return override
+
+        # Sinon, utiliser le profil du manifest
+        profil_risque = profil_data.get("investissement", {}).get("profil_risque")
+
+        if not profil_risque:
+            self.logger.error("Profil investisseur manquant dans patrimoine_input.json")
+            self.logger.warning("Utilisation du profil 'default' par défaut")
+            return "default"
+
+        # Valider que le profil existe dans analysis.yaml
+        valid_profiles = list(self.analysis_config.get("profiles", {}).keys())
+        if profil_risque not in valid_profiles:
+            self.logger.error(
+                f"Profil '{profil_risque}' inconnu. Profils disponibles: {valid_profiles}"
+            )
+            self.logger.warning("Utilisation du profil 'default' par défaut")
+            return "default"
+
+        self.logger.info(f"Profil d'analyse sélectionné : {profil_risque}")
+        return profil_risque
+
+    def _flatten_profile(self, profil_data: dict) -> dict:
+        """
+        Aplatit la structure du profil v2.1 pour compatibilité avec le générateur.
+
+        Structure v2.1 (manifest):
+        {
+          "identite": {"genre", "date_naissance", "situation_familiale", "enfants"},
+          "professionnel": {"statut", "profession", "revenu_mensuel_net"},
+          "investissement": {"profil_risque"}
+        }
+
+        Structure aplatie (attendue par generator):
+        {
+          "prénom", "nom", "genre", "date_naissance", "age",
+          "situation_familiale", "enfants", "statut", "profession", "revenu_mensuel_net"
+        }
+        """
+        from datetime import datetime
+
+        # Extraire des sous-sections
+        identite = profil_data.get("identite", {})
+        professionnel = profil_data.get("professionnel", {})
+
+        # Calculer l'âge depuis date_naissance
+        age = None
+        date_naissance_str = identite.get("date_naissance")
+        if date_naissance_str:
+            try:
+                date_naissance = datetime.fromisoformat(date_naissance_str)
+                age = datetime.now().year - date_naissance.year
+            except (ValueError, TypeError):
+                pass
+
+        # Structure aplatie
+        flat = {
+            "prénom": identite.get("prénom", ""),
+            "nom": identite.get("nom", ""),
+            "genre": identite.get("genre", ""),
+            "date_naissance": date_naissance_str,
+            "age": age,
+            "situation_familiale": identite.get("situation_familiale", ""),
+            "enfants": identite.get("enfants", 0),
+            "statut": professionnel.get("statut", ""),
+            "profession": professionnel.get("profession", ""),
+            "revenu_mensuel_net": professionnel.get("revenu_mensuel_net", 0)
+        }
+
+        return flat
 
     def analyze(self, input_data: dict) -> dict:
-        """Point d'entrée principal d'analyse"""
-        self.logger.info("Début analyse...")
-        
+        """Point d'entrée principal d'analyse (v2.0)"""
+        self.logger.info("Début analyse (v2.0)...")
+
+        # Déterminer profil actif depuis les données d'entrée
+        profil_data = input_data.get("profil", {})
+        self.active_profile = self._determine_active_profile(profil_data)
+
+        # Initialiser le calculateur d'écart benchmark avec le profil actif
+        self.benchmark_calculator = BenchmarkGapCalculator(self.analysis_config, self.active_profile)
+
         start_time = datetime.now()
-        
+
+        # Aplatir la structure du profil v2.1 pour compatibilité generator
+        profil_flat = self._flatten_profile(profil_data)
+
         analysis = {
             "meta": {
-                "version": "1.0.0",
+                "version": "2.0.0",
                 "generated_at": datetime.now().isoformat(),
                 "analysis_duration_seconds": 0,
                 "web_searches_count": 0
             },
-            "profil": input_data.get("profil", {}),  # Inclure le profil investisseur
+            "profil": profil_flat,  # Profil aplati pour compatibilité
+            "active_profile": self.active_profile,  # v2.0: Traçabilité du profil utilisé
             "synthese": {},
             "repartition": {},
             "risques": {},
@@ -111,7 +210,7 @@ class PatrimoineAnalyzer:
             "optimisation_portefeuille": {},
             "recherches_web": []
         }
-        
+
         # 1. Calcul répartitions
         self.logger.info("Analyse répartition...")
         analysis["repartition"] = self._analyze_repartition(input_data)
@@ -288,6 +387,10 @@ class PatrimoineAnalyzer:
                     elif "parts sociales" in type_compte:
                         type_actif = "Actions"
                         detail = f"{etab_nom} (Parts Sociales)"
+                    elif "bond" in type_compte or "obligation" in type_compte:
+                        # T-Bonds, obligations d'État, etc.
+                        type_actif = "Obligations d'État"
+                        detail = f"{etab_nom} ({compte.get('type', 'Obligations')})"
                     elif "compte" in type_compte or "dépôt" in type_compte:
                         # Vérifier si c'est Spiko (T-Bonds)
                         if "spiko" in etab_nom.lower():
@@ -306,32 +409,33 @@ class PatrimoineAnalyzer:
                         "montant": montant
                     })
 
-        # Cryptomonnaies
+        # Cryptomonnaies (v2.1 structure)
         for plat in data["patrimoine"].get("crypto", {}).get("plateformes", []):
             plat_nom = plat.get("nom", "")
-            for actif in plat.get("actifs", []):
-                montant = actif.get("valeur", 0)
+            plat_total = plat.get("total", 0)
+            plat_type = plat.get("type", "Crypto")
+
+            if plat_total > 0:
+                actifs_detailles.append({
+                    "type_actif": "Cryptomonnaies",
+                    "etablissement": f"{plat_nom} ({plat_type})",
+                    "montant": plat_total
+                })
+
+        # Métaux précieux (v2.1 structure)
+        metaux_data = data["patrimoine"].get("metaux_precieux", {})
+        for custodian in metaux_data.get("custodians", []):
+            custodian_name = custodian.get("custodian", "Métaux")
+            for detail in custodian.get("details", []):
+                montant = detail.get("montant", 0)
                 if montant > 0:
-                    symbole = actif.get("symbole", "")
+                    type_metal = detail.get("type", "Métal")
 
                     actifs_detailles.append({
-                        "type_actif": "Cryptomonnaies",
-                        "etablissement": f"{plat_nom} ({symbole})",
+                        "type_actif": "Métaux précieux",
+                        "etablissement": f"{custodian_name} ({type_metal})",
                         "montant": montant
                     })
-
-        # Métaux précieux
-        plateforme_metaux = data["patrimoine"].get("metaux_precieux", {}).get("plateforme", "Veracash")
-        for metal in data["patrimoine"].get("metaux_precieux", {}).get("metaux", []):
-            montant = metal.get("valeur", 0)
-            if montant > 0:
-                type_metal = metal.get("type", "Métal")
-
-                actifs_detailles.append({
-                    "type_actif": "Métaux précieux",
-                    "etablissement": f"{plateforme_metaux} ({type_metal})",
-                    "montant": montant
-                })
 
         # Immobilier
         for bien in data["patrimoine"].get("immobilier", {}).get("biens", []):
