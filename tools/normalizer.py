@@ -272,7 +272,7 @@ class PatrimoineNormalizer:
             # Validation de sécurité : empêcher path traversal
             try:
                 resolved_path = filepath.resolve()
-                sources_resolved = self.sources_dir.resolve()
+                sources_resolved = sources_dir.resolve()
                 if not str(resolved_path).startswith(str(sources_resolved)):
                     self.logger.error(f"🚨 Path traversal détecté: {filepath}")
                     continue
