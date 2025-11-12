@@ -69,8 +69,15 @@ class PatrimoineAnalyzer:
             # Note: active_profile sera déterminé dynamiquement dans analyze()
             # à partir des données d'entrée (v2.0: profil_risque du manifest)
 
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Erreur d'accès au fichier de configuration: {e}")
+            self._load_default_analysis_config()
+        except yaml.YAMLError as e:
+            self.logger.error(f"Erreur de parsing YAML dans la configuration: {e}")
+            self._load_default_analysis_config()
         except Exception as e:
-            self.logger.error(f"Erreur lors du chargement de la configuration: {e}")
+            self.logger.error(f"Erreur inattendue lors du chargement de la configuration: {e}")
+            self.logger.exception("Stack trace complète:")
             self._load_default_analysis_config()
 
     def _load_default_analysis_config(self):

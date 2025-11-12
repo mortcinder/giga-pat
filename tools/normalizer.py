@@ -370,7 +370,15 @@ class PatrimoineNormalizer:
             return parsed_data
 
         except ParsingError as e:
-            raise Exception(f"Tous les parsers ont échoué : {e}")
+            self.logger.error(f"❌ Erreur de parsing de {filepath}: {e}")
+            raise
+        except (OSError, IOError) as e:
+            self.logger.error(f"❌ Erreur d'accès au fichier {filepath}: {e}")
+            raise
+        except Exception as e:
+            self.logger.error(f"❌ Erreur inattendue lors du parsing de {filepath}: {e}")
+            self.logger.exception("Stack trace:")
+            raise
 
     def _enrich_etablissements_metadata(self, comptes_parsed: List[dict]):
         """Enrichit les comptes avec les métadonnées des établissements"""
