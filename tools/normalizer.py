@@ -97,6 +97,9 @@ class PatrimoineNormalizer:
         self.logger.info(f"Sauvegarde {output_path}...")
         self._save_json(data, output_path)
 
+        # Nettoyer le cache si nécessaire (limite: 100 MB)
+        self.cache_manager.enforce_cache_limit(max_size_mb=100)
+
         self.logger.info("✓ Normalisation terminée")
         return data
 

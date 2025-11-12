@@ -16,6 +16,26 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 
+# === CONSTANTES DE SEUILS DE RISQUE ===
+
+# Concentration Assurance-Vie (%)
+AV_CONCENTRATION_CRITIQUE = 25  # Au-delà de 25% du patrimoine en AV = Critique
+AV_CONCENTRATION_ELEVEE = 15    # 15-25% = Élevé
+AV_CONCENTRATION_MODEREE = 10   # 10-15% = Modéré
+
+# Concentration établissement unique (%)
+ETABLISSEMENT_CONCENTRATION_CRITIQUE = 70
+ETABLISSEMENT_CONCENTRATION_ELEVEE = 50
+
+# Concentration géographique (%)
+GEO_CONCENTRATION_CRITIQUE = 90
+GEO_CONCENTRATION_ELEVEE = 80
+
+# Liquidité (%)
+LIQUIDITE_CRITIQUE = 5   # Moins de 5% de liquidités = Critique
+LIQUIDITE_FAIBLE = 10    # 5-10% = Risque modéré
+
+
 class RiskAnalyzer:
     """
     Analyse tous types de risques patrimoniaux
@@ -259,7 +279,7 @@ class RiskAnalyzer:
                 context=f"Exposition AV: {av_total:,.0f}€ ({pct_av:.1f}%)"
             )
 
-            niveau = "Critique" if pct_av >= 25 else "Élevé" if pct_av >= 15 else "Moyen"
+            niveau = "Critique" if pct_av >= AV_CONCENTRATION_CRITIQUE else "Élevé" if pct_av >= AV_CONCENTRATION_ELEVEE else "Moyen"
 
             risks.append({
                 "id": self._get_risk_id(),
