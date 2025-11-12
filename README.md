@@ -2,7 +2,7 @@
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.0** - Architecture manifest-driven avec parsers pluggables
+**Version 2.1** - Architecture homogène avec custodian unifié et parsing multi-fichiers
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 

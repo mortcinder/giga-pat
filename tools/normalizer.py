@@ -195,6 +195,17 @@ class PatrimoineNormalizer:
                     # Mode fichier unique (comportement legacy)
                     filepath = sources_dir / compte_def["source_file"]
 
+                    # Validation de sécurité : empêcher path traversal
+                    try:
+                        resolved_path = filepath.resolve()
+                        sources_resolved = sources_dir.resolve()
+                        if not str(resolved_path).startswith(str(sources_resolved)):
+                            self.logger.error(f"🚨 Path traversal détecté: {filepath}")
+                            raise ValueError(f"Tentative d'accès à un fichier hors de {sources_dir}")
+                    except (ValueError, OSError) as e:
+                        self.logger.error(f"🚨 Erreur de sécurité sur le chemin: {e}")
+                        continue
+
                     if not filepath.exists():
                         self.logger.error(f"    ✗ Fichier introuvable : {filepath}")
                         continue
@@ -254,6 +265,17 @@ class PatrimoineNormalizer:
 
         for filepath in matching_files:
             file_name = filepath.name
+
+            # Validation de sécurité : empêcher path traversal
+            try:
+                resolved_path = filepath.resolve()
+                sources_resolved = self.sources_dir.resolve()
+                if not str(resolved_path).startswith(str(sources_resolved)):
+                    self.logger.error(f"🚨 Path traversal détecté: {filepath}")
+                    continue
+            except (ValueError, OSError) as e:
+                self.logger.error(f"🚨 Erreur de sécurité sur le chemin: {e}")
+                continue
 
             # Déterminer si ce fichier doit être caché
             cache_key = None

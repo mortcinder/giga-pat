@@ -48,7 +48,7 @@ def print_banner():
     """Affiche la bannière"""
     banner = """
 ╔═══════════════════════════════════════════════╗
-║     PATRIMOINE ANALYZER v1.0.0                ║
+║     PATRIMOINE ANALYZER v2.1.0                ║
 ║     Rapport patrimonial automatisé            ║
 ╚═══════════════════════════════════════════════╝
     """

@@ -31,15 +31,15 @@ class CacheManager:
 
     def get_file_hash(self, file_path: str) -> str:
         """
-        Calcule le hash MD5 d'un fichier.
+        Calcule le hash SHA-256 d'un fichier pour vérification d'intégrité.
 
         Args:
             file_path: Chemin vers le fichier
 
         Returns:
-            Hash MD5 hexadécimal
+            Hash SHA-256 hexadécimal
         """
-        hasher = hashlib.md5()
+        hasher = hashlib.sha256()
         with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b''):
                 hasher.update(chunk)

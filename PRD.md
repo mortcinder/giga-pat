@@ -1,12 +1,12 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 2.0.0
+**Version** : 2.1.0
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
 
-## 🆕 Version 2.0 (Novembre 2025)
+## 🆕 Version 2.1 (Novembre 2025)
 
-Cette version introduit une architecture **manifest-driven** avec **parsers pluggables** pour améliorer la robustesse et l'extensibilité du système de parsing.
+Cette version complète l'architecture **manifest-driven** avec **custodian unifié**, **sections manuelles** et **parsing multi-fichiers avec cache intelligent**.
 
 ### Changements majeurs v2.0 :
 - ✅ `manifest.json` remplace `patrimoine.md` comme orchestrateur

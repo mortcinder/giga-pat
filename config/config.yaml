@@ -1,6 +1,6 @@
 project:
   name: "Patrimoine Analyzer"
-  version: "2.0.0"  # Architecture manifest-driven + parsers pluggables
+  version: "2.1.0"  # Architecture homogène + custodian unifié + multi-file parsing avec cache
 
 paths:
   sources: "sources/"

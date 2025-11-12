@@ -34,7 +34,10 @@ import logging
 class BitstackTransactionHistoryParser(BaseParser):
     """Parser pour fichiers CSV d'historique Bitstack."""
 
-    strategy_name = "bitstack.transaction_history.v2025"
+    @property
+    def strategy_name(self) -> str:
+        """Identifiant unique de la stratégie de parsing."""
+        return "bitstack.transaction_history.v2025"
 
     def __init__(self):
         super().__init__()
@@ -47,7 +50,7 @@ class BitstackTransactionHistoryParser(BaseParser):
         """Formats supportés par ce parser."""
         return ['csv']
 
-    def can_parse(self, file_path: str, metadata: Dict[str, Any]) -> bool:
+    def can_parse(self, file_path: str, metadata: Dict[str, Any]) -> float:
         """
         Vérifie si le fichier peut être parsé par ce parser.
 
@@ -55,12 +58,15 @@ class BitstackTransactionHistoryParser(BaseParser):
         - Fichier CSV
         - Pattern [BIT] - *.csv
         - Contient les colonnes attendues
+
+        Returns:
+            float: Score de confiance (0.0 = impossible, 1.0 = certain)
         """
         path = Path(file_path)
 
         # Vérification du pattern de nom
         if not path.name.startswith('[BIT]') or path.suffix.lower() != '.csv':
-            return False
+            return 0.0
 
         # Vérification des colonnes
         try:
@@ -68,10 +74,10 @@ class BitstackTransactionHistoryParser(BaseParser):
                 reader = csv.DictReader(f)
                 headers = reader.fieldnames or []
                 required = ['Type', 'Date', 'Montant reçu', 'Monnaie ou jeton reçu']
-                return all(col in headers for col in required)
+                return 1.0 if all(col in headers for col in required) else 0.0
         except Exception as e:
             self.logger.warning(f"Impossible de vérifier les colonnes: {e}")
-            return False
+            return 0.0
 
     def parse(self, file_path: str, metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -170,7 +176,7 @@ class BitstackTransactionHistoryParser(BaseParser):
         except (InvalidOperation, ValueError):
             return Decimal('0')
 
-    def validate(self, parsed_data: Dict[str, Any]) -> bool:
+    def validate(self, parsed_data: Dict[str, Any]) -> List[str]:
         """
         Valide les données parsées.
 
@@ -178,28 +184,31 @@ class BitstackTransactionHistoryParser(BaseParser):
         - Structure correcte (dict avec 'positions')
         - Au moins une position
         - Solde BTC >= 0 (cohérence des transactions)
+
+        Returns:
+            List[str]: Liste des anomalies détectées (vide si tout est valide)
         """
+        anomalies = []
+
         if not parsed_data:
-            self.logger.error("Aucune donnée parsée")
-            return False
+            anomalies.append("Aucune donnée parsée")
+            return anomalies
 
         # Check for dict structure
         if not isinstance(parsed_data, dict):
-            self.logger.error(f"Format incorrect: attendu dict, obtenu {type(parsed_data)}")
-            return False
+            anomalies.append(f"Format incorrect: attendu dict, obtenu {type(parsed_data)}")
+            return anomalies
 
         positions = parsed_data.get('positions', [])
         if not positions:
-            self.logger.error("Aucune position trouvée")
-            return False
+            anomalies.append("Aucune position trouvée")
+            return anomalies
 
         if len(positions) != 1:
-            self.logger.error(f"Attendu 1 position résumée, obtenu {len(positions)}")
-            return False
+            anomalies.append(f"Attendu 1 position résumée, obtenu {len(positions)}")
 
         btc_qty = positions[0].get('quantite', 0)
         if btc_qty < 0:
-            self.logger.error(f"Solde BTC négatif: {btc_qty}")
-            return False
+            anomalies.append(f"Solde BTC négatif: {btc_qty}")
 
-        return True
+        return anomalies
