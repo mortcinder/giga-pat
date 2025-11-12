@@ -1,7 +1,21 @@
 #!/usr/bin/env python3
 """
 Générateur automatique du projet Patrimoine Analyzer
-Exécutez ce script pour créer toute l'arborescence du projet
+
+⚠️ ATTENTION: Ce fichier est un SCAFFOLD/TEMPLATE pour générer l'arborescence initiale du projet.
+Ce n'est PAS du code de production. Les implémentations réelles se trouvent dans:
+- tools/normalizer.py (parsing et normalisation)
+- tools/analyzer.py (analyse et risques)
+- tools/generator.py (génération HTML)
+
+Ce script génère des fichiers templates avec des PLACEHOLDERS qui doivent être remplacés
+par les implémentations réelles.
+
+Usage:
+    python project_generator.py
+
+Note: Ce script n'est utile QUE pour créer un nouveau projet depuis zéro.
+      Pour un projet existant, n'exécutez PAS ce script.
 """
 
 import os
@@ -296,7 +310,7 @@ class PatrimoineNormalizer:
     
     def _load_source_files(self, data: dict):
         \"\"\"Charge les fichiers sources référencés\"\"\"
-        # TODO: Implémenter parsing des fichiers CSV/PDF
+        # PLACEHOLDER: Implémenter parsing des fichiers CSV/PDF
         pass
     
     def _calculate_totals(self, data: dict):
@@ -309,7 +323,7 @@ class PatrimoineNormalizer:
     
     def _validate(self, data: dict):
         \"\"\"Valide la cohérence des données\"\"\"
-        # TODO: Ajouter validations
+        # PLACEHOLDER: Ajouter validations
         self.logger.info("✓ Validation OK")
     
     def _save_json(self, data: dict, output_path: Path):
@@ -408,7 +422,7 @@ class PatrimoineAnalyzer:
             "concentration": {}
         }
         
-        # TODO: Implémenter analyse répartition
+        # PLACEHOLDER: Implémenter analyse répartition
         
         return repartition
     
@@ -495,17 +509,17 @@ class ReportGenerator:
     
     def _inject_simple_fields(self, soup, data):
         \"\"\"Injecte les champs simples [data-field]\"\"\"
-        # TODO: Implémenter injection
+        # PLACEHOLDER: Implémenter injection
         pass
     
     def _inject_repeated_rows(self, soup, data):
         \"\"\"Duplique et remplit les lignes de tableaux\"\"\"
-        # TODO: Implémenter duplication
+        # PLACEHOLDER: Implémenter duplication
         pass
     
     def _inject_chart_data(self, soup, data):
         \"\"\"Injecte les données dans le graphique Chart.js\"\"\"
-        # TODO: Implémenter injection graphique
+        # PLACEHOLDER: Implémenter injection graphique
         pass
     
     def _format_currency(self, value: float) -> str:
@@ -652,7 +666,7 @@ class WebResearcher:
         
     def _search_single(self, query: str, context: str = "") -> List[Dict[str, Any]]:
         \"\"\"Effectue une recherche web unique\"\"\"
-        # TODO: Implémenter recherche avec API Anthropic
+        # PLACEHOLDER: Implémenter recherche avec API Anthropic
         # Pour l'instant, retourne un placeholder
         return [{
             "url": "https://example.com",
@@ -708,7 +722,7 @@ class RiskAnalyzer:
             "faibles": []
         }
         
-        # TODO: Implémenter analyse risques
+        # PLACEHOLDER: Implémenter analyse risques
         self.logger.info(f"✓ {len(risques['critiques'])} risques critiques identifiés")
         
         return risques
@@ -741,7 +755,7 @@ class Recommender:
             "long_terme": []
         }
         
-        # TODO: Implémenter génération recommandations
+        # PLACEHOLDER: Implémenter génération recommandations
         self.logger.info(f"✓ {len(recommandations['prioritaires'])} recommandations prioritaires")
         
         return recommandations
@@ -770,7 +784,7 @@ class StressTester:
         
         tests = []
         
-        # TODO: Implémenter stress tests
+        # PLACEHOLDER: Implémenter stress tests
         self.logger.info(f"✓ {len(tests)} scénarios simulés")
         
         return tests
