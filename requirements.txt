@@ -1,5 +1,21 @@
-# Core
-python>=3.10
+# ============================================================
+# PRÉREQUIS : Python 3.10+ OBLIGATOIRE
+# ============================================================
+# Ce fichier requirements.txt ne peut PAS vérifier la version Python.
+# La vérification est effectuée dans main.py au démarrage.
+#
+# Vérifiez votre version Python :
+#   python --version  (doit afficher 3.10.x ou supérieur)
+#
+# Installation Python 3.10+ :
+#   • Windows/Mac : https://www.python.org/downloads/
+#   • Linux       : sudo apt install python3.10 (Ubuntu/Debian)
+#
+# Le projet utilise des fonctionnalités Python 3.10+ :
+#   • Type hints natifs (dict[str, Any])
+#   • Méthodes str modernes (removesuffix, removeprefix)
+#   • Dépendances récentes incompatibles avec Python <3.10
+# ============================================================
 
 # Data processing
 pandas>=2.0.0

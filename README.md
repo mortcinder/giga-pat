@@ -1,5 +1,9 @@
 # 💼 Patrimoine Analyzer
 
+![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.0-orange.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
 **Version 2.1** - Architecture homogène avec custodian unifié et parsing multi-fichiers
@@ -25,6 +29,96 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **Profil investisseur** : Défini dans manifest (dynamique/équilibré/prudent)
 - ✅ **Fallback automatique** : Robustesse accrue du parsing
 - ✅ **Migration v1→v2** : Script automatique `generate_manifest.py`
+
+---
+
+## ⚠️ Prérequis
+
+### Python 3.10 ou supérieur **OBLIGATOIRE**
+
+**⛔ Ce projet n'est PAS compatible avec Python 3.7, 3.8 ou 3.9**
+
+Le projet utilise des fonctionnalités modernes de Python qui ne sont disponibles qu'à partir de la version 3.10 :
+- Type hints avec syntaxe native (`dict[str, Any]` au lieu de `Dict[str, Any]`)
+- Méthodes de chaînes modernes (`removesuffix`, `removeprefix`)
+- Dépendances récentes incompatibles avec les anciennes versions
+
+**Vérifiez votre version Python :**
+
+```bash
+python --version
+# ou
+python3 --version
+```
+
+**Versions supportées :**
+- ✅ Python 3.10.x
+- ✅ Python 3.11.x
+- ✅ Python 3.12.x
+- ❌ Python 3.7 / 3.8 / 3.9 (incompatibles)
+
+**Si vous avez Python <3.10**, le script `main.py` affichera un message d'erreur clair avec des instructions d'installation.
+
+### Installation Python 3.10+
+
+<details>
+<summary>🪟 Windows</summary>
+
+1. Télécharger l'installateur depuis [python.org](https://www.python.org/downloads/)
+2. Lancer l'installateur
+3. **Important** : Cocher "Add Python to PATH"
+4. Vérifier : `python --version`
+
+</details>
+
+<details>
+<summary>🍎 macOS</summary>
+
+**Via Homebrew (recommandé) :**
+```bash
+brew install python@3.10
+```
+
+**Via pyenv (gestion multi-versions) :**
+```bash
+brew install pyenv
+pyenv install 3.10.0
+pyenv local 3.10.0
+```
+
+Vérifier : `python3 --version`
+
+</details>
+
+<details>
+<summary>🐧 Linux</summary>
+
+**Ubuntu/Debian :**
+```bash
+sudo apt update
+sudo apt install python3.10 python3.10-venv python3-pip
+```
+
+**Fedora/RHEL :**
+```bash
+sudo dnf install python3.10
+```
+
+**Arch Linux :**
+```bash
+sudo pacman -S python
+```
+
+Vérifier : `python3 --version`
+
+</details>
+
+### Dépendances Python
+
+Une fois Python 3.10+ installé :
+```bash
+pip install -r requirements.txt
+```
 
 ---
 

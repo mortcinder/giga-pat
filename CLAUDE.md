@@ -35,6 +35,36 @@ Patrimoine Analyzer is an automated wealth report generator that transforms sour
    - Add manual sections with currency fields
    - Test: `python main.py` and verify `generated/patrimoine_input.json`
 
+## ⚠️ Critical Prerequisites
+
+### Python 3.10+ REQUIRED
+
+**This project is NOT compatible with Python 3.7, 3.8, or 3.9.**
+
+The codebase uses modern Python features unavailable in versions prior to 3.10:
+- **Native type hints**: `dict[str, Any]`, `list[str]` (instead of `typing.Dict`, `typing.List`)
+- **String methods**: `str.removesuffix()`, `str.removeprefix()` (added in Python 3.9)
+- **Modern dependencies**: pandas>=2.0, scipy>=1.11, etc. require Python 3.10+
+
+**Version Check:**
+```bash
+python --version  # Must show 3.10.x or higher
+```
+
+**Automatic Enforcement:**
+- The `main.py` script includes a fail-fast version check at startup (lines 14-36)
+- Users with Python <3.10 will see a clear error message with installation instructions
+- No imports are executed before this check to avoid cryptic errors
+
+**Installation Guide:**
+- See `README.md` section "⚠️ Prérequis" for platform-specific instructions (Windows/macOS/Linux)
+- Badge in README clearly indicates: ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
+
+**For Development:**
+- When adding new code, assume Python 3.10+ is available
+- Use modern type hints (PEP 604: `X | Y` instead of `Union[X, Y]`)
+- Avoid backward compatibility workarounds for Python <3.10
+
 ## Core Commands
 
 ```bash

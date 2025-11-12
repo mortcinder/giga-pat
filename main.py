@@ -1,9 +1,43 @@
 #!/usr/bin/env python3
 """
 Patrimoine Analyzer - Point d'entrée principal
+
+ATTENTION : Ce projet requiert Python 3.10 ou supérieur
+Type hints modernes, méthodes str récentes, dépendances incompatibles avec Python <3.10
 """
 
+# ============================================================
+# CHECK VERSION PYTHON (AVANT TOUS LES IMPORTS)
+# ============================================================
 import sys
+
+REQUIRED_PYTHON = (3, 10)
+if sys.version_info < REQUIRED_PYTHON:
+    print("=" * 70)
+    print("❌ ERREUR : Version Python incompatible")
+    print("=" * 70)
+    print(f"\n🔍 Requis    : Python {REQUIRED_PYTHON[0]}.{REQUIRED_PYTHON[1]} ou supérieur")
+    print(f"🔍 Détecté   : Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    print("\n💡 Ce projet utilise des fonctionnalités modernes de Python qui ne sont")
+    print("   pas disponibles dans les versions antérieures à 3.10 :")
+    print("   • Type hints avec syntaxe native (dict[str, Any])")
+    print("   • Méthodes de chaînes modernes (removesuffix, removeprefix)")
+    print("   • Dépendances récentes incompatibles avec Python <3.10\n")
+    print("🔧 SOLUTIONS :\n")
+    print("   1️⃣  Installer Python 3.10+ :")
+    print("      • Windows/Mac : https://www.python.org/downloads/")
+    print("      • Linux       : sudo apt install python3.10  (Ubuntu/Debian)")
+    print("                      sudo dnf install python3.10  (Fedora/RHEL)\n")
+    print("   2️⃣  Utiliser pyenv (gestion multi-versions) :")
+    print("      pyenv install 3.10.0")
+    print("      pyenv local 3.10.0\n")
+    print("   3️⃣  Consulter le README.md pour plus d'informations\n")
+    print("=" * 70)
+    sys.exit(1)
+
+# ============================================================
+# IMPORTS STANDARDS
+# ============================================================
 import logging
 from pathlib import Path
 from datetime import datetime
