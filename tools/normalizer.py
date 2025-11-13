@@ -327,17 +327,29 @@ class PatrimoineNormalizer:
 
     def _matches_pattern(self, filename: str, pattern: str) -> bool:
         """
-        Vérifie si un nom de fichier correspond au pattern.
+        Vérifie si un nom de fichier correspond au pattern avec support des crochets littéraux.
 
-        Gère les cas particuliers comme [BIT] qui sont des caractères littéraux,
-        pas des patterns de matching.
+        Problème résolu:
+        glob("[BIT] - *.csv") retourne 0 résultats car [BIT] est interprété
+        comme un pattern de classe de caractères (match B, I, ou T).
+
+        Solution:
+        Utilise regex avec re.escape() pour traiter [BIT] littéralement:
+        1. Échapper le pattern: "[BIT] - *.csv" → r"\[BIT\] - \*\.csv"
+        2. Remplacer \*: r"\[BIT\] - \*\.csv" → r"\[BIT\] - .*\.csv"
+        3. Matcher avec re.fullmatch()
+
+        Exemples:
+            _matches_pattern("[BIT] - 2022.csv", "[BIT] - *.csv") → True
+            _matches_pattern("[XYZ] - 2022.csv", "[BIT] - *.csv") → False
+            _matches_pattern("BIT - 2022.csv", "[BIT] - *.csv") → False
 
         Args:
-            filename: Nom du fichier
-            pattern: Pattern (ex: "[BIT] - *.csv")
+            filename: Nom du fichier à tester
+            pattern: Pattern avec wildcards (ex: "[BIT] - *.csv")
 
         Returns:
-            True si le fichier match
+            True si le fichier correspond exactement au pattern
         """
         # Convertir le pattern en regex-like pour gérer les cas spéciaux
         # Remplacer * par .* mais préserver les [] littéraux
