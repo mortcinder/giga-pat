@@ -1,0 +1,367 @@
+{
+  "version": "1.0.0",
+  "description": "Métadonnées des établissements financiers pour enrichissement automatique",
+  "last_updated": "2025-11-13",
+  "etablissements": {
+    "credit_agricole": {
+      "nom": "Crédit Agricole",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "societe_generale": {
+      "nom": "Société Générale",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "bnp_paribas": {
+      "nom": "BNP Paribas",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "lcl": {
+      "nom": "LCL",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "caisse_epargne": {
+      "nom": "Caisse d'Épargne",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "la_banque_postale": {
+      "nom": "La Banque Postale",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "boursobank": {
+      "nom": "BoursoBank",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque en ligne",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "fortuneo": {
+      "nom": "Fortuneo",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque en ligne",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "hello_bank": {
+      "nom": "Hello Bank",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque en ligne",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "monabanq": {
+      "nom": "Monabanq",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque en ligne",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "bforbank": {
+      "nom": "BforBank",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Banque en ligne",
+      "garantie_depots": "100000 EUR (FGDR)",
+      "exposition_sapin_2": "OUI",
+      "exposition_risque_france": "ELEVEE"
+    },
+    "degiro": {
+      "nom": "Degiro",
+      "juridiction_principale": "Pays-Bas",
+      "pays": "Pays-Bas",
+      "type": "Courtier",
+      "garantie_depots": "20000 EUR (ICF)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "interactive_brokers": {
+      "nom": "Interactive Brokers",
+      "juridiction_principale": "États-Unis",
+      "pays": "États-Unis",
+      "type": "Courtier",
+      "garantie_depots": "500000 USD (SIPC)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "saxo_bank": {
+      "nom": "Saxo Bank",
+      "juridiction_principale": "Danemark",
+      "pays": "Danemark",
+      "type": "Courtier",
+      "garantie_depots": "100000 EUR (DIGF)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "trade_republic": {
+      "nom": "Trade Republic",
+      "juridiction_principale": "Allemagne",
+      "pays": "Allemagne",
+      "type": "Courtier",
+      "garantie_depots": "100000 EUR (EdB)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "etoro": {
+      "nom": "eToro",
+      "juridiction_principale": "Chypre",
+      "pays": "Chypre",
+      "type": "Courtier",
+      "garantie_depots": "20000 EUR (ICF)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "swissquote": {
+      "nom": "Swissquote",
+      "juridiction_principale": "Suisse",
+      "pays": "Suisse",
+      "type": "Courtier",
+      "garantie_depots": "100000 CHF (esisuisse)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "ubs": {
+      "nom": "UBS",
+      "juridiction_principale": "Suisse",
+      "pays": "Suisse",
+      "type": "Banque",
+      "garantie_depots": "100000 CHF (esisuisse)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "credit_suisse": {
+      "nom": "Credit Suisse (UBS)",
+      "juridiction_principale": "Suisse",
+      "pays": "Suisse",
+      "type": "Banque",
+      "garantie_depots": "100000 CHF (esisuisse)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "pictet": {
+      "nom": "Pictet & Cie",
+      "juridiction_principale": "Suisse",
+      "pays": "Suisse",
+      "type": "Banque privée",
+      "garantie_depots": "100000 CHF (esisuisse)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "ing": {
+      "nom": "ING",
+      "juridiction_principale": "Pays-Bas",
+      "pays": "Pays-Bas",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (DNB)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "revolut": {
+      "nom": "Revolut",
+      "juridiction_principale": "Royaume-Uni / Lituanie",
+      "pays": "Royaume-Uni",
+      "type": "Banque numérique",
+      "garantie_depots": "100000 EUR (Bank of Lithuania)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "n26": {
+      "nom": "N26",
+      "juridiction_principale": "Allemagne",
+      "pays": "Allemagne",
+      "type": "Banque numérique",
+      "garantie_depots": "100000 EUR (EdB)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "wise": {
+      "nom": "Wise",
+      "juridiction_principale": "Royaume-Uni",
+      "pays": "Royaume-Uni",
+      "type": "Fintech",
+      "garantie_depots": "85000 GBP (FSCS)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "binance": {
+      "nom": "Binance",
+      "juridiction_principale": "Multi-juridictions",
+      "pays": "Multi-juridictions",
+      "type": "Plateforme crypto",
+      "garantie_depots": "N/A (SAFU fund)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "coinbase": {
+      "nom": "Coinbase",
+      "juridiction_principale": "États-Unis",
+      "pays": "États-Unis",
+      "type": "Plateforme crypto",
+      "garantie_depots": "N/A (assurance FDIC pour USD)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "kraken": {
+      "nom": "Kraken",
+      "juridiction_principale": "États-Unis",
+      "pays": "États-Unis",
+      "type": "Plateforme crypto",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "bitstack": {
+      "nom": "Bitstack",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Plateforme crypto",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "MOYENNE"
+    },
+    "stackinsat": {
+      "nom": "StackinSat",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Plateforme crypto",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "MOYENNE"
+    },
+    "paymium": {
+      "nom": "Paymium",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Plateforme crypto",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "MOYENNE"
+    },
+    "ledger": {
+      "nom": "Ledger (self-custody)",
+      "juridiction_principale": "N/A",
+      "pays": "N/A",
+      "type": "Hardware wallet",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "trezor": {
+      "nom": "Trezor (self-custody)",
+      "juridiction_principale": "N/A",
+      "pays": "N/A",
+      "type": "Hardware wallet",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "metamask": {
+      "nom": "MetaMask (self-custody)",
+      "juridiction_principale": "N/A",
+      "pays": "N/A",
+      "type": "Software wallet",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "aave": {
+      "nom": "Aave (DeFi)",
+      "juridiction_principale": "N/A",
+      "pays": "N/A",
+      "type": "Protocole DeFi",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "uniswap": {
+      "nom": "Uniswap (DeFi)",
+      "juridiction_principale": "N/A",
+      "pays": "N/A",
+      "type": "Protocole DeFi",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "veracash": {
+      "nom": "Veracash",
+      "juridiction_principale": "Suisse",
+      "pays": "Suisse",
+      "type": "Courtier métaux précieux",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "bullionvault": {
+      "nom": "BullionVault",
+      "juridiction_principale": "Royaume-Uni",
+      "pays": "Royaume-Uni",
+      "type": "Courtier métaux précieux",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "goldmoney": {
+      "nom": "GoldMoney",
+      "juridiction_principale": "Canada",
+      "pays": "Canada",
+      "type": "Courtier métaux précieux",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    },
+    "aucoffre": {
+      "nom": "AuCOFFRE",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Courtier métaux précieux",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "MOYENNE"
+    },
+    "linxo": {
+      "nom": "Linxo",
+      "juridiction_principale": "France",
+      "pays": "France",
+      "type": "Agrégateur",
+      "garantie_depots": "N/A",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "MOYENNE"
+    }
+  }
+}

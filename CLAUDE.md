@@ -253,6 +253,41 @@ Then add mapping in `risk_analyzer.py` → `_get_contextual_risk_mapping()`
 - **Automatic**: BTC amounts auto-converted to EUR during parsing
 - **Module**: `tools/crypto_price_api.py`
 
+**Juridictions des établissements** (v2.1+):
+
+1. **Comptes titres parsés** (PEA, CTO, AV, PER):
+   - Enrichis automatiquement depuis `sources/etablissements_financiers.json`
+   - Clés utilisées: `juridiction_principale`, `pays`, `garantie_depots`, `exposition_sapin_2`, `exposition_risque_france`
+   - Fallback: "France" si établissement non trouvé
+   - Module: `tools/normalizer.py` → `_enrich_etablissements_metadata()`
+
+2. **Actifs manuels** (liquidités, obligations, métaux précieux, crypto, immobilier):
+   - Spécifier dans `metadata.juridiction` et `metadata.juridiction_pays`
+   - Lecture depuis `manifest.json` → `patrimoine.[section].[actif].metadata`
+   - Exemple:
+   ```json
+   {
+     "id": "ubs_compte_depot_001",
+     "custodian": "ubs",
+     "custodian_name": "UBS Bank",
+     "custody_type": "institutional",
+     "type_compte": "Compte dépôt",
+     "currency": "CHF",
+     "montant": 50000,
+     "metadata": {
+       "juridiction": "Suisse",
+       "juridiction_pays": "Suisse",
+       "garantie_depots": "100000 CHF (esisuisse)",
+       "exposition_sapin_2": "NON",
+       "exposition_risque_france": "FAIBLE"
+     }
+   }
+   ```
+
+3. **Validation**: Schéma JSON (`config/manifest.schema.json`) documente tous les champs disponibles
+
+4. **Impact**: La juridiction alimente le score de diversification (composante juridictionnelle 40%) et les risques de concentration
+
 **Benchmark Gap**: Compares allocation to targets, 5 status levels (dans_la_cible, sous/sur_pondere_modere/fort)
 
 **Diversification Score v1.1**:

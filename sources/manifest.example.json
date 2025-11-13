@@ -1,0 +1,234 @@
+{
+  "version": "2.1.0",
+  "generated_at": "2025-11-13T10:00:00Z",
+  "profil_investisseur": {
+    "identite": {
+      "prenom": "Jean",
+      "nom": "Dupont",
+      "genre": "Homme",
+      "date_naissance": "1985-03-15",
+      "situation_familiale": "Marié",
+      "enfants": 2
+    },
+    "professionnel": {
+      "statut": "Salarié",
+      "profession": "Ingénieur logiciel",
+      "revenu_mensuel_net": 4500
+    },
+    "investissement": {
+      "profil_risque": "equilibre",
+      "horizon": "long_terme",
+      "objectifs": ["retraite", "croissance", "transmission"]
+    }
+  },
+  "patrimoine": {
+    "comptes_titres": [
+      {
+        "id": "ca_pea_001",
+        "custodian": "credit_agricole",
+        "custodian_name": "Crédit Agricole",
+        "custody_type": "institutional",
+        "type_compte": "PEA",
+        "source_file": "[CA] - PEA.pdf",
+        "parser_strategy": "credit_agricole.pea.v2025",
+        "fallback_parsers": ["generic.csv.flexible"],
+        "metadata": {
+          "format_version": "2025",
+          "note": "Les juridictions des comptes parsés sont enrichies automatiquement depuis etablissements_financiers.json"
+        }
+      },
+      {
+        "id": "dgo_cto_001",
+        "custodian": "degiro",
+        "custodian_name": "Degiro",
+        "custody_type": "custodial_platform",
+        "type_compte": "CTO",
+        "source_file": "[DGO] - CTO.csv",
+        "parser_strategy": "generic.csv.flexible",
+        "fallback_parsers": [],
+        "metadata": {
+          "note": "Degiro sera enrichi avec juridiction = Pays-Bas automatiquement"
+        }
+      }
+    ],
+    "liquidites": [
+      {
+        "id": "ca_livret_a_001",
+        "custodian": "credit_agricole",
+        "custodian_name": "Crédit Agricole",
+        "custody_type": "institutional",
+        "type_compte": "Livret A",
+        "currency": "EUR",
+        "montant": 22950,
+        "metadata": {
+          "juridiction": "France",
+          "juridiction_pays": "France",
+          "garantie_depots": "État français",
+          "exposition_sapin_2": "OUI",
+          "exposition_risque_france": "ELEVEE",
+          "note": "Les liquidités nécessitent metadata.juridiction manuel"
+        }
+      },
+      {
+        "id": "ubs_compte_depot_001",
+        "custodian": "ubs",
+        "custodian_name": "UBS Bank",
+        "custody_type": "institutional",
+        "type_compte": "Compte dépôt",
+        "currency": "CHF",
+        "montant": 50000,
+        "montant_eur_equivalent": 52500,
+        "metadata": {
+          "juridiction": "Suisse",
+          "juridiction_pays": "Suisse",
+          "garantie_depots": "100000 CHF (esisuisse)",
+          "exposition_sapin_2": "NON",
+          "exposition_risque_france": "FAIBLE"
+        }
+      }
+    ],
+    "obligations": [
+      {
+        "id": "ib_tbonds_001",
+        "custodian": "interactive_brokers",
+        "custodian_name": "Interactive Brokers",
+        "custody_type": "custodial_platform",
+        "type_actif": "T-Bonds US",
+        "comptes": [
+          {
+            "currency": "USD",
+            "montant": 10000,
+            "montant_eur_equivalent": 9200
+          }
+        ],
+        "metadata": {
+          "juridiction": "États-Unis",
+          "juridiction_pays": "États-Unis",
+          "garantie_depots": "500000 USD (SIPC)",
+          "exposition_sapin_2": "NON",
+          "exposition_risque_france": "FAIBLE",
+          "note": "Obligations multi-devises supportées"
+        }
+      }
+    ],
+    "crypto": [
+      {
+        "id": "bitstack_btc_001",
+        "custodian": "bitstack",
+        "custodian_name": "Bitstack",
+        "custody_type": "custodial_platform",
+        "type_actif": "BTC",
+        "currency": "EUR",
+        "montant": 0.15,
+        "montant_eur_equivalent": 13500,
+        "source_file": "Bitstack/[BIT] - Historique_2025.csv",
+        "parser_strategy": "bitstack.transaction_history.v2025",
+        "metadata": {
+          "juridiction": "France",
+          "juridiction_pays": "France",
+          "note": "Plateforme custodiale française"
+        }
+      },
+      {
+        "id": "ledger_btc_001",
+        "custodian": "ledger",
+        "custodian_name": "Ledger (self-custody)",
+        "custody_type": "self_custody",
+        "type_actif": "BTC",
+        "currency": "EUR",
+        "montant": 0.05,
+        "montant_eur_equivalent": 4500,
+        "metadata": {
+          "juridiction": "N/A",
+          "juridiction_pays": "N/A",
+          "note": "Self-custody = pas de juridiction spécifique"
+        }
+      },
+      {
+        "id": "aave_defi_001",
+        "custodian": "aave",
+        "custodian_name": "Aave (DeFi)",
+        "custody_type": "defi",
+        "type_actif": "USDC staking",
+        "currency": "EUR",
+        "montant": 5000,
+        "metadata": {
+          "juridiction": "N/A",
+          "juridiction_pays": "N/A",
+          "note": "DeFi = protocole décentralisé sans juridiction"
+        }
+      }
+    ],
+    "metaux_precieux": [
+      {
+        "id": "veracash_or_001",
+        "custodian": "veracash",
+        "custodian_name": "Veracash",
+        "custody_type": "custodial_platform",
+        "type_compte": "Or physique",
+        "type_actif": "Or",
+        "currency": "EUR",
+        "montant": 3500,
+        "metadata": {
+          "juridiction": "Suisse",
+          "juridiction_pays": "Suisse",
+          "note": "Or physique stocké en Suisse",
+          "poids_grammes": 50
+        }
+      },
+      {
+        "id": "aucoffre_argent_001",
+        "custodian": "aucoffre",
+        "custodian_name": "AuCOFFRE",
+        "custody_type": "custodial_platform",
+        "type_compte": "Argent physique",
+        "type_actif": "Argent",
+        "currency": "EUR",
+        "montant": 800,
+        "metadata": {
+          "juridiction": "France",
+          "juridiction_pays": "France",
+          "poids_grammes": 1000
+        }
+      }
+    ],
+    "immobilier": [
+      {
+        "id": "direct_appt_paris_001",
+        "custodian": "direct_ownership",
+        "custodian_name": "Propriété directe",
+        "custody_type": "direct_ownership",
+        "type_bien": "Appartement",
+        "adresse": "75 rue de la République, 75011 Paris",
+        "surface_m2": 65,
+        "prix_acquisition": 350000,
+        "valeur_actuelle": 425000,
+        "currency": "EUR",
+        "metadata": {
+          "juridiction": "France",
+          "juridiction_pays": "France",
+          "annee_acquisition": 2018,
+          "note": "Résidence principale"
+        }
+      },
+      {
+        "id": "direct_maison_portugal_001",
+        "custodian": "direct_ownership",
+        "custodian_name": "Propriété directe",
+        "custody_type": "direct_ownership",
+        "type_bien": "Maison",
+        "adresse": "Algarve, Portugal",
+        "surface_m2": 120,
+        "prix_acquisition": 200000,
+        "valeur_actuelle": 250000,
+        "currency": "EUR",
+        "metadata": {
+          "juridiction": "Portugal",
+          "juridiction_pays": "Portugal",
+          "annee_acquisition": 2020,
+          "note": "Résidence secondaire - diversification géographique"
+        }
+      }
+    ]
+  }
+}

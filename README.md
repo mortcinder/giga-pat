@@ -112,6 +112,78 @@ Le `manifest.json` est le nouveau point d'entrée v2.0 qui définit :
 
 **Profils disponibles** : `dynamique`, `equilibre`, `prudent`, `default`
 
+## 🌍 Enrichir les juridictions des établissements
+
+### Comptes titres (PEA, CTO, AV, PER)
+
+Les juridictions des comptes parsés sont **enrichies automatiquement** depuis `sources/etablissements_financiers.json`.
+
+Le fichier contient 40+ établissements pré-configurés (banques françaises, courtiers internationaux, plateformes crypto, etc.).
+
+**Aucune action requise** si votre établissement est dans la liste. Sinon, ajoutez-le :
+
+```json
+{
+  "etablissements": {
+    "votre_banque": {
+      "nom": "Votre Banque",
+      "juridiction_principale": "Luxembourg",
+      "pays": "Luxembourg",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDL)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    }
+  }
+}
+```
+
+### Actifs manuels (liquidités, obligations, crypto, métaux précieux, immobilier)
+
+Pour les actifs saisis manuellement dans `manifest.json`, ajoutez les métadonnées de juridiction :
+
+```json
+{
+  "patrimoine": {
+    "liquidites": [
+      {
+        "id": "ubs_depot_001",
+        "custodian": "ubs",
+        "custodian_name": "UBS Bank",
+        "custody_type": "institutional",
+        "type_compte": "Compte dépôt",
+        "currency": "CHF",
+        "montant": 50000,
+        "metadata": {
+          "juridiction": "Suisse",
+          "juridiction_pays": "Suisse",
+          "garantie_depots": "100000 CHF (esisuisse)",
+          "exposition_sapin_2": "NON",
+          "exposition_risque_france": "FAIBLE"
+        }
+      }
+    ],
+    "crypto": [
+      {
+        "id": "ledger_btc_001",
+        "custodian": "ledger",
+        "custodian_name": "Ledger (self-custody)",
+        "custody_type": "self_custody",
+        "type_actif": "BTC",
+        "currency": "EUR",
+        "montant": 5000,
+        "metadata": {
+          "juridiction": "N/A",
+          "juridiction_pays": "N/A"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Impact** : La juridiction alimente le score de diversification (40% du score) et les risques de concentration.
+
 ## 🏗️ Architecture v2.0
 
 ```

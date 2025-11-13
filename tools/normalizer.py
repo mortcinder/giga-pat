@@ -637,15 +637,17 @@ class PatrimoineNormalizer:
 
     def _create_etablissement_entry(self, asset: dict) -> dict:
         """Crée une entrée établissement à partir d'un actif manuel"""
+        metadata = asset.get("metadata", {})
+
         return {
             "nom": asset.get("custodian_name", asset.get("custodian", "Inconnu")),
             "code": asset.get("custodian", "unknown"),
-            "juridiction": "France",  # Défaut, peut être enrichi depuis metadata
-            "juridiction_pays": "France",
+            "juridiction": metadata.get("juridiction", "France"),  # Enrichi depuis metadata
+            "juridiction_pays": metadata.get("juridiction_pays", "France"),
             "type_etablissement": asset.get("custody_type", "Plateforme"),
-            "garantie_depots": "N/A",
-            "exposition_sapin_2": "NON",
-            "exposition_risque_france": "FAIBLE",
+            "garantie_depots": metadata.get("garantie_depots", "N/A"),
+            "exposition_sapin_2": metadata.get("exposition_sapin_2", "NON"),
+            "exposition_risque_france": metadata.get("exposition_risque_france", "FAIBLE"),
             "total": 0,
             "comptes": []
         }
