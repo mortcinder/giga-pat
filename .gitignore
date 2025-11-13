@@ -27,10 +27,8 @@ wheels/
 generated/
 logs/
 
-# Données sensibles
+# Données sensibles (utilisateur uniquement, jamais sur Git)
 sources/
-!sources/.gitkeep
-!sources/manifest.example.json
 
 # Configuration locale
 .env
