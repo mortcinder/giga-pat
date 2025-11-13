@@ -413,6 +413,123 @@ cp tools/normalizer_v1_backup.py tools/normalizer.py
 python main.py
 ```
 
+## 🔀 Workflow Git pour développement multi-instances
+
+Si vous développez sur plusieurs machines (Windows, macOS) ou avec Claude Code Web, suivez ce workflow pour éviter le chaos de branches.
+
+### Structure des branches
+
+```
+main        Production stable (tags: v2.0, v2.1, etc.)
+  ↓
+dev         Développement actif (toutes les instances travaillent ici)
+  ↓
+claude/[feature]-[ID]  Branches temporaires Claude Code Web (auto-supprimées après merge)
+```
+
+### Règles de base
+
+**Sur Claude Code Desktop (Windows/macOS)** :
+```bash
+# Toujours travailler sur dev
+git checkout dev
+git pull origin dev
+
+# Faire vos modifications
+# ...
+
+# Commit et push régulièrement
+git add .
+git commit -m "feat: description du changement"
+git push origin dev
+```
+
+**Sur Claude Code Web** :
+```bash
+# Claude Code Web crée automatiquement des branches avec ID
+# Format: claude/[description]-[ID]
+
+# 1. Après le travail de Claude, merger vers dev
+git checkout dev
+git pull origin dev
+git merge claude/[feature]-[ID]
+git push origin dev
+
+# 2. Supprimer la branche temporaire (local + remote)
+git branch -d claude/[feature]-[ID]
+git push origin --delete claude/[feature]-[ID]
+```
+
+**Release vers main** (uniquement quand version stable) :
+```bash
+# Merger dev → main
+git checkout main
+git pull origin main
+git merge dev
+git tag v2.2.0  # Ou version appropriée
+git push origin main --tags
+```
+
+### Commandes utiles
+
+```bash
+# Voir toutes les branches
+git branch -a
+
+# Nettoyer les branches mergées localement
+git branch --merged dev | grep -v "^\*\|main\|dev" | xargs git branch -d
+
+# Nettoyer les branches remote obsolètes
+git fetch --prune
+
+# Voir l'historique des branches
+git log --all --oneline --graph --decorate -10
+```
+
+### Synchronisation entre instances
+
+**Avant de commencer à travailler** :
+```bash
+git checkout dev
+git pull origin dev
+```
+
+**Après chaque session de travail** :
+```bash
+git add .
+git commit -m "description"
+git push origin dev
+```
+
+### En cas de conflit
+
+```bash
+# 1. Récupérer les derniers changements
+git pull origin dev
+
+# 2. Si conflit, résoudre manuellement
+# Éditer les fichiers marqués en conflit
+
+# 3. Marquer comme résolu
+git add .
+git commit -m "fix: resolve merge conflict"
+git push origin dev
+```
+
+### Nettoyage périodique
+
+**Mensuel ou après releases** :
+```bash
+# Lister toutes les branches remote
+git branch -r
+
+# Supprimer les branches claude/* obsolètes (déjà mergées)
+git push origin --delete claude/[branch-name]
+
+# Nettoyer les références locales
+git fetch --prune
+```
+
 ## 📄 Licence
 
 MIT License - Voir LICENSE pour détails
