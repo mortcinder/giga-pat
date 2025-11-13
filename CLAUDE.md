@@ -185,6 +185,19 @@ sources/manifest.json (v2.1) + CSV/PDF files
 - **Intelligent caching**: Years < current year cached automatically (MD5-based invalidation)
 - **Performance**: 80% faster on subsequent runs (3 cached + 1 parsed vs 4 parsed)
 - **Cache location**: `generated/cache/{custodian}_{year}.json`
+- **Cache invalidation**: Automatic via MD5 hash comparison, or manual via `CacheManager.invalidate_cache()`
+- **Current year logic**: Always recalculated (e.g., 2025), past years (2022-2024) loaded from cache
+- **Usage examples**:
+  ```python
+  # Invalidate specific year
+  from tools.cache_manager import CacheManager
+  cache = CacheManager()
+  cache.invalidate_cache("bitstack_2022")
+
+  # Cache statistics
+  stats = cache.get_cache_stats()
+  print(f"Files cached: {stats['file_count']}, Size: {stats['total_size_mb']} MB")
+  ```
 
 **Adding New Parser**:
 1. Create `tools/parsers/{bank}/{type}_v{year}.py` implementing `BaseParser`
