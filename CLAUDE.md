@@ -86,6 +86,61 @@ cp .env.example .env
 # Edit .env and add BRAVE_API_KEY (get from https://api.search.brave.com/app/dashboard)
 ```
 
+## Git Workflow for Claude Code Web
+
+**IMPORTANT**: This project uses a multi-instance Git workflow (Windows, macOS, Claude Code Web).
+
+### Branch Structure
+
+```
+main  → Production stable (tags: v2.0, v2.1, etc.)
+  ↓
+dev   → Active development branch (all instances work here)
+  ↓
+claude/[feature]-[SESSION_ID]  → Temporary branches (Claude Code Web only)
+```
+
+### Workflow for Claude Code Web
+
+**When starting work**:
+```bash
+# 1. Always start from dev
+git checkout dev
+git pull origin dev
+
+# 2. Create temporary branch with session ID
+git checkout -b claude/[feature-description]-[SESSION_ID]
+```
+
+**During work**:
+```bash
+# Make changes, commit normally
+git add .
+git commit -m "feat: description"
+```
+
+**When finishing**:
+```bash
+# Push to temporary branch (403 error if not claude/[name]-[ID])
+git push -u origin claude/[feature-description]-[SESSION_ID]
+
+# Inform user: "Work complete on claude/[feature-description]-[SESSION_ID]"
+# User will merge to dev and delete the temporary branch
+```
+
+### Why This Workflow?
+
+- **Technical constraint**: Claude Code Web server only accepts pushes to branches matching `claude/*-[SESSION_ID]`
+- **Multi-instance sync**: Desktop instances work directly on `dev`, Web instance uses temporary branches
+- **Clean history**: Temporary branches are deleted after merge, keeping repo clean
+
+### Branch Naming Convention
+
+Use clear, descriptive names:
+- ✅ `claude/fix-parser-bug-ABC123`
+- ✅ `claude/add-jurisdictions-ABC123`
+- ❌ `claude/fix-coding-issues-ABC123` (too vague)
+
 ## Architecture: 3-Stage Pipeline
 
 ```
