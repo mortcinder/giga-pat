@@ -30,7 +30,6 @@ logs/
 # Données sensibles
 sources/
 !sources/.gitkeep
-!sources/etablissements_financiers.json
 !sources/manifest.example.json
 
 # Configuration locale

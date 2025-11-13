@@ -210,7 +210,7 @@ Le `manifest.json` est le nouveau point d'entrée v2.0 qui définit :
 
 ### Comptes titres (PEA, CTO, AV, PER)
 
-Les juridictions des comptes parsés sont **enrichies automatiquement** depuis `sources/etablissements_financiers.json`.
+Les juridictions des comptes parsés sont **enrichies automatiquement** depuis `config/etablissements_financiers.yaml`.
 
 Le fichier contient 40+ établissements pré-configurés (banques françaises, courtiers internationaux, plateformes crypto, etc.).
 
