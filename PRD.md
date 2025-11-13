@@ -4,6 +4,14 @@
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
 
+## 🆕 Version 2.1.1 (Novembre 2025)
+
+**Changements récents** :
+- ✅ **Migration config** : `sources/etablissements_financiers.json` → `config/etablissements_financiers.yaml`
+- ✅ **Nettoyage** : Suppression fichiers obsolètes (`research_prompts.yaml`, `test_paths.py`, `project_generator.py`)
+- ✅ **Sources** : Répertoire `sources/` exclusivement pour données utilisateur + `manifest.example.json`
+- ✅ **Documentation** : PRD mis à jour pour refléter architecture v2.1
+
 ## 🆕 Version 2.1 (Novembre 2025)
 
 Cette version complète l'architecture **manifest-driven** avec **custodian unifié**, **sections manuelles** et **parsing multi-fichiers avec cache intelligent**.
@@ -84,8 +92,8 @@ patrimoine-analyzer/
 ├── .gitignore                         # Ignore logs, generated/, .env
 │
 ├── sources/                           # 📥 INPUTS : Fichiers sources (utilisateur)
-│   ├── patrimoine.md                  # Point d'entrée principal
-│   ├── manifest.json                  # Orchestrateur v2.0+ (profil + comptes)
+│   ├── manifest.json                  # Point d'entrée v2.0+ (profil + comptes)
+│   ├── manifest.example.json          # Fichier d'exemple pour créer manifest.json
 │   ├── [CA] - PEA.pdf
 │   ├── [CA] - PEA-PME.pdf
 │   ├── [CA] - AV.pdf
@@ -147,7 +155,9 @@ patrimoine-analyzer/
 ├── config/                            # ⚙️ CONFIG : Configuration
 │   ├── config.yaml                    # Configuration globale
 │   ├── analysis.yaml                  # Configuration analyse et optimisation
-│   └── research_prompts.yaml          # Prompts pour recherches web
+│   ├── risks.yaml                     # Configuration détection de risques
+│   ├── etablissements_financiers.yaml # Métadonnées établissements (v2.1.1+)
+│   └── manifest.schema.json           # JSON Schema validation manifest
 │
 └── main.py                            # 🚀 POINT D'ENTRÉE
 ```
@@ -171,14 +181,14 @@ patrimoine-analyzer/
 
 #### 3.1.1 Responsabilité
 
-Convertir `patrimoine.md` (+ fichiers sources) en un JSON structuré et normalisé.
+Convertir `manifest.json` (v2.0+) et fichiers sources en un JSON structuré et normalisé via parsers pluggables.
 
 #### 3.1.2 Inputs
 
-- `sources/patrimoine.md` (structure patrimoine)
-- Fichiers référencés : CSV, PDF, JSON (dans `sources/`)
-- `sources/etablissements_financiers.json` (liste des établissements financiers)
-- `sources/immobilier_valorisation.json` (liste des biens immobilier avec leur valorisation)
+- `sources/manifest.json` (profil investisseur + mappings comptes)
+- Fichiers référencés : CSV, PDF (dans `sources/`)
+- `config/etablissements_financiers.yaml` (métadonnées établissements - v2.1.1+)
+- Parsers : registry pluggable (v2.0+)
 
 #### 3.1.3 Output
 
@@ -189,9 +199,9 @@ Convertir `patrimoine.md` (+ fichiers sources) en un JSON structuré et normalis
 ```json
 {
   "meta": {
-    "version": "1.0.0",
-    "generated_at": "2025-10-21T14:30:22Z",
-    "source_file": "sources/patrimoine.md"
+    "version": "2.1.0",
+    "generated_at": "2025-11-13T14:30:22Z",
+    "source_manifest": "manifest.json"
   },
   "profil": {
     "genre": "Homme",
@@ -281,9 +291,10 @@ Convertir `patrimoine.md` (+ fichiers sources) en un JSON structuré et normalis
 
 #### 3.1.5 Fonctionnalités clés
 
-1. **Parsing de `patrimoine.md`**
-   - Extraction structure (profil, établissements, comptes)
-   - Détection références fichiers sources
+1. **Parsing de `manifest.json` (v2.0+)**
+   - Extraction profil investisseur et mappings comptes
+   - Validation JSON Schema
+   - Sélection parsers pluggables par stratégie
 
 2. **Lecture fichiers sources**
    - CSV : parsing avec pandas
@@ -1374,18 +1385,18 @@ data: {
 **Données JSON source** : `profil`
 
 **Champs utilisés pour subtitle-profile** :
-- `prénom` : Prénom de l'investisseur (depuis `profil` dans patrimoine.md)
-- `nom` : Nom de l'investisseur (affiché en MAJUSCULES) (depuis `profil` dans patrimoine.md)
-- `age` : Âge calculé depuis la date de naissance (depuis `profil` dans patrimoine.md)
-- `situation_familiale` : Situation familiale (Marié, Célibataire, etc.) (depuis `profil` dans patrimoine.md)
-- `enfants` : Nombre d'enfants (integer) (depuis `profil` dans patrimoine.md)
-- **`profil_actif`** : **Type d'investisseur déterminé par `config/config.yaml → analysis.active_profile`** (Dynamique, Équilibré, Prudent)
-  - **IMPORTANT** : Le profil affiché provient de `config/analysis.yaml`, PAS du champ `type_investissement` dans `patrimoine.md`
+- `prénom` : Prénom de l'investisseur (depuis `profil_investisseur.identite` dans manifest.json)
+- `nom` : Nom de l'investisseur (affiché en MAJUSCULES) (depuis `profil_investisseur.identite` dans manifest.json)
+- `age` : Âge calculé depuis la date de naissance (depuis `profil_investisseur.identite` dans manifest.json)
+- `situation_familiale` : Situation familiale (Marié, Célibataire, etc.) (depuis `profil_investisseur.identite` dans manifest.json)
+- `enfants` : Nombre d'enfants (integer) (depuis `profil_investisseur.identite` dans manifest.json)
+- **`profil_actif`** : **Type d'investisseur défini dans manifest.json → profil_investisseur.investissement.profil_risque** (dynamique, equilibre, prudent)
+  - **v2.0+** : Profil provient directement du manifest.json (source de vérité)
   - Mapping : `dynamique` → "Dynamique", `equilibre` → "Équilibré", `prudent` → "Prudent", `default` → "Équilibré"
   - Source technique : `data["synthese"]["growth_details"]["details"]["profil_actif"]`
-- `statut` : Statut professionnel (Actif, Retraité, etc.) (depuis `profil` dans patrimoine.md)
-- `profession` : Profession exercée (depuis `profil` dans patrimoine.md)
-- `revenu_mensuel_net` : Revenu mensuel net en euros (depuis `profil` dans patrimoine.md)
+- `statut` : Statut professionnel (Actif, Retraité, etc.) (depuis `profil_investisseur.professionnel` dans manifest.json)
+- `profession` : Profession exercée (depuis `profil_investisseur.professionnel` dans manifest.json)
+- `revenu_mensuel_net` : Revenu mensuel net en euros (depuis `profil_investisseur.professionnel` dans manifest.json)
 
 **Format de subtitle-profile** :
 
@@ -1594,7 +1605,7 @@ paths:
   logs: "logs/"
 
 normalizer:
-  input_file: "patrimoine.md"
+  input_file: "manifest.json"  # v2.0+
   output_file: "patrimoine_input.json"
   date_format: "ISO8601"
 
@@ -1643,7 +1654,7 @@ logging:
 [2025-10-21 14:30:15] INFO: Démarrage Patrimoine Analyzer v1.0.0
 [2025-10-21 14:30:15] INFO: ========================================
 [2025-10-21 14:30:15] INFO: [ÉTAPE 1/3] Normalisation des sources
-[2025-10-21 14:30:15] INFO: Lecture sources/patrimoine.md...
+[2025-11-13 14:30:15] INFO: Lecture sources/manifest.json...
 [2025-10-21 14:30:15] DEBUG: Profil détecté : Homme, 49 ans
 [2025-10-21 14:30:16] INFO: Parsing fichiers sources (9 fichiers)...
 [2025-10-21 14:30:18] INFO: ✓ Étape 1 terminée (3.2s)
@@ -1663,8 +1674,8 @@ logging:
 
 ```python
 # tests/test_normalizer.py
-def test_parse_patrimoine_md():
-    """Test parsing fichier patrimoine.md"""
+def test_parse_manifest_json():
+    """Test parsing fichier manifest.json (v2.0+)"""
 
 def test_parse_csv():
     """Test parsing fichier CSV positions"""
@@ -1746,18 +1757,18 @@ def test_inject_repeated_rows():
 ┌─────────────────────────────────────────────────────────────┐
 │                     SOURCES (Input Layer)                    │
 ├─────────────────────────────────────────────────────────────┤
-│  patrimoine.md                                               │
-│  [CA] - PEA.csv, [CA] - AV.pdf, [DGO] - CTO.csv, etc.      │
+│  manifest.json (v2.0+)                                       │
+│  [CA] - PEA.pdf, [CA] - AV.pdf, [DGO] - CTO.csv, etc.      │
 └────────────────────────┬────────────────────────────────────┘
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              NORMALIZER (Processing Layer 1)                 │
 ├─────────────────────────────────────────────────────────────┤
-│  • Parse patrimoine.md (Markdown → Dict)                     │
-│  • Read CSV files (Pandas)                                   │
-│  • Extract PDF tables (pdfplumber)                           │
-│  • Parse JSON files (native)                                 │
+│  • Parse manifest.json (JSON → Dict)                         │
+│  • Pluggable parsers registry (v2.0+)                        │
+│  • Read CSV/PDF via strategies                               │
+│  • Enrich metadata (etablissements_financiers.yaml)          │
 │  • Calculate totals (recursive)                              │
 │  • Validate schema & coherence                               │
 └────────────────────────┬────────────────────────────────────┘
@@ -2940,31 +2951,40 @@ python-dateutil>=2.8.0
 
 ---
 
-## 20. Exemple de session complète
+## 20. Exemple de session complète (v2.1)
 
-### Entrée : `sources/patrimoine.md`
+### Entrée : `sources/manifest.json`
 
-```markdown
-# Patrimoine financier
-
-## Profil
-- Genre : Homme
-- Date de naissance : 23/11/1975
-- Situation familiale : Marié
-- Type d'investissement : Dynamique
-- Revenu : 3500 € / mois
-
-## Epargne
-
-### CA (Crédit Agricole)
-- Assurance vie (AV) : 106 046,01 €
-- Livrets A : 24 327,95 €
-- PEA : 82 186,48 €
-- Voir fichier "[CA] - PEA.pdf"
-
-### DGO (Degiro)
-- CTO : 30 596,54 €
-- Voir fichier "[DGO] - CTO.csv"
+```json
+{
+  "version": "2.1.0",
+  "profil_investisseur": {
+    "identite": {
+      "genre": "Homme",
+      "date_naissance": "1975-11-23",
+      "situation_familiale": "Marié"
+    },
+    "professionnel": {
+      "statut": "Actif",
+      "profession": "Développeur",
+      "revenu_mensuel_net": 3500
+    },
+    "investissement": {
+      "profil_risque": "dynamique"
+    }
+  },
+  "patrimoine": {
+    "comptes_titres": [
+      {
+        "id": "ca_pea_001",
+        "custodian": "credit_agricole",
+        "type_compte": "PEA",
+        "source_file": "[CA] - PEA.pdf",
+        "parser_strategy": "credit_agricole.pea.v2025"
+      }
+    ]
+  }
+}
 ```
 
 ### Sortie : `generated/rapport_20251021_143330.html`
