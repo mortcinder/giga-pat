@@ -21,7 +21,14 @@
       "WebFetch(domain:apprendre-a-investir.net)",
       "WebFetch(domain:fr.wiktionary.org)",
       "WebFetch(domain:ec.europa.eu)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git show-branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git push:*)",
+      "Bash(git branch:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

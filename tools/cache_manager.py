@@ -163,12 +163,20 @@ class CacheManager:
         Détermine si une année doit être mise en cache.
 
         Règle: Toutes les années AVANT l'année courante sont cachées.
+        - Années passées (ex: 2022-2024): Cachées (données figées)
+        - Année courante (ex: 2025): Toujours recalculée (données évolutives)
+
+        Métadonnées du cache incluent:
+        - file_hash: Hash MD5 du fichier source (pour détection de modifications)
+        - cached_at: Timestamp ISO de création du cache
+        - year: Année fiscale concernée
+        - custodian: Établissement financier
 
         Args:
             year: Année à vérifier
 
         Returns:
-            True si l'année doit être cachée
+            True si l'année doit être cachée (year < année courante)
         """
         current_year = datetime.now().year
         return year < current_year
