@@ -1,402 +1,197 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this repository.
+**Context**: This file is loaded automatically by Claude Code. Keep it concise (100-150 lines). Detailed docs are in folder-specific CLAUDE.md files.
 
 ## Project Overview
 
-Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment. The system follows a strict 3-stage pipeline architecture with no user interaction during execution.
+Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment.
 
-**Version**: v2.1 (November 2025) - Architecture homogène avec custodian unifié et sections manuelles
+**Version**: v2.1 (November 2025) - Unified custodian architecture + manual data sections
 
-**Note**: Since October 2025, PEA and PEA-PME files from Crédit Agricole use PDF format instead of CSV.
-
-## v2.1 Key Changes (November 2025)
-
-1. **Homogeneous Custodian Architecture**
-   - Unified `custodian` + `custodian_name` + `custody_type` across ALL asset types
-   - Custody types: `institutional`, `custodial_platform`, `self_custody`, `defi`, `direct_ownership`
-   - Unique IDs for all assets: `{custodian}_{type}_{seq}`
-
-2. **Manual Data Sections in manifest.json**
-   - `patrimoine.liquidites[]`: Livrets, PEL, LDD, comptes dépôt
-   - `patrimoine.obligations[]`: T-Bonds (multi-currency support)
-   - `patrimoine.crypto[]`: All cryptos (custodial, self-custody, DeFi)
-   - `patrimoine.metaux_precieux[]`: Gold, silver, platinum
-   - `patrimoine.immobilier[]`: Real estate properties
-   - `patrimoine.comptes_titres[]`: Parsable securities accounts
-
-3. **Currency Standardization**
-   - Explicit `currency` field (ISO 4217: "EUR", "USD")
-   - `montant_eur_equivalent` for foreign currencies
-
-4. **Migration v2.0 → v2.1**
-   - Move `comptes[]` → `patrimoine.comptes_titres[]`
-   - Rename `etablissement` → `custodian` + add `custodian_name`, `custody_type`
-   - Add manual sections with currency fields
-   - Test: `python main.py` and verify `generated/patrimoine_input.json`
-
-## ⚠️ Critical Prerequisites
-
-### Python 3.10+ REQUIRED
-
-**This project is NOT compatible with Python 3.7, 3.8, or 3.9.**
-
-The codebase uses modern Python features unavailable in versions prior to 3.10:
-- **Native type hints**: `dict[str, Any]`, `list[str]` (instead of `typing.Dict`, `typing.List`)
-- **String methods**: `str.removesuffix()`, `str.removeprefix()` (added in Python 3.9)
-- **Modern dependencies**: pandas>=2.0, scipy>=1.11, etc. require Python 3.10+
-
-**Version Check:**
-```bash
-python --version  # Must show 3.10.x or higher
-```
-
-**Automatic Enforcement:**
-- The `main.py` script includes a fail-fast version check at startup (lines 14-36)
-- Users with Python <3.10 will see a clear error message with installation instructions
-- No imports are executed before this check to avoid cryptic errors
-
-**Installation Guide:**
-- See `README.md` section "⚠️ Prérequis" for platform-specific instructions (Windows/macOS/Linux)
-- Badge in README clearly indicates: ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
-
-**For Development:**
-- When adding new code, assume Python 3.10+ is available
-- Use modern type hints (PEP 604: `X | Y` instead of `Union[X, Y]`)
-- Avoid backward compatibility workarounds for Python <3.10
-
-## Core Commands
-
-```bash
-# Generate full report
-python main.py
-# OR use slash command:
-/report
-
-# Test individual components
-python tests/test_normalizer.py
-python tests/test_analyzer.py
-python tests/test_generator.py
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup environment
-cp .env.example .env
-# Edit .env and add BRAVE_API_KEY (get from https://api.search.brave.com/app/dashboard)
-```
-
-## Git Workflow for Claude Code Web
-
-**IMPORTANT**: This project uses a multi-instance Git workflow (Windows, macOS, Claude Code Web).
-
-### Branch Structure
-
-```
-main  → Production stable (tags: v2.0, v2.1, etc.)
-  ↓
-dev   → Active development branch (all instances work here)
-  ↓
-claude/[feature]-[SESSION_ID]  → Temporary branches (Claude Code Web only)
-```
-
-### Workflow for Claude Code Web
-
-**When starting work**:
-```bash
-# 1. Always start from dev
-git checkout dev
-git pull origin dev
-
-# 2. Create temporary branch with session ID
-git checkout -b claude/[feature-description]-[SESSION_ID]
-```
-
-**During work**:
-```bash
-# Make changes, commit normally
-git add .
-git commit -m "feat: description"
-```
-
-**When finishing**:
-```bash
-# Push to temporary branch (403 error if not claude/[name]-[ID])
-git push -u origin claude/[feature-description]-[SESSION_ID]
-
-# Inform user: "Work complete on claude/[feature-description]-[SESSION_ID]"
-# User will merge to dev and delete the temporary branch
-```
-
-### Why This Workflow?
-
-- **Technical constraint**: Claude Code Web server only accepts pushes to branches matching `claude/*-[SESSION_ID]`
-- **Multi-instance sync**: Desktop instances work directly on `dev`, Web instance uses temporary branches
-- **Clean history**: Temporary branches are deleted after merge, keeping repo clean
-
-### Branch Naming Convention
-
-Use clear, descriptive names:
-- ✅ `claude/fix-parser-bug-ABC123`
-- ✅ `claude/add-jurisdictions-ABC123`
-- ❌ `claude/fix-coding-issues-ABC123` (too vague)
-
-## Architecture: 3-Stage Pipeline
+**Architecture**: 3-stage pipeline with NO user interaction during execution
 
 ```
 sources/manifest.json (v2.1) + CSV/PDF files
     ↓
-[Stage 1: Normalizer + Parsers + Manual Data] → generated/patrimoine_input.json
+[Stage 1: Normalizer + Parsers] → generated/patrimoine_input.json
     ↓
 [Stage 2: Analyzer + Web Research] → generated/patrimoine_analysis.json
     ↓
 [Stage 3: Generator] → generated/rapport_YYYYMMDD_HHMMSS.html
 ```
 
-### Stage 1: Normalizer (`tools/normalizer.py`)
+## ⚠️ Critical Prerequisites
 
-**Purpose**: Parse files, integrate manual data, output normalized JSON.
+**Python 3.10+ REQUIRED** - NOT compatible with 3.7, 3.8, or 3.9
 
-**Flow**:
-1. Load & validate `manifest.json` (v2.1 structure)
-2. Parse `comptes_titres[]` via ParserRegistry (PEA, AV, CTO, PER)
-3. Group by custodian
-4. Integrate manual sections (liquidites, obligations, crypto, metals, real estate)
-5. Enrich with metadata
-6. Calculate totals
-7. Output `patrimoine_input.json`
+The codebase uses modern Python features unavailable in earlier versions:
+- Native type hints: `dict[str, Any]`, `list[str]`
+- String methods: `str.removesuffix()`, `str.removeprefix()`
+- Modern dependencies: pandas>=2.0, scipy>=1.11
 
-**Key v2.1 Methods**:
-- `_group_comptes_titres()`: Groups parsed securities by custodian
-- `_integrate_liquidites()`, `_integrate_obligations()`, `_integrate_crypto()`, `_integrate_metaux_precieux()`, `_integrate_immobilier()`
-- `_create_etablissement_entry()`: Creates custodian entry for manual assets
+**Enforcement**: `main.py` includes fail-fast version check (lines 14-36)
 
-**Pluggable Parsers System** (v2.0):
-- **BaseParser** interface: `strategy_name`, `can_parse()`, `parse()`, `validate()`
-- **ParserRegistry**: Central registry with fallback mechanism
-- **Available parsers**:
-  - `credit_agricole.pea.v2025`: PEA/PEA-PME PDF format
-  - `credit_agricole.av.v2_lignes`: Assurance-vie 2-line format
-  - `generic.csv.flexible`: Flexible CSV mapping
-  - `bitstack.transaction_history.v2025`: Bitstack crypto transactions (v2.1+)
+## Quick Commands
 
-**Multi-File Parsing with Cache** (v2.1+):
-- **Pattern matching**: `source_pattern: "Bitstack/[BIT] - *.csv"` matches multiple files
-- **Intelligent caching**: Years < current year cached automatically (MD5-based invalidation)
-- **Performance**: 80% faster on subsequent runs (3 cached + 1 parsed vs 4 parsed)
-- **Cache location**: `generated/cache/{custodian}_{year}.json`
-- **Cache invalidation**: Automatic via MD5 hash comparison, or manual via `CacheManager.invalidate_cache()`
-- **Current year logic**: Always recalculated (e.g., 2025), past years (2022-2024) loaded from cache
-- **Usage examples**:
-  ```python
-  # Invalidate specific year
-  from tools.cache_manager import CacheManager
-  cache = CacheManager()
-  cache.invalidate_cache("bitstack_2022")
+```bash
+# Generate full report
+python main.py          # OR use slash command: /report
 
-  # Cache statistics
-  stats = cache.get_cache_stats()
-  print(f"Files cached: {stats['file_count']}, Size: {stats['total_size_mb']} MB")
-  ```
+# Test individual stages
+python tests/test_normalizer.py
+python tests/test_analyzer.py
+python tests/test_generator.py
 
-**Adding New Parser**:
-1. Create `tools/parsers/{bank}/{type}_v{year}.py` implementing `BaseParser`
-2. Register in `normalizer.py` `__init__()`
-3. Update `manifest.json` with `parser_strategy`
-4. Optional: Use `source_pattern` for multi-file + `cache_historical_years: true`
+# Setup
+pip install -r requirements.txt
+cp .env.example .env    # Add BRAVE_API_KEY
+```
 
-### Stage 2: Analyzer (`tools/analyzer.py`)
+## v2.1 Key Changes (November 2025)
 
-**Purpose**: Deep analysis with web research, risk assessment, recommendations.
+1. **Unified Custodian Architecture**
+   - `custodian` + `custodian_name` + `custody_type` across ALL assets
+   - Types: `institutional`, `custodial_platform`, `self_custody`, `defi`, `direct_ownership`
+   - Unique IDs: `{custodian}_{type}_{seq}`
 
-**Key Components**:
-- **7 risk categories** (`risk_analyzer.py`): Concentration, regulatory, fiscal, market, liquidity, political, currency
-- **Web research** (`web_research.py`): 15-18 searches via Brave API, rate limiting 1.1-1.5s
-- **5 scores** (0-10): diversification, resilience, liquidity, fiscal, growth
-  - All enriched with labels and breakdowns
-  - Parameters in `config/analysis.yaml`
-- **Portfolio optimization** (`portfolio_optimizer.py`): Markowitz efficient frontier, Sharpe ratios
-- **Stress tests** (`stress_tester.py`): 5 scenarios
-- **Recommendations** (`recommendations.py`): Scored by `(criticité × 0.4) + (impact × 0.3) + (facilité × 0.3)`
-- **Benchmark gaps** (`benchmark_gap.py`): Compares allocation to target ranges
+2. **Manual Data Sections** (in `manifest.json`)
+   - `patrimoine.liquidites[]`: Cash accounts (Livret A, PEL, LDD)
+   - `patrimoine.obligations[]`: Bonds (multi-currency)
+   - `patrimoine.crypto[]`: All cryptos (all custody types)
+   - `patrimoine.metaux_precieux[]`: Precious metals
+   - `patrimoine.immobilier[]`: Real estate
+   - `patrimoine.comptes_titres[]`: Parsable securities (PEA, AV, CTO, PER)
 
-**4 Investor Profiles**: dynamique, equilibre, prudent, default (configured in `config/analysis.yaml`)
-
-### Stage 3: Generator (`tools/generator.py`)
-
-**Purpose**: Inject data into HTML template, generate standalone HTML.
-
-**Injection System**:
-1. **CSS inlining**: `rapport.css` → `<style>` tag (standalone HTML)
-2. **Simple fields**: `data-field="fieldname"` → direct replacement
-3. **Repeated rows**: `data-repeat="typename"` → clone and populate
-4. **Conditional elements**: `data-conditional="identifier"` → remove if condition not met
-5. **Dynamic badges**: Severity classes applied dynamically (`crit`, `high`, `mid`, `low`)
-6. **Chart injection**: Radar chart scores via regex
-7. **Two-line asset classes**: Primary (asset type) + secondary (account detail)
-
-**Key Methods**:
-- `_inline_css()`: Makes HTML standalone
-- `_inject_simple_fields()`: Maps JSON paths to template fields
-- `_inject_repeated_rows()`: Handles establishments, assets, risks, recommendations
-- `_inject_classes_actifs()`: Special handling for asset classes table
-- `_inject_chart_data()`: Radar chart scores
-
-## Configuration
-
-**`config/config.yaml`**:
-- Risk thresholds, web research settings
-- Paths (sources/, templates/, generated/, logs/)
-- Active profile selection
-
-**`config/analysis.yaml`**:
-- 4 investor profiles with return/volatility assumptions
-- Asset statistics (12 classes)
-- Correlation matrix
-- Benchmarks: `{min, target, max}` allocation ranges per profile
-- Score calculation parameters
-- Account classification keywords
-
-**`config/manifest.schema.json`**: JSON Schema validation for v2.1 structure
+3. **Currency Standardization**
+   - Explicit `currency` field (ISO 4217: "EUR", "USD")
+   - `montant_eur_equivalent` for foreign currencies
 
 ## Key Design Principles
 
 1. **No file modification**: Never modify source files or templates
-2. **Timestamped outputs**: `rapport_YYYYMMDD_HHMMSS.html`
+2. **Timestamped outputs**: `rapport_YYYYMMDD_HHMMSS.html` (no overwrites)
 3. **Zero interaction**: Fully autonomous execution
-4. **Template injection**: Safe via `data-field` and `data-repeat` attributes
-5. **Web research**: All risks backed by sources (15-18 API calls)
+4. **Safe injection**: Via `data-field` and `data-repeat` attributes only
+5. **Web-backed risks**: All risks backed by web sources (15-18 API calls)
 6. **Profile passthrough**: `profil` flows through all stages unchanged
 
-## Modifying the Template
+## Configuration Files
 
-**Rules** (`templates/rapport_template.html`):
-- Preserve `data-field="fieldname"` attributes
-- Preserve `data-repeat="typename"` attributes
-- Use `data-conditional="identifier"` for removable elements
-- Badges: ONLY `class="badge"` (NO hardcoded severity classes)
-- Available fields documented in `PRD.md` section 3.3.5
+**Main**: `config/config.yaml`
+- Risk thresholds, web research settings
+- Paths, active profile selection
 
-**Badge CSS Classes**:
-- `.badge.crit`: Critical (red-dark)
-- `.badge.high`: High (red-light)
-- `.badge.mid`: Medium (gold)
-- `.badge.low`: Normal (green)
+**Analysis**: `config/analysis.yaml`
+- 4 investor profiles (dynamique, equilibre, prudent, default)
+- Asset statistics (12 classes), correlation matrix
+- Benchmarks: `{min, target, max}` allocation ranges
+- Score parameters (5 scores: diversification, resilience, liquidity, fiscal, growth)
 
-**Enriched Scores Sections** (design v3.0):
-- 5 scores with detailed breakdowns
-- Design pattern: `.syn-block` → `.syn-head` → `.syn-grid` → `.syn-note-list`
-- Standardized note labels: **Bonus :**, **Pénalités :**, **Alerte :**, **Interprétation :**, **Méthodologie :**
+**Risks**: `config/risks.yaml`
+- Structural risk thresholds
+- Contextual search queries (web-based detection)
 
-## Common Development Scenarios
+**Schema**: `config/manifest.schema.json`
+- JSON Schema validation for v2.1 manifest structure
 
-**Adding a risk**:
-- **Option 1**: Add contextual search in `config/risks.yaml` (no code)
-- **Option 2**: Add structural risk method in `risk_analyzer.py` (requires code)
+**Detailed config docs**: `config/CLAUDE.md`
 
-**Adding template field**:
-1. Add `data-field="newfield"` in template
-2. Add mapping in `generator.py` `_inject_simple_fields()`
+## Architecture Deep Dive
 
-**Customizing analysis**:
-- Change profile: `config.yaml` → `analysis.active_profile`
-- Adjust statistics/correlations: `config/analysis.yaml` → `profiles.[name]`
-- Adjust benchmarks: `config/analysis.yaml` → `benchmarks.[profile]`
-- Customize scores: `config/analysis.yaml` → `scores.[score_name]`
+### Stage 1: Normalizer (`tools/normalizer.py`)
+- Parse files via ParserRegistry (pluggable parsers)
+- Integrate manual data sections
+- Enrich with metadata (juridictions from `etablissements_financiers.json`)
+- Output: `patrimoine_input.json`
 
-**Testing**:
-- Test stages independently: `tests/test_*.py`
-- Check generated JSON: `generated/`
-- Review logs: `logs/rapport_YYYYMMDD_HHMMSS.log`
+**Parsers**: credit_agricole.pea.v2025, credit_agricole.av.v2_lignes, generic.csv.flexible, bitstack.transaction_history.v2025
 
-## Risk Detection System v2.0
+**Multi-file parsing**: Pattern matching + intelligent caching (80% faster on re-runs)
 
-**3 Levels**:
-1. **Structural Risks**: Coded in `risk_analyzer.py` (always active)
-2. **Contextual Risks**: Dynamic web detection via `config/risks.yaml` (optional)
-3. **Future**: LLM-based analysis (reserved)
+**Detailed docs**: `tools/CLAUDE.md`
 
-**Configuration** (`config/risks.yaml`):
-- `risk_settings.enable_contextual_detection`: true/false
-- `structural_risks`: Thresholds and detection rules
-- `contextual_searches`: Web queries for emerging risks
+### Stage 2: Analyzer (`tools/analyzer.py`)
+- 7 risk categories (concentration, regulatory, fiscal, market, liquidity, political, currency)
+- 5 enriched scores (0-10 scale with labels and breakdowns)
+- Web research via Brave API (rate limiting 1.1-1.5s)
+- Portfolio optimization (Markowitz), stress tests (5 scenarios)
+- Recommendations (scored by criticité/impact/facilité)
+- Benchmark gaps (5 status levels)
 
-**Adding Contextual Risk** (no code):
-```yaml
-# In config/risks.yaml → contextual_searches
-my_risk:
-  enabled: true
-  queries: ["query 1", "query 2"]
-  relevance_threshold: 0.7
+**Detailed docs**: `tools/CLAUDE.md`
+
+### Stage 3: Generator (`tools/generator.py`)
+- Inject data into HTML template
+- 7 injection mechanisms: CSS inlining, simple fields, repeated rows, conditional elements, dynamic badges, chart injection, two-line asset classes
+- Output: Standalone HTML (no external dependencies)
+
+**Detailed docs**: `templates/CLAUDE.md`
+
+## Common Tasks
+
+**Add parser**:
+1. Create `tools/parsers/{bank}/{type}_v{year}.py` implementing `BaseParser`
+2. Register in `normalizer.py`
+3. Update `manifest.json` with `parser_strategy`
+→ Details: `tools/CLAUDE.md` → "Adding New Parser"
+
+**Add risk**:
+- **No code**: Add contextual search in `config/risks.yaml`
+- **Requires code**: Add structural risk in `risk_analyzer.py`
+→ Details: `config/CLAUDE.md` → "Risk Detection System"
+
+**Modify template**:
+1. Edit `templates/rapport_template.html`
+2. Preserve `data-field` and `data-repeat` attributes
+3. Badges: ONLY `class="badge"` (NO hardcoded severity)
+4. Add field mapping in `generator.py` if needed
+→ Details: `templates/CLAUDE.md` → "Modifying the Template"
+
+**Change profile**:
+- Edit `config.yaml` → `analysis.active_profile` (dynamique/equilibre/prudent)
+→ Details: `config/CLAUDE.md` → "Investor Profiles"
+
+**Customize scores/benchmarks**:
+- Edit `config/analysis.yaml` → `scores.*` or `benchmarks.*`
+→ Details: `config/CLAUDE.md` → "Scores" / "Benchmarks"
+
+## Testing
+
+**Independent stage tests**:
+```bash
+python tests/test_normalizer.py  # Check patrimoine_input.json
+python tests/test_analyzer.py    # Check patrimoine_analysis.json
+python tests/test_generator.py   # Check rapport_*.html
 ```
 
-Then add mapping in `risk_analyzer.py` → `_get_contextual_risk_mapping()`
+**Check outputs**:
+- JSON: `generated/*.json`
+- HTML: `generated/rapport_*.html`
+- Logs: `logs/rapport_*.log`
 
-## Important Implementation Details
+## Folder-Specific Documentation
 
-**Account Classification** (`analyzer.py`):
-- **Liquidités**: Livret A, LDD, **PEL** (state-guaranteed savings), compte dépôts
-- **Actions**: PEA, CTO, PER, AV-UC, Parts Sociales
-- **Obligations**: T-Bonds, bond funds in AV
-- **Cryptomonnaies**: All custody types
-- **Métaux précieux**: Physical precious metals
-- **Immobilier**: SCPI, real estate
+**Detailed guides** (automatically loaded by Claude Code when working in these folders):
+- `tools/CLAUDE.md`: Stage implementations, parsers, debugging
+- `config/CLAUDE.md`: Configuration files, scores, risks, profiles
+- `templates/CLAUDE.md`: Injection system, badges, field reference
 
-**PDF Parsing**:
-- **AV**: 2-line format (line 0: name + valorization, line 1: breakdown)
-- **PEA**: Multi-page web format, cash extraction from "Ma valorisation totale"
+**Complete spec**: `PRD.md` (900+ lines) - comprehensive technical specification
 
-**Crypto Price Conversion** (v2.1+):
-- **API**: CoinGecko (free, no key required)
-- **Automatic**: BTC amounts auto-converted to EUR during parsing
-- **Module**: `tools/crypto_price_api.py`
+## Implementation Quick Reference
 
-**Juridictions des établissements** (v2.1+):
+**Parsers**: Pluggable via `BaseParser` interface (`can_parse()`, `parse()`, `validate()`)
 
-1. **Comptes titres parsés** (PEA, CTO, AV, PER):
-   - Enrichis automatiquement depuis `sources/etablissements_financiers.json`
-   - Clés utilisées: `juridiction_principale`, `pays`, `garantie_depots`, `exposition_sapin_2`, `exposition_risque_france`
-   - Fallback: "France" si établissement non trouvé
-   - Module: `tools/normalizer.py` → `_enrich_etablissements_metadata()`
+**Cache**: Multi-file parsing with MD5-based invalidation (`generated/cache/`)
 
-2. **Actifs manuels** (liquidités, obligations, métaux précieux, crypto, immobilier):
-   - Spécifier dans `metadata.juridiction` et `metadata.juridiction_pays`
-   - Lecture depuis `manifest.json` → `patrimoine.[section].[actif].metadata`
-   - Exemple:
-   ```json
-   {
-     "id": "ubs_compte_depot_001",
-     "custodian": "ubs",
-     "custodian_name": "UBS Bank",
-     "custody_type": "institutional",
-     "type_compte": "Compte dépôt",
-     "currency": "CHF",
-     "montant": 50000,
-     "metadata": {
-       "juridiction": "Suisse",
-       "juridiction_pays": "Suisse",
-       "garantie_depots": "100000 CHF (esisuisse)",
-       "exposition_sapin_2": "NON",
-       "exposition_risque_france": "FAIBLE"
-     }
-   }
-   ```
+**Scores**: All 0-10 scale with labels (Excellente/Bonne/Modérée/Faible/Critique)
 
-3. **Validation**: Schéma JSON (`config/manifest.schema.json`) documente tous les champs disponibles
+**Risks**: 3 levels (Structural/Contextual/Future-LLM)
 
-4. **Impact**: La juridiction alimente le score de diversification (composante juridictionnelle 40%) et les risques de concentration
+**Badges**: 4 severities (crit/high/mid/low) - dynamically applied, NEVER hardcoded
 
-**Benchmark Gap**: Compares allocation to targets, 5 status levels (dans_la_cible, sous/sur_pondere_modere/fort)
+**Juridictions**: Auto-enriched from `etablissements_financiers.json` + manual in manifest
 
-**Diversification Score v1.1**:
-- Formula: `(Institutional × 60%) + (Jurisdictional × 40%) + Bonuses`
-- 3 bonuses: ≥5 classes (+1.0), ≥10 positions (+0.5), >15% intl (+0.5)
-- 5 labels: Excellente (9-10), Bonne (7-9), Modérée (5-7), Forte (3-5), Critique (0-3)
+**Crypto prices**: CoinGecko API (free, auto-conversion BTC→EUR)
 
-**Growth Score v2.1**: Actions/UC/PER 100%, Crypto 50% (recognizes growth potential while accounting for speculation)
-
-## Documentation
-
-- `PRD.md`: Complete technical specification (900+ lines)
-- `README.md`: User-facing documentation
-- All code includes PRD section references in comments
+**Benchmark gaps**: 5 statuses (dans_la_cible, sous/sur_pondere_modere/fort)
