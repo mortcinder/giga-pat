@@ -29,6 +29,7 @@ logs/
 
 # Données sensibles (utilisateur uniquement, jamais sur Git)
 sources/
+!sources/manifest.example.json
 
 # Configuration locale
 .env
