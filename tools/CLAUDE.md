@@ -11,7 +11,7 @@ This file provides detailed technical guidance for working with the 3-stage pipe
 2. Parse `comptes_titres[]` via ParserRegistry (PEA, AV, CTO, PER)
 3. Group by custodian
 4. Integrate manual sections (liquidites, obligations, crypto, metals, real estate)
-5. Enrich with metadata (juridictions from `sources/etablissements_financiers.json`)
+5. Enrich with metadata (juridictions from `config/etablissements_financiers.yaml`)
 6. Calculate totals
 7. Output `generated/patrimoine_input.json`
 
@@ -123,7 +123,7 @@ eur_value = api.get_price_in_eur("bitcoin", btc_amount)
 ### Juridictions (v2.1+)
 
 **Comptes Titres (Parsed Accounts)**:
-- **Source**: `sources/etablissements_financiers.json`
+- **Source**: `config/etablissements_financiers.yaml`
 - **Fields**: `juridiction_principale`, `pays`, `garantie_depots`, `exposition_sapin_2`, `exposition_risque_france`
 - **Fallback**: "France" if custodian not found
 - **Enrichment**: Automatic in `_enrich_etablissements_metadata()`

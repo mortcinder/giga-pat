@@ -11,6 +11,7 @@ from typing import Dict, Any, List
 import glob
 import re
 import fnmatch
+import yaml
 
 # Import du registry de parsers
 from tools.parsers.registry import ParserRegistry
@@ -397,16 +398,16 @@ class PatrimoineNormalizer:
 
     def _enrich_etablissements_metadata(self, comptes_parsed: List[dict]):
         """Enrichit les comptes avec les métadonnées des établissements"""
-        # Charger établissements_financiers.json
-        metadata_path = Path(self.config["paths"]["sources"]) / "etablissements_financiers.json"
+        # Charger etablissements_financiers.yaml depuis config/
+        metadata_path = Path("config") / "etablissements_financiers.yaml"
 
         if not metadata_path.exists():
-            self.logger.warning(f"Fichier etablissements_financiers.json introuvable : {metadata_path}")
+            self.logger.warning(f"Fichier etablissements_financiers.yaml introuvable : {metadata_path}")
             return
 
         try:
             with open(metadata_path, 'r', encoding='utf-8') as f:
-                metadata = json.load(f)
+                metadata = yaml.safe_load(f)
                 etablissements_meta = metadata.get("etablissements", {})
 
             # Enrichir chaque compte

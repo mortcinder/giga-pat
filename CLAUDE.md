@@ -101,7 +101,7 @@ cp .env.example .env    # Add BRAVE_API_KEY
 ### Stage 1: Normalizer (`tools/normalizer.py`)
 - Parse files via ParserRegistry (pluggable parsers)
 - Integrate manual data sections
-- Enrich with metadata (juridictions from `etablissements_financiers.json`)
+- Enrich with metadata (juridictions from `config/etablissements_financiers.yaml`)
 - Output: `patrimoine_input.json`
 
 **Parsers**: credit_agricole.pea.v2025, credit_agricole.av.v2_lignes, generic.csv.flexible, bitstack.transaction_history.v2025
@@ -190,7 +190,7 @@ python tests/test_generator.py   # Check rapport_*.html
 
 **Badges**: 4 severities (crit/high/mid/low) - dynamically applied, NEVER hardcoded
 
-**Juridictions**: Auto-enriched from `etablissements_financiers.json` + manual in manifest
+**Juridictions**: Auto-enriched from `config/etablissements_financiers.yaml` + manual in manifest
 
 **Crypto prices**: CoinGecko API (free, auto-conversion BTC→EUR)
 
