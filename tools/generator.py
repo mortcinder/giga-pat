@@ -752,20 +752,50 @@ class ReportGenerator:
             # Scénario
             self._set_field(new_div, "test_scenario", test.get("scenario", ""))
 
-            # Impact - Nouvelle structure : valeur et pourcentage séparés
-            impact_montant = test.get("impact_montant", 0)
-            impact_pct = test.get("impact_pct", 0)
+            # Détecter le type de test : résilience (duree_mois) vs perte monétaire
+            is_resilience_test = "duree_mois" in test
 
-            # Injecter la valeur monétaire (dans span.price)
-            self._set_field(
-                new_div, "test_impact_valeur", self._format_currency(impact_montant)
-            )
+            if is_resilience_test:
+                # Test de résilience temporelle (ex: perte d'emploi)
+                # Masquer le bloc impact et afficher le bloc résilience
+                impact_block = new_div.find(attrs={"data-field": "test_impact_block"})
+                resilience_block = new_div.find(attrs={"data-field": "test_resilience_block"})
 
-            # Injecter le pourcentage (dans span.pct)
-            self._set_field(new_div, "test_impact_pct", f"{impact_pct:+.1f} %")
+                if impact_block:
+                    impact_block["style"] = "display: none;"
+                if resilience_block:
+                    resilience_block["style"] = ""  # Afficher le bloc
 
-            # Détails - Description seule (sans sévérité)
-            description = test.get("description", "")
+                # Injecter la durée de résilience
+                duree_mois = test.get("duree_mois", 0)
+                self._set_field(new_div, "test_duree_mois", f"{duree_mois} mois")
+
+                # Injecter la cible recommandée
+                recommandation = test.get("recommandation", "Cible : 12 mois")
+                self._set_field(new_div, "test_cible_mois", recommandation)
+
+                # Description enrichie avec détails de liquidité
+                details = test.get("details", {})
+                liquidite = details.get("liquidite_disponible", 0)
+                depenses = details.get("depenses_mensuelles", 0)
+                description = f"Liquidité : {liquidite:,.0f} € | Dépenses : {depenses:,.0f} €/mois"
+            else:
+                # Test de perte monétaire standard
+                impact_montant = test.get("impact_montant", 0)
+                impact_pct = test.get("impact_pct", 0)
+
+                # Injecter la valeur monétaire (dans span.price)
+                self._set_field(
+                    new_div, "test_impact_valeur", self._format_currency(impact_montant)
+                )
+
+                # Injecter le pourcentage (dans span.pct)
+                self._set_field(new_div, "test_impact_pct", f"{impact_pct:+.1f} %")
+
+                # Description standard
+                description = test.get("description", "")
+
+            # Détails - Description
             severite = test.get("severite", "Moyenne")
             self._set_field(new_div, "test_details", description)
 

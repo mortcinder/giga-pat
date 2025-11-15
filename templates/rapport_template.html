@@ -307,12 +307,23 @@
                         <div class="badge">…</div>
                     </header>
 
-                    <div class="impact">
+                    <!-- Affichage pour tests de perte monétaire -->
+                    <div class="impact" data-field="test_impact_block">
                         <span class="price" data-field="test_impact_valeur"
                             >0 €</span
                         >
                         <span class="pct" data-field="test_impact_pct"
                             >0 %</span
+                        >
+                    </div>
+
+                    <!-- Affichage pour tests de résilience temporelle -->
+                    <div class="impact" data-field="test_resilience_block" style="display: none;">
+                        <span class="price" data-field="test_duree_mois"
+                            >0 mois</span
+                        >
+                        <span class="pct" data-field="test_cible_mois"
+                            >cible : 12 mois</span
                         >
                     </div>
 
