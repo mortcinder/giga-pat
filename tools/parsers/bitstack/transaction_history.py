@@ -124,8 +124,9 @@ class BitstackTransactionHistoryParser(BaseParser):
 
             # Retourner un résumé du solde pour cette période
             position = {
-                'nom': f"Bitcoin {year}",
-                'type': 'BTC',
+                'nom': 'Bitcoin',  # Nom générique (pas par année)
+                'ticker': 'BTC',    # ✅ Ajout du ticker pour la conversion EUR
+                'type': 'Crypto',
                 'quantite': float(self.btc_balance),
                 'valeur_unitaire': 0,  # Sera enrichi par le normalizer avec prix actuel
                 'valeur_totale': 0,    # Sera calculé par le normalizer

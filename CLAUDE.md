@@ -66,6 +66,14 @@ cp .env.example .env    # Add BRAVE_API_KEY
    - Explicit `currency` field (ISO 4217: "EUR", "USD")
    - `montant_eur_equivalent` for foreign currencies
 
+4. **Automatic Real Estate Valorization** (v2.1.2+)
+   - **Dynamic revaluation**: Property values recalculated at EVERY report generation
+   - **Web extraction**: Parses price/m² from Brave API search results
+   - **Intelligent fallback**: City-specific prices when API unavailable (Nanterre: 5300€/m², Paris: 10500€/m²)
+   - **Plus-value tracking**: Auto-calculates appreciation since acquisition
+   - **⚠️ DO NOT** include `valeur_actuelle` in manifest.json - only `prix_acquisition` + `surface_m2`
+   - See `tools/CLAUDE.md` → "Real Estate Valorization" for details
+
 ## Key Design Principles
 
 1. **No file modification**: Never modify source files or templates

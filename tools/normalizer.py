@@ -27,6 +27,9 @@ from tools.crypto_price_api import CryptoPriceAPI
 from tools.parsers.credit_agricole import CreditAgricolePEA2025Parser, CreditAgricoleAV2LignesParser
 from tools.parsers.generic import GenericCSVParser
 from tools.parsers.bitstack import BitstackTransactionHistoryParser
+from tools.parsers.bforbank import BforBankCTO2025Parser
+from tools.parsers.crypcool import CrypCoolTransactionAggregator2025Parser
+from tools.parsers.boursobank import BoursoBankPER2025Parser
 
 
 class PatrimoineNormalizer:
@@ -54,6 +57,9 @@ class PatrimoineNormalizer:
         self.parser_registry.register(CreditAgricoleAV2LignesParser)
         self.parser_registry.register(GenericCSVParser)
         self.parser_registry.register(BitstackTransactionHistoryParser)
+        self.parser_registry.register(BforBankCTO2025Parser)
+        self.parser_registry.register(CrypCoolTransactionAggregator2025Parser)
+        self.parser_registry.register(BoursoBankPER2025Parser)
 
         self.logger.info(f"Parsers enregistrés : {', '.join(self.parser_registry.list_parsers())}")
 
@@ -372,7 +378,12 @@ class PatrimoineNormalizer:
 
         # Ajouter métadonnées supplémentaires (v2.1: custodian)
         metadata["etablissement"] = compte_def.get("custodian", compte_def.get("etablissement"))  # Support legacy
+        metadata["custodian"] = compte_def.get("custodian")
         metadata["type_compte"] = compte_def.get("type_compte", compte_def.get("type_actif", "Crypto"))
+
+        # Ajouter montant_manuel si présent (pour fallback parsers)
+        if "montant_manuel" in compte_def:
+            metadata["montant_manuel"] = compte_def["montant_manuel"]
 
         # Essayer stratégie principale + fallbacks
         all_strategies = [strategy_name] + fallback_strategies
@@ -563,7 +574,8 @@ class PatrimoineNormalizer:
 
         for crypto in cryptos:
             metadata = crypto.get("metadata", {})
-            montant = 0
+            montant_total = 0
+            actifs = []  # Liste des actifs crypto avec valorisation
 
             # Si source_pattern ou source_file est présent, parser les fichiers
             if "source_pattern" in crypto or "source_file" in crypto:
@@ -579,41 +591,72 @@ class PatrimoineNormalizer:
                             continue
                         parsed = self._parse_compte_with_strategy(crypto, filepath)
 
-                    # Calculer le montant total depuis les positions
+                    # Traiter chaque position parsée
                     positions = parsed.get('positions', parsed.get('fonds', []))
                     for pos in positions:
-                        # Pour crypto en BTC, on doit convertir en EUR
-                        if pos.get('devise') == 'BTC':
-                            btc_qty = pos.get('quantite', 0)
-                            eur_value = self.crypto_api.convert_btc_to_eur(btc_qty)
+                        ticker = pos.get('ticker', pos.get('nom', 'UNKNOWN'))
+                        quantite = pos.get('quantite', 0)
+                        devise = pos.get('devise', ticker)  # Devise = ticker par défaut pour crypto
 
-                            if eur_value is not None:
-                                montant += eur_value
-                                self.logger.info(f"    ✓ {btc_qty} BTC converti en {eur_value:.2f} EUR")
-                            else:
-                                self.logger.warning(f"    ⚠️  Impossible de convertir {btc_qty} BTC en EUR (API indisponible)")
-                                montant += 0
+                        # Valorisation EUR selon le type de devise
+                        valeur_eur = None
+
+                        # Cas 1 : Devise fiat (EUR, USD, etc.) - pas de conversion nécessaire
+                        if devise.upper() in ['EUR', 'EURO']:
+                            valeur_eur = quantite
+                            self.logger.info(f"    ✓ {quantite:.2f} {devise} = {valeur_eur:.2f} EUR (fiat)")
+
+                        # Cas 2 : Stablecoins USD (approximation 1:1 avec EUR pour simplifier)
+                        elif devise.upper() in ['USD', 'USDT', 'USDC', 'DAI', 'BUSD']:
+                            valeur_eur = quantite * 0.92  # Taux de change approximatif USD→EUR
+                            self.logger.info(f"    ✓ {quantite:.2f} {devise} ≈ {valeur_eur:.2f} EUR (stablecoin)")
+
+                        # Cas 3 : Crypto - conversion via API générique
                         else:
-                            montant += pos.get('valeur_totale', 0)
+                            valeur_eur = self.crypto_api.convert_crypto_to_eur(ticker, quantite)
 
-                    self.logger.info(f"    ✓ {len(positions)} position(s) parsée(s), montant: {montant} EUR")
+                            if valeur_eur is not None:
+                                self.logger.info(f"    ✓ {quantite} {ticker} converti en {valeur_eur:.2f} EUR")
+                            else:
+                                # Fallback : si API échoue, vérifier si position a déjà une valeur
+                                valeur_eur = pos.get('valeur_totale', pos.get('valeur', 0))
+                                if valeur_eur > 0:
+                                    self.logger.info(f"    ✓ {ticker} valorisé depuis données parsées: {valeur_eur:.2f} EUR")
+                                else:
+                                    self.logger.warning(f"    ⚠️  Impossible de valoriser {quantite} {ticker} (API indisponible)")
+                                    valeur_eur = 0
+
+                        # Ajouter à la liste des actifs
+                        actifs.append({
+                            "ticker": ticker,
+                            "nom": pos.get('nom', ticker),
+                            "quantite": quantite,
+                            "devise": devise,
+                            "valeur_eur": valeur_eur
+                        })
+                        montant_total += valeur_eur
+
+                    self.logger.info(f"    ✓ {len(positions)} position(s) parsée(s), montant: {montant_total:.2f} EUR")
 
                 except Exception as e:
                     self.logger.error(f"    ✗ Échec parsing {crypto['id']}: {e}")
                     # Fallback sur montant manuel si présent
-                    montant = crypto.get("montant_eur_equivalent", crypto.get("montant", 0))
+                    montant_total = crypto.get("montant_eur_equivalent", crypto.get("montant", 0))
+                    actifs = []  # Pas de détail si parsing échoue
             else:
                 # Pas de fichier source, utiliser le montant manuel
-                montant = crypto.get("montant_eur_equivalent", crypto.get("montant", 0))
+                montant_total = crypto.get("montant_eur_equivalent", crypto.get("montant", 0))
+                actifs = []  # Pas de détail en mode manuel
 
             plateforme_entry = {
                 "nom": crypto.get("custodian_name", crypto.get("custodian", "Inconnu")),
                 "code": crypto.get("custodian", "unknown"),
                 "type": crypto.get("type_actif", "Crypto"),
                 "custody_type": crypto.get("custody_type", "custodial_platform"),
-                "total": montant,
+                "total": montant_total,
                 "juridiction": metadata.get("juridiction", "Inconnue"),  # Pour l'analyzer
-                "juridiction_pays": metadata.get("juridiction_pays", "N/A")
+                "juridiction_pays": metadata.get("juridiction_pays", "N/A"),
+                "actifs": actifs  # ✅ Ajout du champ actifs
             }
 
             data["patrimoine"]["crypto"]["plateformes"].append(plateforme_entry)
@@ -668,15 +711,24 @@ class PatrimoineNormalizer:
         ]
 
     def _integrate_immobilier(self, manifest: dict, data: dict):
-        """Intègre l'immobilier du manifest"""
+        """
+        Intègre l'immobilier du manifest.
+
+        Note: valeur_actuelle sera calculée dynamiquement par l'analyzer
+        via recherches web + extraction prix m². Ici on stocke uniquement
+        les données brutes nécessaires au calcul.
+        """
         immobilier = manifest.get("patrimoine", {}).get("immobilier", [])
 
         for bien in immobilier:
             bien_entry = {
                 "type": bien.get("type_bien", "Bien"),
                 "adresse": bien.get("adresse", ""),
-                "valeur_actuelle": bien.get("valeur_actuelle", bien.get("prix_acquisition", 0)),
-                "surface": bien.get("surface_m2", 0),
+                "surface_m2": bien.get("surface_m2", 0),
+                "surface": bien.get("surface_m2", 0),  # Alias pour compatibilité
+                "prix_acquisition": bien.get("prix_acquisition", 0),
+                # valeur_actuelle sera calculée par analyzer via web + fallback
+                "valeur_actuelle": bien.get("prix_acquisition", 0),  # Temporaire, recalculé ensuite
                 "metadata": bien.get("metadata", {})
             }
             data["patrimoine"]["immobilier"]["biens"].append(bien_entry)
