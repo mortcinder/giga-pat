@@ -433,6 +433,44 @@ Configured in `config/analysis.yaml` → see `config/CLAUDE.md` for details.
 
 See `config/CLAUDE.md` for configuration details.
 
+### Stress Tests (`stress_tester.py`)
+
+**Purpose**: Simulate 5 crisis scenarios on the portfolio (Section 17 of PRD).
+
+**5 Scenarios**:
+1. **Banking crisis + Sapin 2**: Freeze AV + partial bank deposits
+2. **Market crash -30%**: Impact on stocks (PEA, CTO, AV-UC)
+3. **Job loss 12-24 months**: Resilience duration calculation
+4. **Tax increase PFU 30% → 35%**: Fiscal impact on CTO
+5. **Real estate crisis -20%**: Property devaluation
+
+**Job Loss Test Logic** (v2.1.3+):
+```python
+# Profile path
+revenu_mensuel = data["profil"]["professionnel"]["revenu_mensuel_net"]
+
+# Monthly expenses (70% of income)
+depenses_mensuelles = revenu_mensuel * 0.70
+
+# Liquid assets detection (extended types)
+for compte in etablissement["comptes"]:
+    if compte_type in ["compte", "dépôt", "livret", "ldd", "pel", "lea", "ldds"]:
+        liquidite += compte["montant"]
+
+# Resilience duration
+duree_mois = liquidite / depenses_mensuelles  # int division
+```
+
+**Important JSON Paths**:
+- ✅ `profil.professionnel.revenu_mensuel_net` (NOT `profil.revenu_mensuel_net`)
+- ✅ Liquid account types: "livret", "ldd", "pel", "compte", "dépôt", "lea", "ldds"
+- ✅ Output: `duree_mois` (integer), `recommandation` (target 12 months)
+
+**Report Display**:
+- Duration in months (e.g., "34 mois")
+- Target recommendation (e.g., "Cible : 12 mois (29,400€)")
+- Liquidity breakdown: "Liquidité : 84,196 € | Dépenses : 2,450 €/mois"
+
 ### Web Research
 
 **Implementation** (`web_research.py`):

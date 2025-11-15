@@ -2863,17 +2863,21 @@ def _test_market_crash(self, data: dict) -> Dict:
 def _test_job_loss(self, data: dict) -> Dict:
     """Scénario : Perte d'emploi prolongée"""
 
-    revenu_mensuel = data["profil"].get("revenu_mensuel_net", 0)
+    # v2.1.3: Chemin correct vers le revenu dans la structure profil
+    profil = data.get("profil", {})
+    revenu_mensuel = profil.get("professionnel", {}).get("revenu_mensuel_net", 0)
 
     # Hypothèse dépenses : 70% du revenu
     depenses_mensuelles = revenu_mensuel * 0.70
 
-    # Liquidité disponible
+    # Liquidité disponible (v2.1.3: détection étendue des types de comptes)
     liquidite = 0
     for etab in data["patrimoine"]["financier"]["etablissements"]:
         for compte in etab.get("comptes", []):
-            if compte["type"] in ["Compte de dépôts", "Livret A", "LDD", "PEL"]:
-                liquidite += compte["montant"]
+            compte_type = compte.get("type", "").lower()
+            # Types de comptes liquides : livrets, comptes de dépôt, épargne réglementée
+            if any(x in compte_type for x in ["compte", "dépôt", "livret", "ldd", "pel", "lea", "ldds"]):
+                liquidite += compte.get("montant", 0)
 
     # Durée tenable
     if depenses_mensuelles > 0:

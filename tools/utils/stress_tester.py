@@ -156,7 +156,8 @@ class StressTester:
         Scénario : Perte d'emploi prolongée
         Section 17.3 du PRD
         """
-        revenu_mensuel = data.get("profil", {}).get("revenu_mensuel_net", 0)
+        profil = data.get("profil", {})
+        revenu_mensuel = profil.get("professionnel", {}).get("revenu_mensuel_net", 0)
 
         # Hypothèse dépenses : 70% du revenu
         depenses_mensuelles = revenu_mensuel * 0.70
@@ -166,7 +167,8 @@ class StressTester:
         for etab in data["patrimoine"]["financier"]["etablissements"]:
             for compte in etab.get("comptes", []):
                 compte_type = compte.get("type", "").lower()
-                if any(x in compte_type for x in ["compte", "dépôt", "livret"]):
+                # Types de comptes liquides : livrets, comptes de dépôt, épargne réglementée
+                if any(x in compte_type for x in ["compte", "dépôt", "livret", "ldd", "pel", "lea", "ldds"]):
                     liquidite += compte.get("montant", 0)
 
         # Durée tenable
