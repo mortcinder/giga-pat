@@ -1177,7 +1177,7 @@ class ReportGenerator:
 
             return (
                 f"⚠️ Sur-liquidité détectée (ratio {ratio:.2f} > {threshold:.2f}). "
-                f"Une partie importante de votre patrimoine est en liquidités non investies, "
+                f"Une partie importante du patrimoine est en liquidités non investies, "
                 f"ce qui peut limiter le potentiel de croissance à long terme."
             )
         except Exception as e:
@@ -1228,7 +1228,7 @@ class ReportGenerator:
             target_months = liquidity_details.get("target_months", 12)
             methodology = (
                 f"Le score de liquidité mesure la capacité à faire face à {target_months} mois de dépenses sans revenus. "
-                f"La cible est adaptée au profil investisseur (prudent = 15 mois, équilibré = 12 mois, dynamique = 9 mois)."
+                f"La cible est adaptée au profil investisseur : prudent = 15 mois, équilibré = 12 mois, dynamique = 9 mois."
             )
             items.append(f"<li><strong>Méthodologie :</strong> {methodology}</li>")
 
@@ -1302,8 +1302,8 @@ class ReportGenerator:
             # Méthodologie (toujours présent)
             methodology = (
                 "Le score de croissance mesure le potentiel de rendement à long terme du patrimoine financier, "
-                "basé sur l'exposition aux marchés actions. La plage optimale varie selon votre profil investisseur "
-                "(prudent = 30-45%, équilibré = 50-65%, dynamique = 70-85%)."
+                "basé sur l'exposition aux marchés actions. La plage optimale varie selon le profil investisseur : "
+                "prudent = 30-45%, équilibré = 50-65%, dynamique = 70-85%."
             )
             items.append(f"<li><strong>Méthodologie :</strong> {methodology}</li>")
 
@@ -1702,24 +1702,24 @@ class ReportGenerator:
         # Construire la synthèse selon les types de risques détectés
         if has_etab_risk and has_jur_risk:
             return (
-                "Votre patrimoine financier présente une double concentration critique : "
+                "Le patrimoine financier présente une double concentration critique : "
                 "sur un établissement unique et sur une seule juridiction. "
                 "Cette situation cumule les risques de contrepartie (défaillance d'un établissement) "
                 "et les risques systémiques (réglementaire, fiscal, politique). "
                 "Une diversification sur plusieurs établissements et juridictions renforcerait "
-                "significativement la résilience de votre patrimoine."
+                "significativement la résilience du patrimoine."
             )
         elif has_etab_risk:
             return (
-                "Une partie importante de votre patrimoine est concentrée sur un seul "
+                "Une partie importante du patrimoine est concentrée sur un seul "
                 "établissement financier. Cette situation augmente le risque de contrepartie "
-                "et limite la résilience de votre patrimoine en cas de difficultés de l'établissement."
+                "et limite la résilience du patrimoine en cas de difficultés de l'établissement."
             )
         else:  # has_jur_risk
             return (
-                "Une concentration géographique excessive expose votre patrimoine aux risques "
+                "Une concentration géographique excessive expose le patrimoine aux risques "
                 "systémiques d'une seule juridiction (réglementaire, fiscal, politique). "
-                "Une diversification internationale renforcerait la robustesse de votre patrimoine."
+                "Une diversification internationale renforcerait la robustesse du patrimoine."
             )
 
     def _get_concentration_alert_severity(self, data: dict) -> str | None:
@@ -1781,7 +1781,7 @@ class ReportGenerator:
                 if alert["severity"] >= 2
                 else "Modéré"
             )
-            details_html += f"<li><strong>{alert['nom']}</strong> : {alert['pct']:.1f}% du patrimoine mobilier</li>"
+            details_html += f"<li><strong>{alert['nom']}</strong> : {alert['pct']:.1f}% du patrimoine financier</li>"
         details_html += "</ul>"
 
         return details_html

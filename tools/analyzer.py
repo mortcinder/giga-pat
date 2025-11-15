@@ -1068,7 +1068,7 @@ class PatrimoineAnalyzer:
             interpretation = ""
             if optimal_range[0] <= pct_actions <= optimal_range[1]:
                 score = 10
-                interpretation = f"Exposition optimale pour votre profil ({optimal_range[0]}-{optimal_range[1]}%)"
+                interpretation = f"Exposition optimale pour le profil {self.active_profile} ({optimal_range[0]}-{optimal_range[1]}%)"
             else:
                 # Vérifier si dans une plage "good"
                 in_good = any(r[0] <= pct_actions <= r[1] for r in good_ranges)
