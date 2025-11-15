@@ -156,9 +156,16 @@ class StressTester:
         Scénario : Perte d'emploi prolongée
         Section 17.3 du PRD
         """
-        revenu_mensuel = data.get("profil", {}).get("revenu_mensuel_net", 0)
+        # Revenu mensuel net depuis profil.professionnel (structure manifest v2.1)
+        profil = data.get("profil", {})
+        revenu_mensuel = profil.get("professionnel", {}).get("revenu_mensuel_net", 0)
 
-        # Hypothèse dépenses : 70% du revenu
+        # Fallback : chercher directement dans profil (rétrocompatibilité)
+        if revenu_mensuel == 0:
+            revenu_mensuel = profil.get("revenu_mensuel_net", 0)
+
+        # Hypothèse dépenses : 70% du revenu (standard gestion de patrimoine)
+        # Inclut : logement, alimentation, transport, assurances, loisirs
         depenses_mensuelles = revenu_mensuel * 0.70
 
         # Liquidité disponible
