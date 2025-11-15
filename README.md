@@ -1,16 +1,23 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.1.0-orange.svg)
+![Version](https://img.shields.io/badge/version-2.1.2-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.1** - Architecture homogène avec custodian unifié et parsing multi-fichiers
+**Version 2.1.2** - Architecture homogène avec valorisation immobilière automatique
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
-## 🆕 Nouveautés v2.1 (Novembre 2025)
+## 🆕 Nouveautés v2.1.2 (Novembre 2025)
+
+### Valorisation immobilière automatique (v2.1.2) ⭐
+- ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
+- ✅ **Extraction web** : Prix/m² depuis Brave API avec regex optimisés
+- ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
+- ⚠️ **Breaking change** : `valeur_actuelle` NE DOIT PLUS être dans manifest.json
 
 ### Architecture homogène v2.1
 - ✅ **Custodian unifié** : `custodian` + `custodian_name` + `custody_type` pour tous les actifs
@@ -22,6 +29,7 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **Pattern matching** : `source_pattern: "Bitstack/[BIT] - *.csv"` détecte automatiquement
 - ✅ **Performance** : 80% plus rapide avec cache (MD5-based invalidation)
 - ✅ **Crypto API** : Conversion BTC→EUR automatique via CoinGecko (gratuit)
+- ✅ **Parser BoursoBank PER** : Gestion encodage Unicode propriétaire (Private Use Area)
 
 ### Base v2.0
 - ✅ **Manifest-driven** : `manifest.json` comme source de vérité unique
@@ -298,11 +306,17 @@ tools/parsers/
 ├── registry.py                 # Registry + fallback
 ├── bitstack/                   # v2.1: Parser Bitstack
 │   └── transaction_history.py
+├── boursobank/                 # v2.1.1: Parser BoursoBank
+│   └── per_v2025.py           # Parser PER (encodage propriétaire)
 ├── credit_agricole/
 │   ├── pea_v2025.py           # Parser PEA CA format 2025
 │   └── av_v2_lignes.py        # Parser AV CA 2 lignes
 └── generic/
     └── csv_flexible.py         # Parser CSV générique
+
+tools/utils/
+├── risk_analyzer.py           # Analyse des risques (7 catégories)
+└── real_estate_valorizer.py   # v2.1.2: Valorisation immobilière
 ```
 
 **Avantages** :

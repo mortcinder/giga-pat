@@ -711,15 +711,24 @@ class PatrimoineNormalizer:
         ]
 
     def _integrate_immobilier(self, manifest: dict, data: dict):
-        """Intègre l'immobilier du manifest"""
+        """
+        Intègre l'immobilier du manifest.
+
+        Note: valeur_actuelle sera calculée dynamiquement par l'analyzer
+        via recherches web + extraction prix m². Ici on stocke uniquement
+        les données brutes nécessaires au calcul.
+        """
         immobilier = manifest.get("patrimoine", {}).get("immobilier", [])
 
         for bien in immobilier:
             bien_entry = {
                 "type": bien.get("type_bien", "Bien"),
                 "adresse": bien.get("adresse", ""),
-                "valeur_actuelle": bien.get("valeur_actuelle", bien.get("prix_acquisition", 0)),
-                "surface": bien.get("surface_m2", 0),
+                "surface_m2": bien.get("surface_m2", 0),
+                "surface": bien.get("surface_m2", 0),  # Alias pour compatibilité
+                "prix_acquisition": bien.get("prix_acquisition", 0),
+                # valeur_actuelle sera calculée par analyzer via web + fallback
+                "valeur_actuelle": bien.get("prix_acquisition", 0),  # Temporaire, recalculé ensuite
                 "metadata": bien.get("metadata", {})
             }
             data["patrimoine"]["immobilier"]["biens"].append(bien_entry)

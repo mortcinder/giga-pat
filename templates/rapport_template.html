@@ -135,7 +135,25 @@
             </table>
 
             <div class="alert" data-conditional="concentration_alert">
-                <span data-field="concentration_alert_content"></span>
+                <h3 data-field="concentration_alert_titre">
+                    Alerte de concentration
+                </h3>
+                <p data-field="concentration_alert_description">
+                    Cette alerte indique une concentration excessive de votre
+                    patrimoine.
+                </p>
+                <p>
+                    <strong>Niveau de risque global :</strong>
+                    <span
+                        class="badge"
+                        data-field="concentration_alert_severite"
+                        >…</span
+                    >
+                </p>
+                <p><strong>Risques identifiés :</strong></p>
+                <div data-field="concentration_alert_details">
+                    <!-- Liste de tous les risques détectés -->
+                </div>
             </div>
         </section>
 
@@ -382,13 +400,26 @@
 
             <!-- Interprétation -->
             <div class="alert">
-                <strong>⚠️ Amélioration modérée possible :</strong>
-                <span
-                    style="margin: 0; font-size: 10.5pt; line-height: 1.6"
-                    data-field="markowitz_interpretation"
-                >
-                    …
-                </span>
+                <h3 data-field="markowitz_alert_titre">
+                    Interprétation de l'optimisation
+                </h3>
+                <p data-field="markowitz_interpretation">
+                    L'analyse Markowitz permet d'identifier les opportunités
+                    d'amélioration du ratio rendement/risque.
+                </p>
+                <p>
+                    <strong>Amélioration potentielle :</strong>
+                    <span class="badge" data-field="markowitz_improvement_level"
+                        >…</span
+                    >
+                </p>
+                <p>
+                    <strong>Gain de Sharpe estimé :</strong>
+                    <span data-field="markowitz_sharpe_gain">+0.00</span>
+                </p>
+                <div data-field="markowitz_recommendation">
+                    <!-- Recommandations d'optimisation injectées dynamiquement -->
+                </div>
             </div>
 
             <!-- Note méthodologique -->

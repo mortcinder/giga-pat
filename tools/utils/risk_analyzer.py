@@ -14,6 +14,7 @@ import yaml
 import os
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from tools.utils.real_estate_valorizer import RealEstateValorizer
 
 
 # === CONSTANTES DE SEUILS DE RISQUE ===
@@ -51,6 +52,7 @@ class RiskAnalyzer:
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.web_researcher = web_researcher
+        self.real_estate_valorizer = RealEstateValorizer()
 
         # Seuils de risque depuis config (legacy, pour compatibilité)
         self.seuils = config.get("analyzer", {}).get("risk_thresholds", {
@@ -426,7 +428,7 @@ class RiskAnalyzer:
                     "sources_web": sources_marche[:1] if sources_marche else []
                 })
 
-        # Risque immobilier - Recherche web sur valorisation actuelle
+        # Risque immobilier - Recherche web sur valorisation actuelle + calcul valeur
         immobilier_total = data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
         biens_immobiliers = data.get("patrimoine", {}).get("immobilier", {}).get("biens", [])
 
@@ -434,7 +436,8 @@ class RiskAnalyzer:
             for bien in biens_immobiliers:
                 bien_type = bien.get("type", "bien")
                 adresse = bien.get("adresse", "")
-                valeur = bien.get("valeur_actuelle", 0)
+                surface_m2 = bien.get("surface_m2", bien.get("surface", 0))
+                prix_acquisition = bien.get("prix_acquisition", 0)
 
                 # Extraire la ville de l'adresse pour la recherche
                 ville = ""
@@ -445,6 +448,7 @@ class RiskAnalyzer:
                         ville = match.group(1).strip()
 
                 # Recherche web sur la valorisation immobilière
+                sources_immo = []
                 if ville:
                     sources_immo = self.web_researcher.search(
                         f"Valorisation immobilière {ville}",
@@ -453,18 +457,55 @@ class RiskAnalyzer:
                             f"marché immobilier {ville} évolution",
                             f"valorisation {bien_type.lower()} {ville}"
                         ],
-                        context=f"Bien: {bien_type}, {adresse}, valeur actuelle: {valeur:,.0f}€"
+                        context=f"Bien: {bien_type}, {adresse}, surface: {surface_m2}m²"
                     )
 
                     self.logger.info(f"Recherche valorisation immobilière {ville}: {len(sources_immo)} sources")
 
-                    # Ajouter un risque informatif sur le bien immobilier
+                # Calculer la valorisation actuelle depuis web ou fallback
+                if surface_m2 > 0:
+                    valorisation = self.real_estate_valorizer.calculate_property_value(
+                        surface_m2=surface_m2,
+                        city=ville if ville else "default",
+                        web_sources=sources_immo,
+                        acquisition_price=prix_acquisition
+                    )
+
+                    # Stocker la valorisation calculée dans le bien
+                    bien["valeur_actuelle"] = valorisation["valeur_actuelle"]
+                    bien["prix_m2_actuel"] = valorisation["prix_m2"]
+                    bien["valorisation_source"] = valorisation["source"]
+
+                    valeur = valorisation["valeur_actuelle"]
+
+                    # Description enrichie avec plus-value si disponible
+                    description = f"{bien_type} situé à {adresse}. Surface: {surface_m2}m². "
+                    description += f"Valeur estimée actuelle: {valeur:,.0f}€ "
+                    description += f"(prix m²: {valorisation['prix_m2']:,.0f}€, source: {valorisation['source']}). "
+
+                    if "plus_value" in valorisation:
+                        plus_value_pct = valorisation["plus_value_pct"]
+                        sign = "+" if plus_value_pct >= 0 else ""
+                        description += f"Plus-value: {sign}{plus_value_pct}% depuis acquisition ({prix_acquisition:,.0f}€). "
+
+                    description += "Consulter les sources web pour l'évolution du marché local."
+
+                    self.logger.info(
+                        f"Valorisation {bien_type} {ville}: {valeur:,.0f}€ "
+                        f"({surface_m2}m² × {valorisation['prix_m2']}€/m², source: {valorisation['source']})"
+                    )
+                else:
+                    # Fallback si pas de surface
+                    valeur = bien.get("valeur_actuelle", prix_acquisition)
+                    description = f"{bien_type} situé à {adresse}. Valeur estimée: {valeur:,.0f}€."
+                    self.logger.warning(f"Pas de surface pour {bien_type} {ville}, utilisation valeur brute")
+
+                # Ajouter un risque informatif sur le bien immobilier
+                if ville:
                     risks.append({
                         "id": self._get_risk_id(),
                         "titre": f"Valorisation {bien_type} - {ville}",
-                        "description": f"{bien_type} situé à {adresse}. "
-                                      f"Valeur estimée actuelle: {valeur:,.0f}€. "
-                                      f"Consulter les sources web pour l'évolution du marché local.",
+                        "description": description,
                         "exposition_montant": valeur,
                         "exposition_pct": round((valeur / (total_patrimoine + immobilier_total)) * 100, 1) if (total_patrimoine + immobilier_total) > 0 else 0,
                         "probabilite": "Faible",
@@ -473,6 +514,11 @@ class RiskAnalyzer:
                         "categorie": "Marché - Immobilier",
                         "sources_web": sources_immo[:3] if sources_immo else []
                     })
+
+            # Recalculer le total immobilier après mise à jour des valorisations
+            total_immo_recalcule = sum(b.get("valeur_actuelle", 0) for b in biens_immobiliers)
+            data["patrimoine"]["immobilier"]["total"] = total_immo_recalcule
+            self.logger.info(f"Total immobilier recalculé: {total_immo_recalcule:,.0f}€")
 
         return risks
 

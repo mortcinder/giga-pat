@@ -18,7 +18,7 @@
     --text-light: #475569;
     --text-alpha: rgba(51, 65, 85, 0.1);
     --muted: #64748b;
-    --blue: #0e1823;
+    --blue: #162846;
     --blue-dark: #070c14;
     --blue-light: #dde2f2;
     --gold: #b29965;
@@ -60,7 +60,8 @@
     --border-side-blue: 4px solid var(--blue);
     --border-side-red: 4px solid var(--red);
     --border-side-gray: 5px solid var(--gray-light);
-    --border-side-dashed: 1px dashed #e5e7eb;
+    --border-side-dashed-dark: 1px dashed var(--text-alpha);
+    --border-side-dashed-light: 1px dashed var(--gray-light);
     --shadow-card: 0 6px 18px rgba(16, 24, 40, 0.06);
     --shadow-cover: 0 10px 30px rgba(2, 6, 23, 0.18);
     --border-slate: 4px solid var(--slate);
@@ -257,19 +258,9 @@ table .badge {
     padding: 3px 8px;
 } /* version compacte */
 
-/* Alertes simples */
-.alert {
-    padding: 12px;
-    border-left: var(--border-side-red);
-    background: var(--red-light);
-    border-radius: var(--border-radius);
-    margin: 12px 0;
-}
-
 /* Titres unifiés des cartes */
 .card-title,
 .reco h3,
-.alert strong,
 .stress .scenario,
 .mk-card-current h3,
 .mk-card-optimal h3 {
@@ -387,6 +378,7 @@ table .badge {
 }
 
 /* 5.3 Risques patrimoniaux */
+.alert,
 .risque {
     position: relative;
     background: var(--red-light);
@@ -397,33 +389,40 @@ table .badge {
     padding: var(--padding-card);
     margin: 12px 0;
 }
+.alert h3,
 .risque h3 {
     margin: var(--margin-h3);
     color: var(--blue-dark);
     font-weight: var(--font-weight-bold);
 }
+.alert p,
 .risque p {
     color: var(--text);
 }
+.alert p + p,
 .risque p + p {
     margin-top: 8px;
-    border-top: var(--border-side-dashed);
+    border-top: var(--border-side-dashed-dark);
     padding-top: 8px;
 }
+.alert strong,
 .risque strong {
     color: var(--blue);
 }
+.alert details,
 .risque details summary {
     font-weight: var(--font-weight-semibold);
     margin-top: 10px;
     color: var(--blue-dark);
 }
+.alert details ul,
 .risque details ul {
     margin: 6px 0 0 14px;
     padding: 0;
     list-style: disc;
     color: var(--text);
 }
+.alertdetails li,
 .risque details li {
     font-size: var(--font-size-sm);
 }
@@ -461,7 +460,7 @@ table .badge {
 }
 .reco p + p {
     margin-top: 8px;
-    border-top: var(--border-side-dashed);
+    border-top: var(--border-side-dashed-light);
     padding-top: 8px;
 }
 .stress strong,
@@ -530,7 +529,7 @@ table .badge {
 }
 .stress p.description {
     margin-top: 8px;
-    border-top: var(--border-side-dashed);
+    border-top: var(--border-side-dashed-light);
     padding-top: 8px;
     color: var(--text);
     line-height: 1.45;
@@ -590,6 +589,9 @@ table .badge {
     background: var(--subtle);
     box-shadow: var(--shadow-card);
 }
+.mk-card-current {
+    border-left: var(--border-side-red);
+}
 .mk-card-optimal {
     border-left: var(--border-side-gold);
 }
@@ -641,7 +643,7 @@ table .badge {
 }
 .methodology-content li {
     padding: 5px 0;
-    border-bottom: var(--border-side-dashed);
+    border-bottom: var(--border-side-dashed-light);
     color: var(--text-light);
     font-size: var(--font-size-sm);
 }
@@ -765,7 +767,7 @@ footer {
     gap: 8px;
     align-items: baseline;
     font-size: var(--font-size-sm);
-    border-bottom: var(--border-side-dashed);
+    border-bottom: var(--border-side-dashed-light);
 }
 
 .syn-kv strong {
@@ -780,7 +782,7 @@ footer {
 
 .syn-note-list li {
     padding: 8px 0;
-    border-bottom: var(--border-side-dashed);
+    border-bottom: var(--border-side-dashed-light);
     color: var(--text-light);
     font-size: var(--font-size-sm);
     line-height: 1.6;

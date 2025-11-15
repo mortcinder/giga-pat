@@ -222,8 +222,23 @@ class ReportGenerator:
             ),
             "growth_optimal_range": (self._format_growth_optimal_range, None),
             "growth_note_complete": (self._format_growth_complete_note, None),
-            # Alerte de concentration (conditionnel)
+            # Alerte de concentration (conditionnel) - Structure harmonisée
             "concentration_alert_content": (self._analyze_concentration_alert, None),
+            "concentration_alert_titre": (self._get_concentration_alert_title, None),
+            "concentration_alert_description": (
+                self._get_concentration_alert_description,
+                None,
+            ),
+            "concentration_alert_severite": (
+                self._get_concentration_alert_severity,
+                None,
+            ),
+            "concentration_alert_montant": (self._get_concentration_alert_amount, None),
+            "concentration_alert_pct": (self._get_concentration_alert_pct, None),
+            "concentration_alert_details": (
+                self._get_concentration_alert_details,
+                None,
+            ),
             # Optimisation Markowitz - Graphique
             "markowitz_chart": ("optimisation_portefeuille.graphique_base64", str),
             # Optimisation Markowitz - Portefeuille actuel
@@ -261,6 +276,14 @@ class ReportGenerator:
                 "optimisation_portefeuille.interpretation",
                 str,
             ),
+            # Optimisation Markowitz - Alerte harmonisée
+            "markowitz_alert_titre": (self._get_markowitz_alert_title, None),
+            "markowitz_improvement_level": (
+                self._get_markowitz_improvement_level,
+                None,
+            ),
+            "markowitz_sharpe_gain": (self._get_markowitz_sharpe_gain, None),
+            "markowitz_recommendation": (self._get_markowitz_recommendation, None),
             # Méthodologie benchmark
             "benchmark_methodology_content": (self._format_benchmark_methodology, None),
         }
@@ -374,6 +397,44 @@ class ReportGenerator:
         for badge_el in growth_label_elements:
             label_text = badge_el.string if badge_el.string else ""
             badge_class = self._get_growth_badge_class(label_text)
+
+            if badge_el.has_attr("class"):
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
+                badge_classes.append(badge_class)
+                badge_el["class"] = badge_classes
+            else:
+                badge_el["class"] = ["badge", badge_class]
+
+        # Post-traitement : Appliquer la classe CSS au badge concentration_alert_severite
+        concentration_severity_elements = soup.find_all(
+            attrs={"data-field": "concentration_alert_severite"}
+        )
+        for badge_el in concentration_severity_elements:
+            label_text = badge_el.string if badge_el.string else ""
+            badge_class = self._get_alert_severity_badge_class(label_text)
+
+            if badge_el.has_attr("class"):
+                badge_classes = [
+                    c
+                    for c in badge_el["class"]
+                    if c not in ["high", "mid", "low", "crit"]
+                ]
+                badge_classes.append(badge_class)
+                badge_el["class"] = badge_classes
+            else:
+                badge_el["class"] = ["badge", badge_class]
+
+        # Post-traitement : Appliquer la classe CSS au badge markowitz_improvement_level
+        markowitz_improvement_elements = soup.find_all(
+            attrs={"data-field": "markowitz_improvement_level"}
+        )
+        for badge_el in markowitz_improvement_elements:
+            label_text = badge_el.string if badge_el.string else ""
+            badge_class = self._get_markowitz_improvement_badge_class(label_text)
 
             if badge_el.has_attr("class"):
                 badge_classes = [
@@ -526,7 +587,9 @@ class ReportGenerator:
             gap_niveau = benchmark_gap.get("niveau", "dans_la_cible")
 
             # Niveau 1 (primaire) : Badge avec écart (ex: "▲ +131%", "▼ -50%", "Cible")
-            badge_primary = new_row.find("span", attrs={"data-field": "class_gap_badge_primary"})
+            badge_primary = new_row.find(
+                "span", attrs={"data-field": "class_gap_badge_primary"}
+            )
             if badge_primary:
                 # Déterminer la classe CSS selon le niveau
                 if gap_niveau == "dans_la_cible":
@@ -542,7 +605,9 @@ class ReportGenerator:
                 badge_primary.string = gap_message_badge
 
             # Niveau 2 (secondaire) : Contexte (ex: "38.5% vs 77.5%")
-            context_span = new_row.find("span", attrs={"data-field": "class_gap_context"})
+            context_span = new_row.find(
+                "span", attrs={"data-field": "class_gap_context"}
+            )
             if context_span:
                 context_span.string = gap_message_context
 
@@ -1444,12 +1509,12 @@ class ReportGenerator:
 
             # Nom de juridiction plus lisible
             jur_name = {
-                "france": "système français",
-                "suisse": "système suisse",
-                "luxembourg": "système luxembourgeois",
-                "usa": "système américain",
-                "royaume-uni": "système britannique",
-            }.get(juridiction.lower(), f"système {juridiction}")
+                "france": "Système français",
+                "suisse": "Système suisse",
+                "luxembourg": "Système luxembourgeois",
+                "usa": "Système américain",
+                "royaume-uni": "Système britannique",
+            }.get(juridiction.lower(), f"Système {juridiction}")
 
             if niveau_risque == "Critique" or pct >= 80:
                 alerts.append(
@@ -1611,3 +1676,328 @@ class ReportGenerator:
         """
 
         return methodology_html
+
+    def _get_concentration_alert_title(self, data: dict) -> str | None:
+        """
+        Retourne le titre de l'alerte de concentration
+        """
+        alerts = self._get_concentration_alerts_data(data)
+        if not alerts:
+            return None
+
+        return "Alerte de concentration"
+
+    def _get_concentration_alert_description(self, data: dict) -> str | None:
+        """
+        Retourne une synthèse/résumé des risques de concentration détectés
+        """
+        alerts = self._get_concentration_alerts_data(data)
+        if not alerts:
+            return None
+
+        # Identifier les types de risques présents
+        has_etab_risk = any("etablissement" in a["type"] for a in alerts)
+        has_jur_risk = any("juridiction" in a["type"] for a in alerts)
+
+        # Construire la synthèse selon les types de risques détectés
+        if has_etab_risk and has_jur_risk:
+            return (
+                "Votre patrimoine financier présente une double concentration critique : "
+                "sur un établissement unique et sur une seule juridiction. "
+                "Cette situation cumule les risques de contrepartie (défaillance d'un établissement) "
+                "et les risques systémiques (réglementaire, fiscal, politique). "
+                "Une diversification sur plusieurs établissements et juridictions renforcerait "
+                "significativement la résilience de votre patrimoine."
+            )
+        elif has_etab_risk:
+            return (
+                "Une partie importante de votre patrimoine est concentrée sur un seul "
+                "établissement financier. Cette situation augmente le risque de contrepartie "
+                "et limite la résilience de votre patrimoine en cas de difficultés de l'établissement."
+            )
+        else:  # has_jur_risk
+            return (
+                "Une concentration géographique excessive expose votre patrimoine aux risques "
+                "systémiques d'une seule juridiction (réglementaire, fiscal, politique). "
+                "Une diversification internationale renforcerait la robustesse de votre patrimoine."
+            )
+
+    def _get_concentration_alert_severity(self, data: dict) -> str | None:
+        """
+        Retourne le niveau de sévérité de l'alerte (badge)
+        """
+        alerts = self._get_concentration_alerts_data(data)
+        if not alerts:
+            return None
+
+        alert = alerts[0]
+        if alert["severity"] >= 3:
+            return "Critique"
+        elif alert["severity"] >= 2:
+            return "Élevé"
+        else:
+            return "Modéré"
+
+    def _get_concentration_alert_amount(self, data: dict) -> str | None:
+        """
+        Retourne le montant exposé
+        """
+        alerts = self._get_concentration_alerts_data(data)
+        if not alerts:
+            return None
+
+        alert = alerts[0]
+        pct = alert["pct"]
+        patrimoine_total = data.get("synthese", {}).get("patrimoine_total", 0)
+        montant = patrimoine_total * pct / 100
+
+        return self._format_currency(montant)
+
+    def _get_concentration_alert_pct(self, data: dict) -> str | None:
+        """
+        Retourne le pourcentage du patrimoine exposé
+        """
+        alerts = self._get_concentration_alerts_data(data)
+        if not alerts:
+            return None
+
+        return f"{alerts[0]['pct']:.1f}"
+
+    def _get_concentration_alert_details(self, data: dict) -> str | None:
+        """
+        Retourne la liste de TOUS les risques de concentration détectés
+        """
+        alerts = self._get_concentration_alerts_data(data)
+        if not alerts:
+            return None
+
+        # Lister TOUS les risques détectés
+        details_html = "<ul>"
+        for alert in alerts[:4]:  # Max 4 alertes
+            severity_label = (
+                "Critique"
+                if alert["severity"] >= 3
+                else "Élevé"
+                if alert["severity"] >= 2
+                else "Modéré"
+            )
+            details_html += f"<li><strong>{alert['nom']}</strong> : {alert['pct']:.1f}% du patrimoine mobilier</li>"
+        details_html += "</ul>"
+
+        return details_html
+
+    def _severity_to_class(self, severity: str) -> str:
+        """Convertit un niveau de sévérité en classe CSS"""
+        mapping = {
+            "Critique": "crit",
+            "Élevé": "high",
+            "Modéré": "mid",
+            "Faible": "low",
+        }
+        return mapping.get(severity, "mid")
+
+    def _get_concentration_alerts_data(self, data: dict) -> list:
+        """
+        Helper pour extraire les données d'alerte de concentration
+        Similaire à _analyze_concentration_alert mais retourne les données structurées
+        """
+        etablissements = data.get("repartition", {}).get("par_etablissement", [])
+        concentration_jur = data.get("repartition", {}).get("concentration", {})
+
+        alerts = []
+
+        # 1. Analyser la concentration par établissement
+        for etab in etablissements:
+            pct = etab.get("pourcentage", 0)
+            nom = etab.get("nom", "Établissement inconnu")
+            niveau_risque = etab.get("niveau_risque", "Normal")
+
+            if niveau_risque == "Critique" or pct >= 50:
+                alerts.append(
+                    {
+                        "type": "etablissement_critique",
+                        "pct": pct,
+                        "nom": nom,
+                        "severity": 3,
+                    }
+                )
+            elif niveau_risque == "Élevé" or pct >= 30:
+                alerts.append(
+                    {
+                        "type": "etablissement_eleve",
+                        "pct": pct,
+                        "nom": nom,
+                        "severity": 2,
+                    }
+                )
+
+        # 2. Analyser la concentration par juridiction
+        for juridiction, info in concentration_jur.items():
+            pct = info.get("pourcentage", 0)
+            niveau_risque = info.get("niveau_risque", "Normal")
+
+            jur_name = {
+                "france": "Système français",
+                "suisse": "Système suisse",
+                "luxembourg": "Système luxembourgeois",
+                "usa": "Système américain",
+                "royaume-uni": "Système britannique",
+            }.get(juridiction.lower(), f"Système {juridiction}")
+
+            if niveau_risque == "Critique" or pct >= 80:
+                alerts.append(
+                    {
+                        "type": "juridiction_critique",
+                        "pct": pct,
+                        "nom": jur_name,
+                        "severity": 3,
+                    }
+                )
+            elif niveau_risque == "Élevé" or pct >= 60:
+                alerts.append(
+                    {
+                        "type": "juridiction_elevee",
+                        "pct": pct,
+                        "nom": jur_name,
+                        "severity": 2,
+                    }
+                )
+
+        # Trier par sévérité décroissante
+        alerts.sort(key=lambda x: (-x["severity"], -x["pct"]))
+
+        return alerts
+
+    def _get_markowitz_alert_title(self, data: dict) -> str:
+        """
+        Retourne le titre de l'alerte Markowitz
+        """
+        return "Interprétation de l'optimisation Markowitz"
+
+    def _get_markowitz_improvement_level(self, data: dict) -> str:
+        """
+        Retourne le niveau d'amélioration possible (badge)
+        """
+        current_sharpe = (
+            data.get("optimisation_portefeuille", {})
+            .get("portefeuille_actuel", {})
+            .get("ratio_sharpe", 0)
+        )
+        optimal_sharpe = (
+            data.get("optimisation_portefeuille", {})
+            .get("portefeuille_optimal", {})
+            .get("ratio_sharpe", 0)
+        )
+
+        gain = optimal_sharpe - current_sharpe
+
+        if gain >= 0.5:
+            return "Importante"
+        elif gain >= 0.2:
+            return "Modérée"
+        elif gain >= 0.05:
+            return "Marginale"
+        else:
+            return "Inutile"
+
+    def _get_markowitz_sharpe_gain(self, data: dict) -> str:
+        """
+        Retourne le gain de Sharpe estimé
+        """
+        current_sharpe = (
+            data.get("optimisation_portefeuille", {})
+            .get("portefeuille_actuel", {})
+            .get("ratio_sharpe", 0)
+        )
+        optimal_sharpe = (
+            data.get("optimisation_portefeuille", {})
+            .get("portefeuille_optimal", {})
+            .get("ratio_sharpe", 0)
+        )
+
+        gain = optimal_sharpe - current_sharpe
+        return f"+{gain:.2f}" if gain > 0 else f"{gain:.2f}"
+
+    def _get_markowitz_recommendation(self, data: dict) -> str:
+        """
+        Retourne les recommandations d'optimisation basées sur l'écart Sharpe
+        Génère des actions concrètes, pas l'interprétation générale
+        """
+        current_sharpe = (
+            data.get("optimisation_portefeuille", {})
+            .get("portefeuille_actuel", {})
+            .get("ratio_sharpe", 0)
+        )
+        optimal_sharpe = (
+            data.get("optimisation_portefeuille", {})
+            .get("portefeuille_optimal", {})
+            .get("ratio_sharpe", 0)
+        )
+
+        gain = optimal_sharpe - current_sharpe
+
+        # Générer des recommandations spécifiques basées sur l'écart
+        recommendations = []
+
+        if gain >= 0.5:
+            recommendations = [
+                "Rééquilibrer significativement l'allocation entre classes d'actifs",
+                "Considérer une réduction de l'exposition aux actifs les moins efficients",
+                "Optimiser la diversification pour réduire la volatilité globale",
+            ]
+        elif gain >= 0.2:
+            recommendations = [
+                "Ajuster progressivement l'allocation vers le portefeuille optimal",
+                "Évaluer les frais de transaction avant rééquilibrage",
+                "Maintenir un suivi régulier des écarts avec l'allocation cible",
+            ]
+        elif gain >= 0.05:
+            recommendations = [
+                "Maintenir l'allocation actuelle avec surveillance trimestrielle",
+                "Rééquilibrer uniquement lors d'écarts supérieurs à 5%",
+            ]
+        else:
+            recommendations = [
+                "L'allocation actuelle est optimale, aucune action requise",
+                "Poursuivre la stratégie d'investissement en place",
+            ]
+
+        if not recommendations:
+            return ""
+
+        html = "<ul>"
+        for rec in recommendations:
+            html += f"<li>{rec}</li>"
+        html += "</ul>"
+
+        return html
+
+    def _get_alert_severity_badge_class(self, label: str) -> str:
+        """
+        Retourne classe CSS selon le label de sévérité de l'alerte
+        """
+        label_lower = label.lower()
+        if "critique" in label_lower:
+            return "crit"  # Rouge foncé
+        elif "élevé" in label_lower:
+            return "high"  # Rouge clair
+        elif "modéré" in label_lower:
+            return "mid"  # Orange
+        else:
+            return "low"  # Vert
+
+    def _get_markowitz_improvement_badge_class(self, label: str) -> str:
+        """
+        Retourne classe CSS selon le niveau d'amélioration Markowitz
+        """
+        label_lower = label.lower()
+        if "forte" in label_lower:
+            return "high"  # Rouge clair = forte amélioration nécessaire
+        elif "modérée" in label_lower:
+            return "mid"  # Orange = amélioration modérée
+        elif "marginale" in label_lower:
+            return "low"  # Vert = bon
+        elif "proche de l'optimal" in label_lower or "optimal" in label_lower:
+            return "low"  # Vert = excellent
+        else:
+            return "mid"  # Par défaut : orange

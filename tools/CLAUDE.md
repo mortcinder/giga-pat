@@ -289,6 +289,94 @@ plateforme_entry = {
 2. If no valeur → log warning and set to 0
 3. Manual-only crypto (no source_file) → empty `actifs[]`, manual total
 
+### Real Estate Valorization (v2.1.2+)
+
+**Purpose**: Automatically revalue real estate at each report generation via web research + intelligent fallback.
+
+**Architecture** (`tools/utils/real_estate_valorizer.py`):
+- **Web extraction**: Parses price/m² from Brave API search results
+- **Intelligent fallback**: City-specific prices when API unavailable (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
+- **Automatic calculation**: `valeur_actuelle = surface_m2 × prix_m2`
+- **Plus-value tracking**: Auto-calculates appreciation since acquisition
+
+**Integration Flow**:
+1. **Normalizer** (`_integrate_immobilier()`):
+   - Stores `prix_acquisition` as temporary `valeur_actuelle`
+   - Preserves `surface_m2`, `adresse`, `metadata`
+2. **Analyzer** (`risk_analyzer.py`, `_analyze_market_risks()`):
+   - Performs web searches: `"prix immobilier m² {city} 2025"`
+   - Calls `RealEstateValorizer.calculate_property_value()`
+   - Updates `bien["valeur_actuelle"]` with calculated value
+   - Stores `prix_m2_actuel`, `valorisation_source` (web/fallback)
+   - Recalculates `data["patrimoine"]["immobilier"]["total"]`
+3. **Report**: Displays updated valorization with enriched details
+
+**Manifest Structure** (v2.1.2):
+```json
+{
+  "patrimoine": {
+    "immobilier": [{
+      "id": "nanterre_studio_001",
+      "type_bien": "Studio",
+      "adresse": "34 rue Salvador Allende, 92000 Nanterre",
+      "surface_m2": 25,
+      "prix_acquisition": 110000,
+      "currency": "EUR",
+      "metadata": {
+        "prix_m2_acquisition": 4400,
+        "date_acquisition": "2016-06-30"
+      }
+    }]
+  }
+}
+```
+
+**⚠️ IMPORTANT**:
+- **DO NOT** include `valeur_actuelle` in manifest.json
+- Value is recalculated at EVERY report generation
+- `prix_acquisition` is the only static reference value
+
+**Example Output** (logs):
+```
+[INFO] Prix fallback pour Nanterre: 5300 €/m²
+[INFO] Valorisation calculée : 25m² × 5300€/m² = 132500€ (source: fallback)
+[INFO] Valorisation Studio Nanterre: 132,500€ (25m² × 5300€/m², source: fallback)
+[INFO] Total immobilier recalculé: 132,500€
+```
+
+**Report Display**:
+```
+Valorisation Studio - Nanterre
+Studio situé à 34 rue Salvador Allende, 92000 Nanterre.
+Surface: 25m².
+Valeur estimée actuelle: 132,500€
+(prix m²: 5,300€, source: fallback).
+Plus-value: +20.5% depuis acquisition (110,000€).
+```
+
+**Fallback Prices** (default values in `real_estate_valorizer.py`):
+- Nanterre: 5300€/m²
+- Paris: 10500€/m²
+- Lyon: 5800€/m²
+- Marseille: 4200€/m²
+- Default: 3500€/m² (national average)
+
+**Web Extraction Patterns**:
+- `(\d[\d\s]*)\s*€\s*/\s*m[²2]` → "5 300 €/m²"
+- `prix\s+(?:moyen|médian)\s*:\s*(\d[\d\s]*)\s*€` → "prix moyen : 5 300 €"
+- Filters aberrant values (valid range: 1000-20000 €/m²)
+- Returns median of extracted prices (robust against outliers)
+
+**Customizing Fallback Prices**:
+Edit `tools/utils/real_estate_valorizer.py` → `self.fallback_prices`:
+```python
+self.fallback_prices = {
+    "nanterre": 5300,
+    "my_city": 4500,  # Add your city
+    "default": 3500
+}
+```
+
 ## Stage 2: Analyzer (`analyzer.py`)
 
 **Purpose**: Deep analysis with web research, risk assessment, recommendations.
