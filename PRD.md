@@ -500,7 +500,7 @@ Analyser le patrimoine en profondeur avec recherches web exhaustives et génére
     "critiques": [
       {
         "id": "RISK_001",
-        "titre": "Loi Sapin 2 - Blocage assurance-vie",
+        "titre": "Loi Sapin 2 — Blocage assurance-vie",
         "description": "Risque de gel temporaire de l'AV en cas de crise bancaire",
         "exposition_montant": 106046,
         "exposition_pct": 30.1,

@@ -346,7 +346,7 @@ plateforme_entry = {
 
 **Report Display**:
 ```
-Valorisation Studio - Nanterre
+Valorisation Studio — Nanterre
 Studio situé à 34 rue Salvador Allende, 92000 Nanterre.
 Surface: 25m².
 Valeur estimée actuelle: 132,500€

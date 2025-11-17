@@ -759,7 +759,9 @@ class ReportGenerator:
                 # Test de résilience temporelle (ex: perte d'emploi)
                 # Masquer le bloc impact et afficher le bloc résilience
                 impact_block = new_div.find(attrs={"data-field": "test_impact_block"})
-                resilience_block = new_div.find(attrs={"data-field": "test_resilience_block"})
+                resilience_block = new_div.find(
+                    attrs={"data-field": "test_resilience_block"}
+                )
 
                 if impact_block:
                     impact_block["style"] = "display: none;"
@@ -1588,7 +1590,7 @@ class ReportGenerator:
                     )
                 else:  # juridiction
                     alert_messages.append(
-                        f"<strong>⚠️ Concentration géographique critique :</strong> {pct:.1f}% du patrimoine "
+                        f"<strong>⚠️ Concentration géographique :</strong> {pct:.1f}% du patrimoine "
                         f"exposé au <strong>{nom}</strong>"
                     )
             else:  # élevé
@@ -1626,10 +1628,9 @@ class ReportGenerator:
         Returns:
             Nom du profil (ex: "Dynamique", "Équilibré", "Prudent")
         """
-        # Le profil actif est stocké dans config
-        active_profile = self.config.get("analysis", {}).get(
-            "active_profile", "default"
-        )
+        # v2.1: Le profil actif est stocké à la racine des données d'analyse JSON
+        # (déterminé par l'analyzer depuis manifest.json ou override config)
+        active_profile = data.get("active_profile", "default")
 
         # Mapping des noms de profils
         profile_names = {
@@ -1652,9 +1653,8 @@ class ReportGenerator:
         Returns:
             HTML formaté en 2 colonnes avec listes
         """
-        active_profile = self.config.get("analysis", {}).get(
-            "active_profile", "default"
-        )
+        # v2.1: Le profil actif est lu depuis la racine des données d'analyse JSON
+        active_profile = data.get("active_profile", "default")
         profile_display = self._get_active_profile_display(data)
 
         # Charger les benchmarks du profil actif
@@ -1680,7 +1680,7 @@ class ReportGenerator:
 
         # Structure HTML en 2 colonnes (comme Markowitz)
         methodology_html = f"""
-        <div class="methodology-content">
+        <div class="grid">
             <div class="methods">
                 <h4>Méthodologie</h4>
                 <ul>

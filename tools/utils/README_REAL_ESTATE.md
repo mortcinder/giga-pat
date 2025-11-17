@@ -191,7 +191,7 @@ data["patrimoine"]["immobilier"]["total"] = sum(
 ### Stage 3: Report
 
 ```html
-<h3>Valorisation Studio - Nanterre</h3>
+<h3>Valorisation Studio — Nanterre</h3>
 <p>
 Studio situé à 34 rue Salvador Allende, 92000 Nanterre.
 Surface: 25m².
