@@ -28,7 +28,7 @@ from tools.parsers.credit_agricole import CreditAgricolePEA2025Parser, CreditAgr
 from tools.parsers.generic import GenericCSVParser
 from tools.parsers.bitstack import BitstackTransactionHistoryParser
 from tools.parsers.bforbank import BforBankCTO2025Parser
-from tools.parsers.crypcool import CrypCoolTransactionAggregator2025Parser
+from tools.parsers.crypcool import CrypCoolTransactionAggregator2025Parser, CrypCoolTransactionAggregator2026Parser
 from tools.parsers.boursobank import BoursoBankPER2025Parser
 
 
@@ -59,6 +59,7 @@ class PatrimoineNormalizer:
         self.parser_registry.register(BitstackTransactionHistoryParser)
         self.parser_registry.register(BforBankCTO2025Parser)
         self.parser_registry.register(CrypCoolTransactionAggregator2025Parser)
+        self.parser_registry.register(CrypCoolTransactionAggregator2026Parser)
         self.parser_registry.register(BoursoBankPER2025Parser)
 
         self.logger.info(f"Parsers enregistrés : {', '.join(self.parser_registry.list_parsers())}")

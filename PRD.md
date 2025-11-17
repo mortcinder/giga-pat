@@ -1739,7 +1739,14 @@ Le système supporte actuellement les parsers suivants (architecture pluggable) 
 | Parser | Plateforme | Type | Format | Statut |
 |--------|------------|------|--------|--------|
 | `bitstack.transaction_history.v2025` | Bitstack | Bitcoin | CSV multi-fichiers | ✅ Actif |
-| `crypcool.csv.v2025` | CrypCool | Multi-crypto | CSV | ✅ Actif |
+| `crypcool.csv.v2025` | CrypCool | Multi-crypto | CSV colonnaire | ⚠️ Legacy |
+| `crypcool.csv.v2026` | CrypCool | Multi-crypto | CSV transactionnel | ✅ Actif |
+
+**CrypCool v2026 (NEW)** :
+- Format transactionnel avec colonnes : `Timestamp`, `Operation type`, `Base amount`, `Base currency`, `Quote amount`, `Quote currency`, `Fee amount`, `Fee currency`
+- Déduction automatique des frais payés en crypto
+- Support des trades crypto-to-crypto (ex: BTC→VRO)
+- Valorisation ~2-3% inférieure à l'affichage CrypCool (frais déduits + prix CoinGecko)
 
 ### 7.3.3 Cas spéciaux : BoursoBank PER
 

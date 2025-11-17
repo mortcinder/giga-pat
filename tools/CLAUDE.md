@@ -33,7 +33,8 @@ This file provides detailed technical guidance for working with the 3-stage pipe
 - `credit_agricole.av.v2_lignes`: Assurance-vie 2-line format
 - `generic.csv.flexible`: Flexible CSV mapping with column configuration
 - `bitstack.transaction_history.v2025`: Bitstack crypto transactions (v2.1+)
-- `crypcool.csv.v2025`: CrypCool multi-crypto CSV aggregator (v2.1.1+)
+- `crypcool.csv.v2025`: CrypCool multi-crypto CSV aggregator (columnar format, v2.1.1+)
+- `crypcool.csv.v2026`: CrypCool transactional CSV with fees deduction (v2.1.3+)
 - `bforbank.cto.v2025`: BforBank CTO PDF parser (v2.1+)
 - `boursobank.per.v2025`: BoursoBank PER with Unicode corruption handling (v2.1+)
 
@@ -128,14 +129,35 @@ This file provides detailed technical guidance for working with the 3-stage pipe
 - **Caching**: Supports historical year caching (80% faster on re-runs)
 - **Location**: `tools/parsers/bitstack/transaction_history.py`
 
-**CrypCool Parser** (`crypcool.csv.v2025`):
-- **Format**: CSV transaction history with multi-crypto columns
+**CrypCool Parser v2025** (`crypcool.csv.v2025`):
+- **Format**: CSV with columnar crypto data (one column per crypto)
 - **Logic**: Dynamic column detection + algebraic aggregation
 - **Columns**: Auto-detects all crypto columns (BTC, ETH, VRO, etc.)
 - **Aggregation**: `holdings[crypto] = sum(all transactions)` (+ and -)
 - **Filter**: Only returns cryptos with `amount > 0` (positive balance)
 - **Output**: One position per crypto with ticker for EUR conversion
 - **Location**: `tools/parsers/crypcool/csv_transaction_aggregator_v2025.py`
+
+**CrypCool Parser v2026** (`crypcool.csv.v2026`) - **NEW in v2.1.3**:
+- **Format**: CSV transactional format (Timestamp, Operation type, Base amount, Base currency, etc.)
+- **Logic**: Row-based transaction aggregation with fee deduction
+- **Features**:
+  - Supports `trade` and `deposit` operations
+  - Deducts fees paid in crypto from holdings (e.g., BTC fees reduce BTC balance)
+  - Handles crypto-to-crypto trades (e.g., BTC spent to buy VRO)
+  - EUR fees are ignored (don't affect crypto holdings)
+- **Columns Required**: `Timestamp`, `Operation type`, `Base amount`, `Base currency`, `Quote amount`, `Quote currency`
+- **Optional Columns**: `Fee amount`, `Fee currency` (for fee deduction)
+- **Aggregation Logic**:
+  - `trade EUR→Crypto`: +Base amount (crypto received)
+  - `trade Crypto→Crypto`: +Base amount, -Quote amount (e.g., VRO received, BTC spent)
+  - `deposit Crypto`: +Base amount
+  - `fees`: Deducted from crypto holding if fee currency is crypto
+- **Output**: One position per crypto with net holdings after fees
+- **Location**: `tools/parsers/crypcool/csv_transaction_aggregator_v2026.py`
+- **Note**: Holdings will be slightly lower than CrypCool web app display (~2-3%) due to:
+  1. Fee deduction (real liquidable value)
+  2. Different price sources (CoinGecko vs CrypCool internal prices)
 
 **Known Issue - CrypCool CSV Data**:
 - ⚠️ Some CrypCool CSV exports contain **negative balances** due to incomplete transaction history

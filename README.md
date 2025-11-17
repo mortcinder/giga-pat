@@ -1,18 +1,25 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.1.2-orange.svg)
+![Version](https://img.shields.io/badge/version-2.1.3-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.1.2** - Architecture homogène avec valorisation immobilière automatique
+**Version 2.1.3** - Parser CrypCool v2026 avec déduction des frais
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
-## 🆕 Nouveautés v2.1.2 (Novembre 2025)
+## 🆕 Nouveautés v2.1.3 (Novembre 2025)
 
-### Valorisation immobilière automatique (v2.1.2) ⭐
+### Parser CrypCool v2026 (v2.1.3) ⭐
+- ✅ **Format transactionnel** : Support du nouveau format CSV CrypCool (Timestamp, Operation type, Base amount, etc.)
+- ✅ **Déduction des frais** : Frais payés en crypto automatiquement déduits du solde
+- ✅ **Trades crypto-to-crypto** : Support complet (ex: BTC dépensé pour acheter VRO)
+- ✅ **Multi-crypto** : BTC, ETH, VRO et autres cryptos dans un seul fichier
+- ⚠️ **Note** : Valorisation ~2-3% inférieure à l'affichage CrypCool (frais réels déduits + prix CoinGecko)
+
+### Valorisation immobilière automatique (v2.1.2)
 - ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
 - ✅ **Extraction web** : Prix/m² depuis Brave API avec regex optimisés
 - ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
@@ -308,6 +315,9 @@ tools/parsers/
 │   └── transaction_history.py
 ├── boursobank/                 # v2.1.1: Parser BoursoBank
 │   └── per_v2025.py           # Parser PER (encodage propriétaire)
+├── crypcool/                   # v2.1.3: Parsers CrypCool
+│   ├── csv_transaction_aggregator_v2025.py  # Format colonnaire (legacy)
+│   └── csv_transaction_aggregator_v2026.py  # Format transactionnel + fees
 ├── credit_agricole/
 │   ├── pea_v2025.py           # Parser PEA CA format 2025
 │   └── av_v2_lignes.py        # Parser AV CA 2 lignes
