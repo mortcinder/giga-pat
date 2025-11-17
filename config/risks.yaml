@@ -49,7 +49,7 @@ structural_risks:
       niveau: "Critique"
       probabilite: "Faible"
       impact: "Élevé"
-      titre_template: "Concentration excessive — {establishment_name}"
+      titre_template: "Concentration excessive - {establishment_name}"
       description_template: "L'établissement {establishment_name} représente {percentage:.1f}% du patrimoine financier, créant un risque de concentration critique."
     web_research:
       enabled: true
@@ -285,7 +285,7 @@ structural_risks:
       niveau: "Faible"
       probabilite: "Faible"
       impact: "Moyen"
-      titre_template: "Risque politique — France"
+      titre_template: "Risque politique - France"
       description_template: "Très forte concentration en France ({percentage:.1f}%). Exposition aux décisions politiques françaises."
     web_research:
       enabled: true

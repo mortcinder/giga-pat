@@ -674,7 +674,7 @@ class RiskAnalyzer:
                     risks.append(
                         {
                             "id": self._get_risk_id(),
-                            "titre": "Risque politique — France",
+                            "titre": "Risque politique - France",
                             "description": f"Très forte concentration en France ({pct:.1f}%). "
                             f"Exposition aux décisions politiques françaises.",
                             "exposition_montant": montant,
