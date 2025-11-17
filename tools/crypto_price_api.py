@@ -14,6 +14,27 @@ from typing import Dict, Optional
 class CryptoPriceAPI:
     """Client pour récupérer les prix crypto via CoinGecko API."""
 
+    # Mapping ticker → CoinGecko ID (étendre au besoin)
+    TICKER_TO_COINGECKO_ID = {
+        'BTC': 'bitcoin',
+        'ETH': 'ethereum',
+        'USDT': 'tether',
+        'USDC': 'usd-coin',
+        'BNB': 'binancecoin',
+        'XRP': 'ripple',
+        'ADA': 'cardano',
+        'SOL': 'solana',
+        'DOGE': 'dogecoin',
+        'DOT': 'polkadot',
+        'MATIC': 'matic-network',
+        'LTC': 'litecoin',
+        'LINK': 'chainlink',
+        'AVAX': 'avalanche-2',
+        'UNI': 'uniswap',
+        'ATOM': 'cosmos',
+        'VRO': 'veraone',  # VRO = VeraOne
+    }
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.base_url = "https://api.coingecko.com/api/v3"
@@ -105,3 +126,32 @@ class CryptoPriceAPI:
         except Exception as e:
             self.logger.error(f"Erreur inattendue: {e}")
             return None
+
+    def convert_crypto_to_eur(self, ticker: str, amount: float) -> Optional[float]:
+        """
+        Convertit un montant de crypto en EUR (méthode générique).
+
+        Args:
+            ticker: Ticker de la crypto (BTC, ETH, VRO, etc.)
+            amount: Quantité de crypto
+
+        Returns:
+            Montant en EUR, ou None si ticker inconnu ou erreur API
+        """
+        # Normaliser le ticker (uppercase)
+        ticker = ticker.upper().strip()
+
+        # Chercher l'ID CoinGecko
+        coingecko_id = self.TICKER_TO_COINGECKO_ID.get(ticker)
+
+        if not coingecko_id:
+            self.logger.warning(f"Ticker crypto inconnu: {ticker} (pas de mapping CoinGecko)")
+            return None
+
+        # Récupérer le prix
+        price = self.get_crypto_price(coingecko_id, "eur")
+
+        if price is None:
+            return None
+
+        return amount * price

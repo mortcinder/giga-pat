@@ -6,7 +6,7 @@
 
 Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment.
 
-**Version**: v2.1 (November 2025) - Unified custodian architecture + manual data sections
+**Version**: v2.1.3 (November 2025) - CrypCool v2026 parser with fee deduction
 
 **Architecture**: 3-stage pipeline with NO user interaction during execution
 
@@ -66,6 +66,21 @@ cp .env.example .env    # Add BRAVE_API_KEY
    - Explicit `currency` field (ISO 4217: "EUR", "USD")
    - `montant_eur_equivalent` for foreign currencies
 
+4. **Automatic Real Estate Valorization** (v2.1.2+)
+   - **Dynamic revaluation**: Property values recalculated at EVERY report generation
+   - **Web extraction**: Parses price/m² from Brave API search results
+   - **Intelligent fallback**: City-specific prices when API unavailable (Nanterre: 5300€/m², Paris: 10500€/m²)
+   - **Plus-value tracking**: Auto-calculates appreciation since acquisition
+   - **⚠️ DO NOT** include `valeur_actuelle` in manifest.json - only `prix_acquisition` + `surface_m2`
+   - See `tools/CLAUDE.md` → "Real Estate Valorization" for details
+
+5. **CrypCool Parser v2026** (v2.1.3+)
+   - **Transactional format**: Supports new CSV format with Timestamp, Operation type, Base amount, etc.
+   - **Fee deduction**: Crypto fees automatically deducted from holdings
+   - **Crypto-to-crypto trades**: Full support (e.g., BTC spent to buy VRO)
+   - **Accurate valuation**: Shows real liquidable value (~2-3% lower than CrypCool display)
+   - See `tools/CLAUDE.md` → "Crypto Parsers" for details
+
 ## Key Design Principles
 
 1. **No file modification**: Never modify source files or templates
@@ -104,7 +119,7 @@ cp .env.example .env    # Add BRAVE_API_KEY
 - Enrich with metadata (juridictions from `config/etablissements_financiers.yaml`)
 - Output: `patrimoine_input.json`
 
-**Parsers**: credit_agricole.pea.v2025, credit_agricole.av.v2_lignes, generic.csv.flexible, bitstack.transaction_history.v2025
+**Parsers**: credit_agricole.pea.v2025, credit_agricole.av.v2_lignes, generic.csv.flexible, bitstack.transaction_history.v2025, crypcool.csv.v2025, crypcool.csv.v2026, bforbank.cto.v2025, boursobank.per.v2025
 
 **Multi-file parsing**: Pattern matching + intelligent caching (80% faster on re-runs)
 

@@ -28,7 +28,9 @@
       "Bash(git cherry-pick:*)",
       "Bash(git push:*)",
       "Bash(git branch:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(timeout 90 python3:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []

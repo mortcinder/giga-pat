@@ -33,6 +33,10 @@ This file provides detailed technical guidance for working with the 3-stage pipe
 - `credit_agricole.av.v2_lignes`: Assurance-vie 2-line format
 - `generic.csv.flexible`: Flexible CSV mapping with column configuration
 - `bitstack.transaction_history.v2025`: Bitstack crypto transactions (v2.1+)
+- `crypcool.csv.v2025`: CrypCool multi-crypto CSV aggregator (columnar format, v2.1.1+)
+- `crypcool.csv.v2026`: CrypCool transactional CSV with fees deduction (v2.1.3+)
+- `bforbank.cto.v2025`: BforBank CTO PDF parser (v2.1+)
+- `boursobank.per.v2025`: BoursoBank PER with Unicode corruption handling (v2.1+)
 
 ### Multi-File Parsing with Cache (v2.1+)
 
@@ -103,21 +107,111 @@ This file provides detailed technical guidance for working with the 3-stage pipe
 - Pattern: `"Ma valorisation totale.*?([0-9\s,]+)\s*€"`
 - Stock positions from tabular data
 
-### Crypto Price Conversion (v2.1+)
+**BoursoBank PER (Unicode corruption handling)**:
+- **Challenge**: BoursoBank PDFs use proprietary Unicode encoding (Private Use Area U+E000-U+F8FF)
+- **Solution**: `clean_pdf_text()` function with complete character mapping
+- **Mapping**:
+  - Digits: `\ue0f1-\ue0fa` → `0-9`
+  - Uppercase: `\ue0c2-\ue0ea` → `A-Z`
+  - Lowercase: `\ue082-\ue0aa` → `a-z`
+  - Punctuation: `\ue06c` → `,`, `\ue113` → `€`, etc.
+- **Merged rows**: Detects multiple funds in single table row (split by `\nPD ` pattern)
+- **Fallback**: Manual amount from metadata if PDF extraction fails
+- **Location**: `tools/parsers/boursobank/per_v2025.py:14-133`
+
+### Crypto Parsers (v2.1.1+)
+
+**Bitstack Parser** (`bitstack.transaction_history.v2025`):
+- **Format**: CSV transaction history with multi-file support
+- **Logic**: Aggregates purchases, withdrawals, deposits across years
+- **Output**: Single position per year with cumulative BTC balance
+- **Ticker**: Generates `ticker: "BTC"` for generic EUR conversion
+- **Caching**: Supports historical year caching (80% faster on re-runs)
+- **Location**: `tools/parsers/bitstack/transaction_history.py`
+
+**CrypCool Parser v2025** (`crypcool.csv.v2025`):
+- **Format**: CSV with columnar crypto data (one column per crypto)
+- **Logic**: Dynamic column detection + algebraic aggregation
+- **Columns**: Auto-detects all crypto columns (BTC, ETH, VRO, etc.)
+- **Aggregation**: `holdings[crypto] = sum(all transactions)` (+ and -)
+- **Filter**: Only returns cryptos with `amount > 0` (positive balance)
+- **Output**: One position per crypto with ticker for EUR conversion
+- **Location**: `tools/parsers/crypcool/csv_transaction_aggregator_v2025.py`
+
+**CrypCool Parser v2026** (`crypcool.csv.v2026`) - **NEW in v2.1.3**:
+- **Format**: CSV transactional format (Timestamp, Operation type, Base amount, Base currency, etc.)
+- **Logic**: Row-based transaction aggregation with fee deduction
+- **Features**:
+  - Supports `trade` and `deposit` operations
+  - Deducts fees paid in crypto from holdings (e.g., BTC fees reduce BTC balance)
+  - Handles crypto-to-crypto trades (e.g., BTC spent to buy VRO)
+  - EUR fees are ignored (don't affect crypto holdings)
+- **Columns Required**: `Timestamp`, `Operation type`, `Base amount`, `Base currency`, `Quote amount`, `Quote currency`
+- **Optional Columns**: `Fee amount`, `Fee currency` (for fee deduction)
+- **Aggregation Logic**:
+  - `trade EUR→Crypto`: +Base amount (crypto received)
+  - `trade Crypto→Crypto`: +Base amount, -Quote amount (e.g., VRO received, BTC spent)
+  - `deposit Crypto`: +Base amount
+  - `fees`: Deducted from crypto holding if fee currency is crypto
+- **Output**: One position per crypto with net holdings after fees
+- **Location**: `tools/parsers/crypcool/csv_transaction_aggregator_v2026.py`
+- **Note**: Holdings will be slightly lower than CrypCool web app display (~2-3%) due to:
+  1. Fee deduction (real liquidable value)
+  2. Different price sources (CoinGecko vs CrypCool internal prices)
+
+**Known Issue - CrypCool CSV Data**:
+- ⚠️ Some CrypCool CSV exports contain **negative balances** due to incomplete transaction history
+- Example: User exchanges/withdraws MORE crypto than purchase records show
+- Root cause: CSV export may not include all historical deposits or purchases
+- **Parser behavior**: Correctly filters out negative balances (by design)
+- **Resolution**: User must correct/complete their CSV export from CrypCool platform
+- **Impact**: Missing cryptos won't appear in report until CSV data is corrected
+- **Verification**: Parser treats ALL cryptos identically (no hardcoded logic)
+
+**Crypto Parser Best Practices**:
+- Always generate a `ticker` field (uppercase) for EUR conversion
+- Use dynamic column detection (not hardcoded crypto names)
+- Log conversion results with price and quantity
+- Handle API failures gracefully (fallback to 0 or manual amounts)
+- Include metadata (year, transaction_count) for debugging
+
+### Crypto Price Conversion (v2.1.1+)
 
 **Implementation** (`crypto_price_api.py`):
 - **API**: CoinGecko (free, no key required)
 - **Endpoint**: `/api/v3/simple/price`
-- **Automatic**: BTC amounts auto-converted to EUR during parsing
-- **Caching**: 5-minute cache to avoid rate limits
-- **Error handling**: Falls back to 0 if API unavailable
+- **Generic conversion**: ALL cryptos auto-converted to EUR via ticker mapping
+- **Caching**: In-memory cache to avoid rate limits
+- **Error handling**: Falls back to 0 if API unavailable or ticker unknown
+
+**Supported Cryptos** (extensible via `TICKER_TO_COINGECKO_ID`):
+- Major: BTC, ETH, BNB, SOL, ADA, DOT, AVAX, MATIC, LINK, UNI, ATOM
+- Stablecoins: USDT, USDC
+- Others: DOGE, LTC, XRP, VRO (VeraOne)
 
 **Usage in Parser**:
 ```python
 from tools.crypto_price_api import CryptoPriceAPI
 
 api = CryptoPriceAPI()
-eur_value = api.get_price_in_eur("bitcoin", btc_amount)
+
+# Generic method (works for any supported ticker)
+eur_value = api.convert_crypto_to_eur("ETH", 0.5)  # 0.5 ETH → EUR
+eur_value = api.convert_crypto_to_eur("VRO", 100)  # 100 VRO → EUR
+
+# Legacy method (BTC only, deprecated)
+eur_value = api.convert_btc_to_eur(0.001)  # 0.001 BTC → EUR
+```
+
+**Adding New Crypto**:
+Add mapping in `crypto_price_api.py`:
+```python
+TICKER_TO_COINGECKO_ID = {
+    'BTC': 'bitcoin',
+    'ETH': 'ethereum',
+    'NEWCOIN': 'coingecko-id-here',  # ← Add this line
+    ...
+}
 ```
 
 ### Juridictions (v2.1+)
@@ -149,6 +243,161 @@ eur_value = api.get_price_in_eur("bitcoin", btc_amount)
 - Feeds diversification score (jurisdictional component: 40%)
 - Used in concentration risk detection
 - Appears in report's custodian details
+
+### Crypto Integration in Normalizer (v2.1.1+)
+
+**Method**: `_integrate_crypto()` (`normalizer.py:570-662`)
+
+**Purpose**: Parse crypto files, valorize positions, store detailed `actifs[]` array
+
+**Key Features**:
+1. **Parse crypto files** via registered parsers (Bitstack, CrypCool, etc.)
+2. **Generic EUR valorization** for ALL cryptos (not just BTC)
+3. **Store detailed positions** in `actifs[]` field (required by analyzer)
+4. **Multi-currency support**: EUR, USD, stablecoins, cryptos
+
+**Valorization Logic** (lines 604-637):
+```python
+# Case 1: Fiat currencies (EUR, EURO)
+if devise.upper() in ['EUR', 'EURO']:
+    valeur_eur = quantite
+
+# Case 2: USD stablecoins (approximation 1:1)
+elif devise.upper() in ['USD', 'USDT', 'USDC', 'DAI', 'BUSD']:
+    valeur_eur = quantite * 0.92  # ~USD→EUR conversion
+
+# Case 3: Cryptocurrencies (BTC, ETH, VRO, etc.)
+else:
+    valeur_eur = self.crypto_api.convert_crypto_to_eur(ticker, quantite)
+```
+
+**Output Structure** (v2.1.1):
+```python
+plateforme_entry = {
+    "nom": "CrypCool",
+    "code": "crypcool",
+    "type": "Crypto multi-actifs",
+    "custody_type": "custodial_platform",
+    "total": 121.15,  # ✅ Sum of all actifs
+    "juridiction": "France",
+    "juridiction_pays": "France",
+    "actifs": [  # ✅ NEW: Detailed positions array
+        {
+            "ticker": "ETH",
+            "nom": "ETH",
+            "quantite": 0.03587361,
+            "devise": "ETH",
+            "valeur_eur": 98.63
+        },
+        {
+            "ticker": "VRO",
+            "nom": "VRO",
+            "quantite": 0.19543974,
+            "devise": "VRO",
+            "valeur_eur": 22.52
+        }
+    ]
+}
+```
+
+**Critical Fields**:
+- `actifs[]`: **REQUIRED** by analyzer for position counting (line 721)
+- `total`: Sum of all `valeur_eur` from actifs
+- `ticker`: **REQUIRED** for EUR conversion via CoinGecko API
+- `devise`: Usually same as ticker for cryptos
+
+**Fallbacks**:
+1. If API fails → check `pos.get('valeur_totale')` from parser
+2. If no valeur → log warning and set to 0
+3. Manual-only crypto (no source_file) → empty `actifs[]`, manual total
+
+### Real Estate Valorization (v2.1.2+)
+
+**Purpose**: Automatically revalue real estate at each report generation via web research + intelligent fallback.
+
+**Architecture** (`tools/utils/real_estate_valorizer.py`):
+- **Web extraction**: Parses price/m² from Brave API search results
+- **Intelligent fallback**: City-specific prices when API unavailable (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
+- **Automatic calculation**: `valeur_actuelle = surface_m2 × prix_m2`
+- **Plus-value tracking**: Auto-calculates appreciation since acquisition
+
+**Integration Flow**:
+1. **Normalizer** (`_integrate_immobilier()`):
+   - Stores `prix_acquisition` as temporary `valeur_actuelle`
+   - Preserves `surface_m2`, `adresse`, `metadata`
+2. **Analyzer** (`risk_analyzer.py`, `_analyze_market_risks()`):
+   - Performs web searches: `"prix immobilier m² {city} 2025"`
+   - Calls `RealEstateValorizer.calculate_property_value()`
+   - Updates `bien["valeur_actuelle"]` with calculated value
+   - Stores `prix_m2_actuel`, `valorisation_source` (web/fallback)
+   - Recalculates `data["patrimoine"]["immobilier"]["total"]`
+3. **Report**: Displays updated valorization with enriched details
+
+**Manifest Structure** (v2.1.2):
+```json
+{
+  "patrimoine": {
+    "immobilier": [{
+      "id": "nanterre_studio_001",
+      "type_bien": "Studio",
+      "adresse": "34 rue Salvador Allende, 92000 Nanterre",
+      "surface_m2": 25,
+      "prix_acquisition": 110000,
+      "currency": "EUR",
+      "metadata": {
+        "prix_m2_acquisition": 4400,
+        "date_acquisition": "2016-06-30"
+      }
+    }]
+  }
+}
+```
+
+**⚠️ IMPORTANT**:
+- **DO NOT** include `valeur_actuelle` in manifest.json
+- Value is recalculated at EVERY report generation
+- `prix_acquisition` is the only static reference value
+
+**Example Output** (logs):
+```
+[INFO] Prix fallback pour Nanterre: 5300 €/m²
+[INFO] Valorisation calculée : 25m² × 5300€/m² = 132500€ (source: fallback)
+[INFO] Valorisation Studio Nanterre: 132,500€ (25m² × 5300€/m², source: fallback)
+[INFO] Total immobilier recalculé: 132,500€
+```
+
+**Report Display**:
+```
+Valorisation Studio — Nanterre
+Studio situé à 34 rue Salvador Allende, 92000 Nanterre.
+Surface: 25m².
+Valeur estimée actuelle: 132,500€
+(prix m²: 5,300€, source: fallback).
+Plus-value: +20.5% depuis acquisition (110,000€).
+```
+
+**Fallback Prices** (default values in `real_estate_valorizer.py`):
+- Nanterre: 5300€/m²
+- Paris: 10500€/m²
+- Lyon: 5800€/m²
+- Marseille: 4200€/m²
+- Default: 3500€/m² (national average)
+
+**Web Extraction Patterns**:
+- `(\d[\d\s]*)\s*€\s*/\s*m[²2]` → "5 300 €/m²"
+- `prix\s+(?:moyen|médian)\s*:\s*(\d[\d\s]*)\s*€` → "prix moyen : 5 300 €"
+- Filters aberrant values (valid range: 1000-20000 €/m²)
+- Returns median of extracted prices (robust against outliers)
+
+**Customizing Fallback Prices**:
+Edit `tools/utils/real_estate_valorizer.py` → `self.fallback_prices`:
+```python
+self.fallback_prices = {
+    "nanterre": 5300,
+    "my_city": 4500,  # Add your city
+    "default": 3500
+}
+```
 
 ## Stage 2: Analyzer (`analyzer.py`)
 
@@ -205,6 +454,44 @@ Configured in `config/analysis.yaml` → see `config/CLAUDE.md` for details.
 3. **Future**: LLM-based analysis (reserved)
 
 See `config/CLAUDE.md` for configuration details.
+
+### Stress Tests (`stress_tester.py`)
+
+**Purpose**: Simulate 5 crisis scenarios on the portfolio (Section 17 of PRD).
+
+**5 Scenarios**:
+1. **Banking crisis + Sapin 2**: Freeze AV + partial bank deposits
+2. **Market crash -30%**: Impact on stocks (PEA, CTO, AV-UC)
+3. **Job loss 12-24 months**: Resilience duration calculation
+4. **Tax increase PFU 30% → 35%**: Fiscal impact on CTO
+5. **Real estate crisis -20%**: Property devaluation
+
+**Job Loss Test Logic** (v2.1.3+):
+```python
+# Profile path
+revenu_mensuel = data["profil"]["professionnel"]["revenu_mensuel_net"]
+
+# Monthly expenses (70% of income)
+depenses_mensuelles = revenu_mensuel * 0.70
+
+# Liquid assets detection (extended types)
+for compte in etablissement["comptes"]:
+    if compte_type in ["compte", "dépôt", "livret", "ldd", "pel", "lea", "ldds"]:
+        liquidite += compte["montant"]
+
+# Resilience duration
+duree_mois = liquidite / depenses_mensuelles  # int division
+```
+
+**Important JSON Paths**:
+- ✅ `profil.professionnel.revenu_mensuel_net` (NOT `profil.revenu_mensuel_net`)
+- ✅ Liquid account types: "livret", "ldd", "pel", "compte", "dépôt", "lea", "ldds"
+- ✅ Output: `duree_mois` (integer), `recommandation` (target 12 months)
+
+**Report Display**:
+- Duration in months (e.g., "34 mois")
+- Target recommendation (e.g., "Cible : 12 mois (29,400€)")
+- Liquidity breakdown: "Liquidité : 84,196 € | Dépenses : 2,450 €/mois"
 
 ### Web Research
 
@@ -304,6 +591,18 @@ python tests/test_generator.py
 - Use `can_parse()` to verify file detection logic
 - Test parser in isolation before integrating
 - Check generated JSON structure matches expected format
+
+**Special Case: PDF Character Encoding Issues**:
+- **Symptom**: PDF text appears as garbled Unicode characters (`\ue0xx`)
+- **Diagnosis**:
+  1. Extract raw text: `pdf.pages[0].extract_text()`
+  2. Inspect character codes: `for char in text: print(f"{char} = U+{ord(char):04X}")`
+  3. Look for Private Use Area (U+E000-U+F8FF) patterns
+- **Solution**:
+  1. Create character mapping dictionary (reverse-engineer from PDF samples)
+  2. Apply cleaning function to all text before parsing
+  3. Use raw strings (`r"""`) in docstrings to avoid Python Unicode escape issues
+- **Example**: See `tools/parsers/boursobank/per_v2025.py` for complete implementation
 
 ### Performance Optimization
 

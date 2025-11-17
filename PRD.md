@@ -1,8 +1,26 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 2.1.0
+**Version** : 2.1.2
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
+
+## 🆕 Version 2.1.2 (Novembre 2025)
+
+**Nouveauté majeure : Valorisation immobilière automatique**
+
+- ✅ **Réévaluation dynamique** : Les biens immobiliers sont revalorisés à CHAQUE génération de rapport
+- ✅ **Extraction web** : Prix au m² extrait depuis résultats Brave API (patterns regex optimisés)
+- ✅ **Fallback intelligent** : Prix par ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
+- ✅ **Calcul automatique** : `valeur_actuelle = surface_m2 × prix_m2_web`
+- ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
+- ✅ **Module dédié** : `tools/utils/real_estate_valorizer.py` (extraction + fallback)
+- ✅ **Total recalculé** : `patrimoine.immobilier.total` mis à jour après valorisation
+- ⚠️ **Breaking change** : `valeur_actuelle` ne doit PLUS être dans manifest.json (uniquement `prix_acquisition` + `surface_m2`)
+
+**Architecture** :
+1. Normalizer stocke `prix_acquisition` comme valeur temporaire
+2. Analyzer effectue recherches web → extrait prix m² → calcule valorisation → met à jour `bien["valeur_actuelle"]`
+3. Report affiche valorisation enrichie avec source (web/fallback) + plus-value
 
 ## 🆕 Version 2.1.1 (Novembre 2025)
 
@@ -10,7 +28,8 @@
 - ✅ **Migration config** : `sources/etablissements_financiers.json` → `config/etablissements_financiers.yaml`
 - ✅ **Nettoyage** : Suppression fichiers obsolètes (`research_prompts.yaml`, `test_paths.py`, `project_generator.py`)
 - ✅ **Sources** : Répertoire `sources/` exclusivement pour données utilisateur + `manifest.example.json`
-- ✅ **Documentation** : PRD mis à jour pour refléter architecture v2.1
+- ✅ **Parser BoursoBank PER** : Gestion complète encodage Unicode propriétaire (Private Use Area U+E000-U+F8FF)
+- ✅ **Documentation** : PRD et `tools/CLAUDE.md` mis à jour avec section parsers disponibles
 
 ## 🆕 Version 2.1 (Novembre 2025)
 
@@ -300,6 +319,7 @@ Convertir `manifest.json` (v2.0+) et fichiers sources en un JSON structuré et n
    - CSV : parsing avec pandas
    - PDF : extraction texte + tableaux (pdfplumber)
    - JSON : lecture directe
+   - **Gestion encodage PDF corrompu** : Certains PDFs (ex: BoursoBank) utilisent des encodages propriétaires (Unicode Private Use Area U+E000-U+F8FF). Le système détecte et convertit automatiquement ces caractères via mapping complet.
 
 3. **Normalisation**
    - Conversion montants en float
@@ -480,7 +500,7 @@ Analyser le patrimoine en profondeur avec recherches web exhaustives et génére
     "critiques": [
       {
         "id": "RISK_001",
-        "titre": "Loi Sapin 2 - Blocage assurance-vie",
+        "titre": "Loi Sapin 2 — Blocage assurance-vie",
         "description": "Risque de gel temporaire de l'AV en cas de crise bancaire",
         "exposition_montant": 106046,
         "exposition_pct": 30.1,
@@ -1700,6 +1720,58 @@ def test_inject_repeated_rows():
 
 ---
 
+## 7.3 Parsers disponibles (v2.1.1)
+
+Le système supporte actuellement les parsers suivants (architecture pluggable) :
+
+### 7.3.1 Parsers bancaires
+
+| Parser | Établissement | Type | Format | Statut |
+|--------|---------------|------|--------|--------|
+| `credit_agricole.pea.v2025` | Crédit Agricole | PEA/PEA-PME | PDF multi-page | ✅ Actif |
+| `credit_agricole.av.v2_lignes` | Crédit Agricole | Assurance-vie | PDF (format 2 lignes) | ✅ Actif |
+| `boursobank.per.v2025` | BoursoBank | PER | PDF (encodage propriétaire) | ✅ Actif |
+| `bforbank.cto.v2025` | BforBank | CTO | PDF | ✅ Actif |
+| `generic.csv.flexible` | Universel | Tous | CSV | ✅ Actif |
+
+### 7.3.2 Parsers crypto
+
+| Parser | Plateforme | Type | Format | Statut |
+|--------|------------|------|--------|--------|
+| `bitstack.transaction_history.v2025` | Bitstack | Bitcoin | CSV multi-fichiers | ✅ Actif |
+| `crypcool.csv.v2025` | CrypCool | Multi-crypto | CSV colonnaire | ⚠️ Legacy |
+| `crypcool.csv.v2026` | CrypCool | Multi-crypto | CSV transactionnel | ✅ Actif |
+
+**CrypCool v2026 (NEW)** :
+- Format transactionnel avec colonnes : `Timestamp`, `Operation type`, `Base amount`, `Base currency`, `Quote amount`, `Quote currency`, `Fee amount`, `Fee currency`
+- Déduction automatique des frais payés en crypto
+- Support des trades crypto-to-crypto (ex: BTC→VRO)
+- Valorisation ~2-3% inférieure à l'affichage CrypCool (frais déduits + prix CoinGecko)
+
+### 7.3.3 Cas spéciaux : BoursoBank PER
+
+**Problème** : BoursoBank utilise un encodage propriétaire dans ses PDFs (Unicode Private Use Area U+E000-U+F8FF) où TOUS les caractères sont remplacés par des codes non-standard.
+
+**Solution implémentée** :
+- Fonction `clean_pdf_text()` avec mapping complet (123 caractères)
+- Mapping : chiffres (`\ue0f1-\ue0fa` → `0-9`), lettres majuscules/minuscules, ponctuation
+- Gestion des lignes fusionnées (plusieurs fonds dans une même ligne de tableau)
+- Fallback manuel si extraction PDF échoue
+
+**Fichier** : `tools/parsers/boursobank/per_v2025.py:14-400`
+
+### 7.3.4 Ajout d'un nouveau parser
+
+Voir `tools/CLAUDE.md` → "Adding New Parser" pour instructions détaillées.
+
+**Résumé** :
+1. Créer `tools/parsers/{bank}/{type}_v{year}.py`
+2. Implémenter interface `BaseParser` (`can_parse()`, `parse()`, `validate()`)
+3. Enregistrer dans `normalizer.py` `__init__()`
+4. Configurer dans `manifest.json` : `"parser_strategy": "bank.type.v2025"`
+
+---
+
 ## 8. Évolutions futures (hors scope v1.0)
 
 ### 8.1 Fonctionnalités potentielles
@@ -1718,9 +1790,9 @@ def test_inject_repeated_rows():
 
 ### 9.1 Limites connues
 
-1. **Parsing PDF** : Extraction imparfaite sur PDF complexes
-2. **Recherches web** : Dépend disponibilité API Anthropic
-3. **Monnaies** : Support EUR uniquement (USD converti manuellement)
+1. **Parsing PDF** : Extraction imparfaite sur PDF complexes. Certains établissements (ex: BoursoBank) utilisent des encodages propriétaires qui nécessitent des mappings spécifiques.
+2. **Recherches web** : Dépend disponibilité API Brave Search (rate limit: 1 req/sec)
+3. **Monnaies** : Support EUR/USD avec conversion automatique (crypto via CoinGecko API)
 4. **Graphiques** : Chart.js requiert JS activé
 5. **Taille fichiers** : Limite 100 MB par fichier source
 
@@ -2798,17 +2870,21 @@ def _test_market_crash(self, data: dict) -> Dict:
 def _test_job_loss(self, data: dict) -> Dict:
     """Scénario : Perte d'emploi prolongée"""
 
-    revenu_mensuel = data["profil"].get("revenu_mensuel_net", 0)
+    # v2.1.3: Chemin correct vers le revenu dans la structure profil
+    profil = data.get("profil", {})
+    revenu_mensuel = profil.get("professionnel", {}).get("revenu_mensuel_net", 0)
 
     # Hypothèse dépenses : 70% du revenu
     depenses_mensuelles = revenu_mensuel * 0.70
 
-    # Liquidité disponible
+    # Liquidité disponible (v2.1.3: détection étendue des types de comptes)
     liquidite = 0
     for etab in data["patrimoine"]["financier"]["etablissements"]:
         for compte in etab.get("comptes", []):
-            if compte["type"] in ["Compte de dépôts", "Livret A", "LDD", "PEL"]:
-                liquidite += compte["montant"]
+            compte_type = compte.get("type", "").lower()
+            # Types de comptes liquides : livrets, comptes de dépôt, épargne réglementée
+            if any(x in compte_type for x in ["compte", "dépôt", "livret", "ldd", "pel", "lea", "ldds"]):
+                liquidite += compte.get("montant", 0)
 
     # Durée tenable
     if depenses_mensuelles > 0:
