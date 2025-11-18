@@ -1,16 +1,40 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 2.1.2
+**Version** : 2.2.0
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
+
+## 🆕 Version 2.2.0 (Novembre 2025)
+
+**Nouveauté majeure : Architecture Web Search Multi-Provider**
+
+- ✅ **4 providers** : Brave (2000 req/mois), Serper (2500 req/mois), Tavily (1000 req/mois), DuckDuckGo (illimité)
+- ✅ **Fallback automatique** : Brave → Serper → Tavily → DuckDuckGo (continuité de service)
+- ✅ **Architecture pluggable** : Package `tools/utils/search_providers/` avec BaseSearchProvider, Factory, 4 implémentations
+- ✅ **Configuration centralisée** : `config.yaml` définit ordre de fallback, rate limits, timeouts par provider
+- ✅ **Backward compatible** : API publique de WebResearcher inchangée (analyzer.py ne change pas)
+- ✅ **Résilience** : Si quota Brave épuisé → bascule automatique sur Serper sans interruption
+- ✅ **5500+ requêtes/mois gratuites** : Répartition intelligente entre providers
+- 📄 **Documentation** : `tools/utils/search_providers/README.md` + `update/Migration-Multi-Provider-v2.0.md`
+
+**Architecture** :
+```
+WebResearcher (façade)
+└── SearchProviderFactory
+    └── Chaîne de fallback [Brave, Serper, Tavily, DuckDuckGo]
+        ├── BraveSearchProvider (priorité 1)
+        ├── SerperSearchProvider (priorité 2)
+        ├── TavilySearchProvider (priorité 3)
+        └── DDGSSearchProvider (priorité 4)
+```
 
 ## 🆕 Version 2.1.2 (Novembre 2025)
 
 **Nouveauté majeure : Valorisation immobilière automatique**
 
 - ✅ **Réévaluation dynamique** : Les biens immobiliers sont revalorisés à CHAQUE génération de rapport
-- ✅ **Extraction web** : Prix au m² extrait depuis résultats Brave API (patterns regex optimisés)
-- ✅ **Fallback intelligent** : Prix par ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
+- ✅ **Extraction web** : Prix au m² extrait depuis recherche web multi-provider (patterns regex optimisés)
+- ✅ **Fallback intelligent** : Prix par ville quand APIs indisponibles (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
 - ✅ **Calcul automatique** : `valeur_actuelle = surface_m2 × prix_m2_web`
 - ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
 - ✅ **Module dédié** : `tools/utils/real_estate_valorizer.py` (extraction + fallback)
@@ -161,7 +185,14 @@ patrimoine-analyzer/
 │   └── utils/
 │       ├── __init__.py
 │       ├── file_parser.py             # Parsing CSV/PDF/JSON
-│       ├── web_research.py            # Recherches web (Brave API)
+│       ├── web_research.py            # Recherches web multi-provider (v2.0)
+│       ├── search_providers/          # Architecture pluggable (v2.2.0)
+│       │   ├── base.py                # BaseSearchProvider
+│       │   ├── factory.py             # Factory + fallback chain
+│       │   ├── brave_provider.py      # Brave Search API
+│       │   ├── serper_provider.py     # Serper (Google) API
+│       │   ├── tavily_provider.py     # Tavily AI-native API
+│       │   └── ddgs_provider.py       # DuckDuckGo (no API key)
 │       ├── risk_analyzer.py           # Analyse de risques
 │       ├── recommendations.py         # Génération recommandations
 │       ├── stress_tester.py           # Stress tests
@@ -725,7 +756,14 @@ Scénarios à simuler :
 4. **Hausse fiscalité** : PFU 30% → 35%
 5. **Crise immobilière -20%** : Correction marché local
 
-##### 3.2.5.5 Recherches web (`tools/utils/web_research.py`)
+##### 3.2.5.5 Recherches web (`tools/utils/web_research.py` + `search_providers/`)
+
+**Architecture v2.2.0** :
+- **Façade** : `WebResearcher` (API publique inchangée pour compatibilité)
+- **Factory** : `SearchProviderFactory` crée la chaîne de providers
+- **Providers** : 4 implémentations (Brave, Serper, Tavily, DuckDuckGo)
+- **Fallback** : Automatique en cas d'échec (quota, réseau, erreur)
+- **Configuration** : `config.yaml` définit ordre et paramètres
 
 **Sujets de recherche** :
 
@@ -749,11 +787,13 @@ Scénarios à simuler :
    - Risques macro (inflation, récession)
    - Évolutions réglementaires
 
-**Implémentation** :
-- Utilisation API Brave Search (L'utilisateur dispose de sa clé API)
-- Attendre entre 1,1 et 1,5 secondes entre chaque requête (C'est une limitation Brave)
-- 10-15 recherches ciblées
-- Toutes sources citées avec URL + date
+**Implémentation v2.2.0** :
+- **Multi-provider** : Brave (priorité 1), Serper (2), Tavily (3), DuckDuckGo (4)
+- **Rate limiting** : Configurable par provider dans config.yaml (ex: Brave 1.3s, Serper 1.0s, DDGS 2.0s)
+- **Fallback automatique** : Si provider échoue → essaie le suivant dans la chaîne
+- **10-15 recherches ciblées** : Réparties entre providers disponibles
+- **Toutes sources citées** : URL + date + provider utilisé
+- **Clés API** : Optionnelles (BRAVE_API_KEY, SERPER_API_KEY, TAVILY_API_KEY) - DuckDuckGo fonctionne sans clé
 - Pas d'invention, uniquement sources vérifiables
 
 **Format des sources** :
@@ -1594,20 +1634,43 @@ Tous les logs sont sauvegardés dans `logs/rapport_YYYYMMDD_HHMMSS.log`.
 Le projet nécessite un fichier `.env` à la racine contenant les clés API requises :
 
 ```bash
-# Brave Search API (requise pour les recherches web)
-BRAVE_API_KEY=your-api-key-here
+# Web Search APIs (v2.2.0 - Multi-provider)
+# Au moins une clé API recommandée, DuckDuckGo fonctionne sans clé
+
+# Brave Search API (2000 req/mois gratuit - Priorité 1)
+BRAVE_API_KEY=your-brave-api-key-here
+
+# Serper API (2500 req/mois gratuit - Priorité 2)
+SERPER_API_KEY=your-serper-api-key-here
+
+# Tavily API (1000 req/mois gratuit - Priorité 3)
+TAVILY_API_KEY=your-tavily-api-key-here
+
+# DuckDuckGo : Pas de clé requise (Priorité 4, fallback illimité)
 ```
 
-**Obtenir une clé Brave Search API** :
-1. Créer un compte sur https://brave.com/search/api/
-2. Tableau de bord : https://api.search.brave.com/app/dashboard
-3. Plan gratuit disponible : 2000 requêtes/mois
-4. Copier la clé API et l'ajouter au fichier `.env`
+**Obtenir les clés API** :
+
+1. **Brave Search API** (recommandé - 2000 req/mois) :
+   - Créer un compte : https://brave.com/search/api/
+   - Dashboard : https://api.search.brave.com/app/dashboard
+
+2. **Serper API** (Google Search - 2500 req/mois) :
+   - Créer un compte : https://serper.dev/
+   - Dashboard : https://serper.dev/dashboard
+
+3. **Tavily API** (AI-native - 1000 req/mois) :
+   - Créer un compte : https://tavily.com/
+   - Dashboard : https://app.tavily.com/
+
+4. **DuckDuckGo** : Aucune clé requise (bibliothèque Python gratuite)
+
+**Note** : Au moins une clé API est recommandée pour fonctionnement optimal. Si aucune clé n'est fournie, le système utilisera uniquement DuckDuckGo.
 
 **Important** :
 - Le fichier `.env` est dans `.gitignore` (ne pas committer les clés)
-- Sans `BRAVE_API_KEY`, les recherches web seront désactivées
-- L'analyse de risques continuera mais sans sources web
+- Sans aucune clé API, le système utilisera DuckDuckGo (gratuit illimité)
+- Avec au moins une clé, le système bascule automatiquement entre providers disponibles
 
 ---
 
