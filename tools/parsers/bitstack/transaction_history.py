@@ -3,17 +3,35 @@ Parser pour les fichiers de transaction Bitstack (CSV).
 
 Ce parser supporte:
 - Format CSV d'historique de transactions Bitstack
-- Calcul automatique du solde BTC (achats - retraits)
+- Calcul automatique du solde BTC (achats - retraits + dépôts)
 - Support multi-années avec système de cache
 
 Structure CSV:
 Type,Date,Fuseau horaire,Montant reçu,Monnaie ou jeton reçu,Montant envoyé,
 Monnaie ou jeton envoyé,Frais,Monnaie ou jeton des frais,Description,...
 
-Types de transactions:
-- Échange: Achat de BTC avec EUR
-- Retrait: Envoi de BTC vers wallet externe
-- Dépôt: Réception de BTC (cadeau, transfert)
+Types de transactions supportées:
+- Échange: Achat de BTC avec EUR (ajoute au solde)
+- Retrait: Envoi de BTC vers wallet externe (soustrait du solde)
+- Dépôt: Réception de BTC - cadeau/transfert (ajoute au solde)
+
+Format de sortie:
+{
+  "type_compte": "Crypto",
+  "positions": [{
+    "nom": "Bitcoin 2022",
+    "type": "BTC",
+    "quantite": 0.00062009,
+    "devise": "BTC",
+    "metadata": {
+      "year": "2022",
+      "transaction_count": 32
+    }
+  }]
+}
+
+Logique de calcul du solde:
+cumulative_btc = sum(purchases) - sum(withdrawals) + sum(deposits)
 
 Version: v2025
 Auteur: Claude Code
@@ -106,8 +124,9 @@ class BitstackTransactionHistoryParser(BaseParser):
 
             # Retourner un résumé du solde pour cette période
             position = {
-                'nom': f"Bitcoin {year}",
-                'type': 'BTC',
+                'nom': 'Bitcoin',  # Nom générique (pas par année)
+                'ticker': 'BTC',    # ✅ Ajout du ticker pour la conversion EUR
+                'type': 'Crypto',
                 'quantite': float(self.btc_balance),
                 'valeur_unitaire': 0,  # Sera enrichi par le normalizer avec prix actuel
                 'valeur_totale': 0,    # Sera calculé par le normalizer

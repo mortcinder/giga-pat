@@ -9,19 +9,21 @@ Nouveautés v2.0:
 """
 
 import logging
-import re
-import yaml
 import os
-from typing import Dict, List, Any, Optional
+import re
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+import yaml
+
+from tools.utils.real_estate_valorizer import RealEstateValorizer
 
 # === CONSTANTES DE SEUILS DE RISQUE ===
 
 # Concentration Assurance-Vie (%)
 AV_CONCENTRATION_CRITIQUE = 25  # Au-delà de 25% du patrimoine en AV = Critique
-AV_CONCENTRATION_ELEVEE = 15    # 15-25% = Élevé
-AV_CONCENTRATION_MODEREE = 10   # 10-15% = Modéré
+AV_CONCENTRATION_ELEVEE = 15  # 15-25% = Élevé
+AV_CONCENTRATION_MODEREE = 10  # 10-15% = Modéré
 
 # Concentration établissement unique (%)
 ETABLISSEMENT_CONCENTRATION_CRITIQUE = 70
@@ -32,8 +34,8 @@ GEO_CONCENTRATION_CRITIQUE = 90
 GEO_CONCENTRATION_ELEVEE = 80
 
 # Liquidité (%)
-LIQUIDITE_CRITIQUE = 5   # Moins de 5% de liquidités = Critique
-LIQUIDITE_FAIBLE = 10    # 5-10% = Risque modéré
+LIQUIDITE_CRITIQUE = 5  # Moins de 5% de liquidités = Critique
+LIQUIDITE_FAIBLE = 10  # 5-10% = Risque modéré
 
 
 class RiskAnalyzer:
@@ -51,16 +53,20 @@ class RiskAnalyzer:
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.web_researcher = web_researcher
+        self.real_estate_valorizer = RealEstateValorizer()
 
         # Seuils de risque depuis config (legacy, pour compatibilité)
-        self.seuils = config.get("analyzer", {}).get("risk_thresholds", {
-            "concentration_etablissement_critique": 50,
-            "concentration_etablissement_eleve": 30,
-            "concentration_juridiction_critique": 80,
-            "concentration_juridiction_eleve": 60,
-            "liquidite_critique": 5000,
-            "liquidite_faible": 15000
-        })
+        self.seuils = config.get("analyzer", {}).get(
+            "risk_thresholds",
+            {
+                "concentration_etablissement_critique": 50,
+                "concentration_etablissement_eleve": 30,
+                "concentration_juridiction_critique": 80,
+                "concentration_juridiction_eleve": 60,
+                "liquidite_critique": 5000,
+                "liquidite_faible": 15000,
+            },
+        )
 
         self.risk_id_counter = 1
 
@@ -69,7 +75,9 @@ class RiskAnalyzer:
         self.contextual_searches = self.risk_definitions.get("contextual_searches", {})
         self.risk_settings = self.risk_definitions.get("risk_settings", {})
 
-        self.logger.info(f"RiskAnalyzer v{self.risk_settings.get('version', '2.0.0')} initialisé")
+        self.logger.info(
+            f"RiskAnalyzer v{self.risk_settings.get('version', '2.0.0')} initialisé"
+        )
         if self.risk_settings.get("enable_contextual_detection"):
             self.logger.info("  → Détection contextuelle activée")
 
@@ -81,17 +89,21 @@ class RiskAnalyzer:
         risks_config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
             "config",
-            "risks.yaml"
+            "risks.yaml",
         )
 
         try:
             if os.path.exists(risks_config_path):
                 with open(risks_config_path, "r", encoding="utf-8") as f:
                     risk_defs = yaml.safe_load(f)
-                    self.logger.info(f"✓ Définitions de risques chargées depuis {risks_config_path}")
+                    self.logger.info(
+                        f"✓ Définitions de risques chargées depuis {risks_config_path}"
+                    )
                     return risk_defs
             else:
-                self.logger.warning(f"Fichier {risks_config_path} introuvable, utilisation du mode legacy")
+                self.logger.warning(
+                    f"Fichier {risks_config_path} introuvable, utilisation du mode legacy"
+                )
                 return {}
         except Exception as e:
             self.logger.error(f"Erreur lors du chargement de {risks_config_path}: {e}")
@@ -151,18 +163,22 @@ class RiskAnalyzer:
             self.logger.info("  → Risques contextuels (détection dynamique)")
             contextual_risks = self._detect_contextual_risks(data)
             all_risks.extend(contextual_risks)
-            self.logger.info(f"    ✓ {len(contextual_risks)} risques contextuels détectés")
+            self.logger.info(
+                f"    ✓ {len(contextual_risks)} risques contextuels détectés"
+            )
 
         # Catégorisation par niveau
         risques = {
             "critiques": [r for r in all_risks if r["niveau"] == "Critique"],
             "eleves": [r for r in all_risks if r["niveau"] == "Élevé"],
             "moyens": [r for r in all_risks if r["niveau"] == "Moyen"],
-            "faibles": [r for r in all_risks if r["niveau"] == "Faible"]
+            "faibles": [r for r in all_risks if r["niveau"] == "Faible"],
         }
 
-        self.logger.info(f"✓ {len(all_risks)} risques identifiés : {len(risques['critiques'])} critiques, "
-                        f"{len(risques['eleves'])} élevés, {len(risques['moyens'])} moyens, {len(risques['faibles'])} faibles")
+        self.logger.info(
+            f"✓ {len(all_risks)} risques identifiés : {len(risques['critiques'])} critiques, "
+            f"{len(risques['eleves'])} élevés, {len(risques['moyens'])} moyens, {len(risques['faibles'])} faibles"
+        )
 
         return risques
 
@@ -182,38 +198,44 @@ class RiskAnalyzer:
                 # Recherche web sur risques concentration
                 sources = self.web_researcher.search(
                     "Concentration bancaire",
-                    [f"risques concentration bancaire {etab['nom']}",
-                     "diversification établissements bancaires France"],
-                    context=f"Exposition {pct:.1f}% chez {etab['nom']}"
+                    [
+                        f"risques concentration bancaire {etab['nom']}",
+                        "diversification établissements bancaires France",
+                    ],
+                    context=f"Exposition {pct:.1f}% chez {etab['nom']}",
                 )
 
-                risks.append({
-                    "id": self._get_risk_id(),
-                    "titre": f"Concentration excessive - {etab['nom']}",
-                    "description": f"L'établissement {etab['nom']} représente {pct:.1f}% du patrimoine financier, "
-                                  f"créant un risque de concentration critique.",
-                    "exposition_montant": etab["total"],
-                    "exposition_pct": round(pct, 1),
-                    "probabilite": "Faible",
-                    "impact": "Élevé",
-                    "niveau": "Critique",
-                    "categorie": "Concentration",
-                    "sources_web": sources[:2] if sources else []
-                })
+                risks.append(
+                    {
+                        "id": self._get_risk_id(),
+                        "titre": f"Concentration excessive - {etab['nom']}",
+                        "description": f"L'établissement {etab['nom']} représente {pct:.1f}% du patrimoine financier, "
+                        f"créant un risque de concentration critique.",
+                        "exposition_montant": etab["total"],
+                        "exposition_pct": round(pct, 1),
+                        "probabilite": "Faible",
+                        "impact": "Élevé",
+                        "niveau": "Critique",
+                        "categorie": "Concentration",
+                        "sources_web": sources[:2] if sources else [],
+                    }
+                )
 
             elif pct >= self.seuils.get("concentration_etablissement_eleve", 30):
-                risks.append({
-                    "id": self._get_risk_id(),
-                    "titre": f"Concentration élevée - {etab['nom']}",
-                    "description": f"L'établissement {etab['nom']} représente {pct:.1f}% du patrimoine financier.",
-                    "exposition_montant": etab["total"],
-                    "exposition_pct": round(pct, 1),
-                    "probabilite": "Faible",
-                    "impact": "Moyen",
-                    "niveau": "Élevé",
-                    "categorie": "Concentration",
-                    "sources_web": []
-                })
+                risks.append(
+                    {
+                        "id": self._get_risk_id(),
+                        "titre": f"Concentration élevée - {etab['nom']}",
+                        "description": f"L'établissement {etab['nom']} représente {pct:.1f}% du patrimoine financier.",
+                        "exposition_montant": etab["total"],
+                        "exposition_pct": round(pct, 1),
+                        "probabilite": "Faible",
+                        "impact": "Moyen",
+                        "niveau": "Élevé",
+                        "categorie": "Concentration",
+                        "sources_web": [],
+                    }
+                )
 
         # Concentration par juridiction
         juridictions = {}
@@ -225,7 +247,9 @@ class RiskAnalyzer:
             jur = crypto_plat.get("juridiction", "Inconnue")
             juridictions[jur] = juridictions.get(jur, 0) + crypto_plat.get("total", 0)
 
-        total_global = total_financier + data["patrimoine"].get("crypto", {}).get("total", 0)
+        total_global = total_financier + data["patrimoine"].get("crypto", {}).get(
+            "total", 0
+        )
 
         for jur, montant in juridictions.items():
             if total_global > 0:
@@ -234,24 +258,28 @@ class RiskAnalyzer:
                 if pct >= self.seuils.get("concentration_juridiction_critique", 80):
                     sources = self.web_researcher.search(
                         "Risque pays",
-                        [f"risque pays {jur}",
-                         f"diversification géographique patrimoine"],
-                        context=f"Exposition {pct:.1f}% en {jur}"
+                        [
+                            f"risque pays {jur}",
+                            f"diversification géographique patrimoine",
+                        ],
+                        context=f"Exposition {pct:.1f}% en {jur}",
                     )
 
-                    risks.append({
-                        "id": self._get_risk_id(),
-                        "titre": f"Concentration géographique critique - {jur}",
-                        "description": f"La juridiction {jur} représente {pct:.1f}% du patrimoine total, "
-                                      f"créant un risque pays important.",
-                        "exposition_montant": montant,
-                        "exposition_pct": round(pct, 1),
-                        "probabilite": "Moyenne",
-                        "impact": "Élevé",
-                        "niveau": "Critique",
-                        "categorie": "Concentration géographique",
-                        "sources_web": sources[:2] if sources else []
-                    })
+                    risks.append(
+                        {
+                            "id": self._get_risk_id(),
+                            "titre": f"Concentration géographique - {jur}",
+                            "description": f"La juridiction {jur} représente {pct:.1f}% du patrimoine total, "
+                            f"créant un risque pays important.",
+                            "exposition_montant": montant,
+                            "exposition_pct": round(pct, 1),
+                            "probabilite": "Moyenne",
+                            "impact": "Élevé",
+                            "niveau": "Critique",
+                            "categorie": "Concentration géographique",
+                            "sources_web": sources[:2] if sources else [],
+                        }
+                    )
 
         return risks
 
@@ -264,7 +292,10 @@ class RiskAnalyzer:
         av_total = 0
         for etab in data["patrimoine"]["financier"]["etablissements"]:
             for compte in etab.get("comptes", []):
-                if "assurance" in compte.get("type", "").lower() and "vie" in compte.get("type", "").lower():
+                if (
+                    "assurance" in compte.get("type", "").lower()
+                    and "vie" in compte.get("type", "").lower()
+                ):
                     av_total += compte.get("montant", 0)
 
         if av_total > 0 and total_financier > 0:
@@ -273,34 +304,46 @@ class RiskAnalyzer:
             # Recherche web sur Loi Sapin 2
             sources = self.web_researcher.search(
                 "Loi Sapin 2",
-                ["Loi Sapin 2 blocage assurance-vie 2025",
-                 "HCSF article 21 Loi Sapin 2",
-                 "risques assurance-vie gel rachats"],
-                context=f"Exposition AV: {av_total:,.0f}€ ({pct_av:.1f}%)"
+                [
+                    "Loi Sapin 2 blocage assurance-vie 2025",
+                    "HCSF article 21 Loi Sapin 2",
+                    "risques assurance-vie gel rachats",
+                ],
+                context=f"Exposition AV: {av_total:,.0f}€ ({pct_av:.1f}%)",
             )
 
-            niveau = "Critique" if pct_av >= AV_CONCENTRATION_CRITIQUE else "Élevé" if pct_av >= AV_CONCENTRATION_ELEVEE else "Moyen"
+            niveau = (
+                "Critique"
+                if pct_av >= AV_CONCENTRATION_CRITIQUE
+                else "Élevé"
+                if pct_av >= AV_CONCENTRATION_ELEVEE
+                else "Moyen"
+            )
 
-            risks.append({
-                "id": self._get_risk_id(),
-                "titre": "Loi Sapin 2 - Blocage assurance-vie",
-                "description": f"Risque de gel temporaire de l'assurance-vie en cas de crise bancaire. "
-                              f"Exposition actuelle : {av_total:,.0f}€ ({pct_av:.1f}% du patrimoine financier).",
-                "exposition_montant": av_total,
-                "exposition_pct": round(pct_av, 1),
-                "probabilite": "Faible",
-                "impact": "Élevé",
-                "niveau": niveau,
-                "categorie": "Réglementaire",
-                "sources_web": sources[:3] if sources else []
-            })
+            risks.append(
+                {
+                    "id": self._get_risk_id(),
+                    "titre": "Loi Sapin 2 - Blocage assurance-vie",
+                    "description": f"Risque de gel temporaire de l'assurance-vie en cas de crise bancaire. "
+                    f"Exposition actuelle : {av_total:,.0f}€ ({pct_av:.1f}% du patrimoine financier).",
+                    "exposition_montant": av_total,
+                    "exposition_pct": round(pct_av, 1),
+                    "probabilite": "Faible",
+                    "impact": "Élevé",
+                    "niveau": niveau,
+                    "categorie": "Réglementaire",
+                    "sources_web": sources[:3] if sources else [],
+                }
+            )
 
         # Garantie des dépôts (100k€ par établissement)
         sources_garantie = self.web_researcher.search(
             "Garantie dépôts",
-            ["garantie dépôts bancaires France 100000 euros",
-             "FGDR fonds garantie dépôts résolution"],
-            context="Vérification couverture dépôts"
+            [
+                "garantie dépôts bancaires France 100000 euros",
+                "FGDR fonds garantie dépôts résolution",
+            ],
+            context="Vérification couverture dépôts",
         )
 
         for etab in data["patrimoine"]["financier"]["etablissements"]:
@@ -314,36 +357,40 @@ class RiskAnalyzer:
                 excedent = depots_total - 100000
                 pct_non_garanti = (excedent / depots_total) * 100
 
-                risks.append({
-                    "id": self._get_risk_id(),
-                    "titre": f"Dépassement garantie dépôts - {etab['nom']}",
-                    "description": f"Les dépôts chez {etab['nom']} dépassent de {excedent:,.0f}€ "
-                                  f"le plafond de garantie de 100 000€.",
-                    "exposition_montant": excedent,
-                    "exposition_pct": round(pct_non_garanti, 1),
-                    "probabilite": "Très faible",
-                    "impact": "Élevé",
-                    "niveau": "Moyen",
-                    "categorie": "Réglementaire",
-                    "sources_web": sources_garantie[:1] if sources_garantie else []
-                })
+                risks.append(
+                    {
+                        "id": self._get_risk_id(),
+                        "titre": f"Dépassement garantie dépôts - {etab['nom']}",
+                        "description": f"Les dépôts chez {etab['nom']} dépassent de {excedent:,.0f}€ "
+                        f"le plafond de garantie de 100 000€.",
+                        "exposition_montant": excedent,
+                        "exposition_pct": round(pct_non_garanti, 1),
+                        "probabilite": "Très faible",
+                        "impact": "Élevé",
+                        "niveau": "Moyen",
+                        "categorie": "Réglementaire",
+                        "sources_web": sources_garantie[:1] if sources_garantie else [],
+                    }
+                )
 
         # Plafonds PEA/PEA-PME
         for etab in data["patrimoine"]["financier"]["etablissements"]:
             for compte in etab.get("comptes", []):
                 if compte.get("type") == "PEA" and compte.get("montant", 0) > 150000:
-                    risks.append({
-                        "id": self._get_risk_id(),
-                        "titre": "Plafond PEA dépassé",
-                        "description": f"Le PEA dépasse le plafond de 150 000€. Nouveaux versements impossibles.",
-                        "exposition_montant": compte["montant"] - 150000,
-                        "exposition_pct": 0,
-                        "probabilite": "N/A",
-                        "impact": "Faible",
-                        "niveau": "Faible",
-                        "categorie": "Réglementaire",
-                        "sources_web": []
-                    })
+                    risks.append(
+                        {
+                            "id": self._get_risk_id(),
+                            "titre": "Plafond PEA dépassé",
+                            "description": f"Le PEA dépasse le plafond de 150 000€. Nouveaux versements impossibles.",
+                            "exposition_montant": compte["montant"] - 150000,
+                            "exposition_pct": 0,
+                            "probabilite": "N/A",
+                            "impact": "Faible",
+                            "niveau": "Faible",
+                            "categorie": "Réglementaire",
+                            "sources_web": [],
+                        }
+                    )
 
         return risks
 
@@ -354,10 +401,12 @@ class RiskAnalyzer:
         # Recherche sur évolution fiscalité
         sources_fiscal = self.web_researcher.search(
             "Fiscalité épargne",
-            ["PFU prélèvement forfaitaire unique évolution 2025",
-             "fiscalité assurance-vie France",
-             "flat tax 30% réforme fiscale"],
-            context="Anticipation évolutions fiscales"
+            [
+                "PFU prélèvement forfaitaire unique évolution 2025",
+                "fiscalité assurance-vie France",
+                "flat tax 30% réforme fiscale",
+            ],
+            context="Anticipation évolutions fiscales",
         )
 
         # Risque évolution PFU
@@ -368,19 +417,21 @@ class RiskAnalyzer:
                     total_cto += compte.get("montant", 0)
 
         if total_cto > 50000:
-            risks.append({
-                "id": self._get_risk_id(),
-                "titre": "Risque hausse fiscalité PFU",
-                "description": f"Le CTO ({total_cto:,.0f}€) est soumis au PFU de 30%. "
-                              f"Risque de hausse fiscale future (ex: 35%).",
-                "exposition_montant": total_cto,
-                "exposition_pct": 0,
-                "probabilite": "Moyenne",
-                "impact": "Moyen",
-                "niveau": "Moyen",
-                "categorie": "Fiscal",
-                "sources_web": sources_fiscal[:2] if sources_fiscal else []
-            })
+            risks.append(
+                {
+                    "id": self._get_risk_id(),
+                    "titre": "Risque hausse fiscalité PFU",
+                    "description": f"Le CTO ({total_cto:,.0f}€) est soumis au PFU de 30%. "
+                    f"Risque de hausse fiscale future (ex: 35%).",
+                    "exposition_montant": total_cto,
+                    "exposition_pct": 0,
+                    "probabilite": "Moyenne",
+                    "impact": "Moyen",
+                    "niveau": "Moyen",
+                    "categorie": "Fiscal",
+                    "sources_web": sources_fiscal[:2] if sources_fiscal else [],
+                }
+            )
 
         return risks
 
@@ -407,34 +458,43 @@ class RiskAnalyzer:
             if pct_actions > 70:
                 sources_marche = self.web_researcher.search(
                     "Risque actions",
-                    ["volatilité marchés actions risques",
-                     "diversification actions obligations"],
-                    context=f"Exposition actions {pct_actions:.1f}%"
+                    [
+                        "volatilité marchés actions risques",
+                        "diversification actions obligations",
+                    ],
+                    context=f"Exposition actions {pct_actions:.1f}%",
                 )
 
-                risks.append({
-                    "id": self._get_risk_id(),
-                    "titre": "Forte exposition au risque actions",
-                    "description": f"L'exposition aux actions ({pct_actions:.1f}%) est élevée. "
-                                  f"Volatilité et risque de correction important.",
-                    "exposition_montant": exposition_actions,
-                    "exposition_pct": round(pct_actions, 1),
-                    "probabilite": "Moyenne",
-                    "impact": "Élevé",
-                    "niveau": "Moyen",
-                    "categorie": "Marché",
-                    "sources_web": sources_marche[:1] if sources_marche else []
-                })
+                risks.append(
+                    {
+                        "id": self._get_risk_id(),
+                        "titre": "Forte exposition au risque actions",
+                        "description": f"L'exposition aux actions ({pct_actions:.1f}%) est élevée. "
+                        f"Volatilité et risque de correction important.",
+                        "exposition_montant": exposition_actions,
+                        "exposition_pct": round(pct_actions, 1),
+                        "probabilite": "Moyenne",
+                        "impact": "Élevé",
+                        "niveau": "Moyen",
+                        "categorie": "Marché",
+                        "sources_web": sources_marche[:1] if sources_marche else [],
+                    }
+                )
 
-        # Risque immobilier - Recherche web sur valorisation actuelle
-        immobilier_total = data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
-        biens_immobiliers = data.get("patrimoine", {}).get("immobilier", {}).get("biens", [])
+        # Risque immobilier - Recherche web sur valorisation actuelle + calcul valeur
+        immobilier_total = (
+            data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
+        )
+        biens_immobiliers = (
+            data.get("patrimoine", {}).get("immobilier", {}).get("biens", [])
+        )
 
         if immobilier_total > 0 and biens_immobiliers:
             for bien in biens_immobiliers:
                 bien_type = bien.get("type", "bien")
                 adresse = bien.get("adresse", "")
-                valeur = bien.get("valeur_actuelle", 0)
+                surface_m2 = bien.get("surface_m2", bien.get("surface", 0))
+                prix_acquisition = bien.get("prix_acquisition", 0)
 
                 # Extraire la ville de l'adresse pour la recherche
                 ville = ""
@@ -445,34 +505,96 @@ class RiskAnalyzer:
                         ville = match.group(1).strip()
 
                 # Recherche web sur la valorisation immobilière
+                sources_immo = []
                 if ville:
                     sources_immo = self.web_researcher.search(
                         f"Valorisation immobilière {ville}",
                         [
                             f"prix immobilier m² {ville} 2025",
                             f"marché immobilier {ville} évolution",
-                            f"valorisation {bien_type.lower()} {ville}"
+                            f"valorisation {bien_type.lower()} {ville}",
                         ],
-                        context=f"Bien: {bien_type}, {adresse}, valeur actuelle: {valeur:,.0f}€"
+                        context=f"Bien: {bien_type}, {adresse}, surface: {surface_m2}m²",
                     )
 
-                    self.logger.info(f"Recherche valorisation immobilière {ville}: {len(sources_immo)} sources")
+                    self.logger.info(
+                        f"Recherche valorisation immobilière {ville}: {len(sources_immo)} sources"
+                    )
 
-                    # Ajouter un risque informatif sur le bien immobilier
-                    risks.append({
-                        "id": self._get_risk_id(),
-                        "titre": f"Valorisation {bien_type} - {ville}",
-                        "description": f"{bien_type} situé à {adresse}. "
-                                      f"Valeur estimée actuelle: {valeur:,.0f}€. "
-                                      f"Consulter les sources web pour l'évolution du marché local.",
-                        "exposition_montant": valeur,
-                        "exposition_pct": round((valeur / (total_patrimoine + immobilier_total)) * 100, 1) if (total_patrimoine + immobilier_total) > 0 else 0,
-                        "probabilite": "Faible",
-                        "impact": "Moyen",
-                        "niveau": "Faible",
-                        "categorie": "Marché - Immobilier",
-                        "sources_web": sources_immo[:3] if sources_immo else []
-                    })
+                # Calculer la valorisation actuelle depuis web ou fallback
+                if surface_m2 > 0:
+                    valorisation = self.real_estate_valorizer.calculate_property_value(
+                        surface_m2=surface_m2,
+                        city=ville if ville else "default",
+                        web_sources=sources_immo,
+                        acquisition_price=prix_acquisition,
+                    )
+
+                    # Stocker la valorisation calculée dans le bien
+                    bien["valeur_actuelle"] = valorisation["valeur_actuelle"]
+                    bien["prix_m2_actuel"] = valorisation["prix_m2"]
+                    bien["valorisation_source"] = valorisation["source"]
+
+                    valeur = valorisation["valeur_actuelle"]
+
+                    # Description enrichie avec plus-value si disponible
+                    description = (
+                        f"{bien_type} situé à {adresse}. Surface: {surface_m2}m². "
+                    )
+                    description += f"Valeur estimée actuelle: {valeur:,.0f}€ "
+                    description += f"(prix m²: {valorisation['prix_m2']:,.0f}€, source: {valorisation['source']}). "
+
+                    if "plus_value" in valorisation:
+                        plus_value_pct = valorisation["plus_value_pct"]
+                        sign = "+" if plus_value_pct >= 0 else ""
+                        description += f"Plus-value: {sign}{plus_value_pct}% depuis acquisition ({prix_acquisition:,.0f}€). "
+
+                    description += (
+                        "Consulter les sources web pour l'évolution du marché local."
+                    )
+
+                    self.logger.info(
+                        f"Valorisation {bien_type} {ville}: {valeur:,.0f}€ "
+                        f"({surface_m2}m² × {valorisation['prix_m2']}€/m², source: {valorisation['source']})"
+                    )
+                else:
+                    # Fallback si pas de surface
+                    valeur = bien.get("valeur_actuelle", prix_acquisition)
+                    description = f"{bien_type} situé à {adresse}. Valeur estimée: {valeur:,.0f}€."
+                    self.logger.warning(
+                        f"Pas de surface pour {bien_type} {ville}, utilisation valeur brute"
+                    )
+
+                # Ajouter un risque informatif sur le bien immobilier
+                if ville:
+                    risks.append(
+                        {
+                            "id": self._get_risk_id(),
+                            "titre": f"Valorisation {bien_type} - {ville}",
+                            "description": description,
+                            "exposition_montant": valeur,
+                            "exposition_pct": round(
+                                (valeur / (total_patrimoine + immobilier_total)) * 100,
+                                1,
+                            )
+                            if (total_patrimoine + immobilier_total) > 0
+                            else 0,
+                            "probabilite": "Faible",
+                            "impact": "Moyen",
+                            "niveau": "Faible",
+                            "categorie": "Marché - Immobilier",
+                            "sources_web": sources_immo[:3] if sources_immo else [],
+                        }
+                    )
+
+            # Recalculer le total immobilier après mise à jour des valorisations
+            total_immo_recalcule = sum(
+                b.get("valeur_actuelle", 0) for b in biens_immobiliers
+            )
+            data["patrimoine"]["immobilier"]["total"] = total_immo_recalcule
+            self.logger.info(
+                f"Total immobilier recalculé: {total_immo_recalcule:,.0f}€"
+            )
 
         return risks
 
@@ -489,32 +611,36 @@ class RiskAnalyzer:
                     liquidite += compte.get("montant", 0)
 
         if liquidite < self.seuils.get("liquidite_critique", 5000):
-            risks.append({
-                "id": self._get_risk_id(),
-                "titre": "Liquidité critique",
-                "description": f"Liquidité disponible très faible : {liquidite:,.0f}€. "
-                              f"Recommandé : minimum 3-6 mois de dépenses.",
-                "exposition_montant": liquidite,
-                "exposition_pct": 0,
-                "probabilite": "N/A",
-                "impact": "Élevé",
-                "niveau": "Critique",
-                "categorie": "Liquidité",
-                "sources_web": []
-            })
+            risks.append(
+                {
+                    "id": self._get_risk_id(),
+                    "titre": "Liquidité critique",
+                    "description": f"Liquidité disponible très faible : {liquidite:,.0f}€. "
+                    f"Recommandé : minimum 3-6 mois de dépenses.",
+                    "exposition_montant": liquidite,
+                    "exposition_pct": 0,
+                    "probabilite": "N/A",
+                    "impact": "Élevé",
+                    "niveau": "Critique",
+                    "categorie": "Liquidité",
+                    "sources_web": [],
+                }
+            )
         elif liquidite < self.seuils.get("liquidite_faible", 15000):
-            risks.append({
-                "id": self._get_risk_id(),
-                "titre": "Liquidité faible",
-                "description": f"Liquidité disponible limitée : {liquidite:,.0f}€.",
-                "exposition_montant": liquidite,
-                "exposition_pct": 0,
-                "probabilite": "N/A",
-                "impact": "Moyen",
-                "niveau": "Moyen",
-                "categorie": "Liquidité",
-                "sources_web": []
-            })
+            risks.append(
+                {
+                    "id": self._get_risk_id(),
+                    "titre": "Liquidité faible",
+                    "description": f"Liquidité disponible limitée : {liquidite:,.0f}€.",
+                    "exposition_montant": liquidite,
+                    "exposition_pct": 0,
+                    "probabilite": "N/A",
+                    "impact": "Moyen",
+                    "niveau": "Moyen",
+                    "categorie": "Liquidité",
+                    "sources_web": [],
+                }
+            )
 
         return risks
 
@@ -540,24 +666,26 @@ class RiskAnalyzer:
                         [
                             "risque politique France investissements",
                             "concentration géographique patrimoine France",
-                            "diversification internationale patrimoine"
+                            "diversification internationale patrimoine",
                         ],
-                        context=f"Concentration {pct:.1f}% en France"
+                        context=f"Concentration {pct:.1f}% en France",
                     )
 
-                    risks.append({
-                        "id": self._get_risk_id(),
-                        "titre": "Risque politique concentration France",
-                        "description": f"Très forte concentration en France ({pct:.1f}%). "
-                                      f"Exposition aux décisions politiques françaises.",
-                        "exposition_montant": montant,
-                        "exposition_pct": round(pct, 1),
-                        "probabilite": "Faible",
-                        "impact": "Moyen",
-                        "niveau": "Faible",
-                        "categorie": "Politique",
-                        "sources_web": sources[:3] if sources else []
-                    })
+                    risks.append(
+                        {
+                            "id": self._get_risk_id(),
+                            "titre": "Risque politique - France",
+                            "description": f"Très forte concentration en France ({pct:.1f}%). "
+                            f"Exposition aux décisions politiques françaises.",
+                            "exposition_montant": montant,
+                            "exposition_pct": round(pct, 1),
+                            "probabilite": "Faible",
+                            "impact": "Moyen",
+                            "niveau": "Faible",
+                            "categorie": "Politique",
+                            "sources_web": sources[:3] if sources else [],
+                        }
+                    )
 
         return risks
 
@@ -576,7 +704,10 @@ class RiskAnalyzer:
         for etab in data["patrimoine"]["financier"]["etablissements"]:
             if "spiko" in etab.get("nom", "").lower():
                 for compte in etab.get("comptes", []):
-                    if "$" in compte.get("type", "").lower() or "usd" in compte.get("type", "").lower():
+                    if (
+                        "$" in compte.get("type", "").lower()
+                        or "usd" in compte.get("type", "").lower()
+                    ):
                         montant_usd += compte.get("montant", 0)
 
         # 2. Actifs crypto (volatilité devise)
@@ -591,10 +722,10 @@ class RiskAnalyzer:
 
         total_exposition = montant_usd + montant_crypto + montant_immo_etranger
         total_patrimoine = (
-            data.get("patrimoine", {}).get("financier", {}).get("total", 0) +
-            data.get("patrimoine", {}).get("crypto", {}).get("total", 0) +
-            data.get("patrimoine", {}).get("metaux_precieux", {}).get("total", 0) +
-            data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
+            data.get("patrimoine", {}).get("financier", {}).get("total", 0)
+            + data.get("patrimoine", {}).get("crypto", {}).get("total", 0)
+            + data.get("patrimoine", {}).get("metaux_precieux", {}).get("total", 0)
+            + data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
         )
 
         if total_patrimoine > 0:
@@ -607,9 +738,9 @@ class RiskAnalyzer:
                     [
                         "volatilité EUR USD 2025",
                         "risque de change investissement",
-                        "couverture risque devise"
+                        "couverture risque devise",
                     ],
-                    context=f"Exposition {pct_exposition:.1f}% du patrimoine en devises étrangères"
+                    context=f"Exposition {pct_exposition:.1f}% du patrimoine en devises étrangères",
                 )
 
                 # Déterminer niveau de risque
@@ -626,21 +757,23 @@ class RiskAnalyzer:
                     probabilite = "Faible"
                     impact = "Faible"
 
-                risks.append({
-                    "id": self._get_risk_id(),
-                    "titre": "Risque de change (EUR/USD et crypto)",
-                    "description": f"Exposition à {pct_exposition:.1f}% en devises étrangères "
-                                  f"(USD: {montant_usd:,.0f}€, Crypto: {montant_crypto:,.0f}€, "
-                                  f"Immobilier étranger: {montant_immo_etranger:,.0f}€). "
-                                  f"Risque de perte en cas de dépréciation EUR.",
-                    "exposition_montant": total_exposition,
-                    "exposition_pct": round(pct_exposition, 1),
-                    "probabilite": probabilite,
-                    "impact": impact,
-                    "niveau": niveau,
-                    "categorie": "Change",
-                    "sources_web": sources[:2] if sources else []
-                })
+                risks.append(
+                    {
+                        "id": self._get_risk_id(),
+                        "titre": "Risque de change (EUR/USD et crypto)",
+                        "description": f"Exposition à {pct_exposition:.1f}% en devises étrangères "
+                        f"(USD: {montant_usd:,.0f}€, Crypto: {montant_crypto:,.0f}€, "
+                        f"Immobilier étranger: {montant_immo_etranger:,.0f}€). "
+                        f"Risque de perte en cas de dépréciation EUR.",
+                        "exposition_montant": total_exposition,
+                        "exposition_pct": round(pct_exposition, 1),
+                        "probabilite": probabilite,
+                        "impact": impact,
+                        "niveau": niveau,
+                        "categorie": "Change",
+                        "sources_web": sources[:2] if sources else [],
+                    }
+                )
 
         return risks
 
@@ -684,13 +817,13 @@ class RiskAnalyzer:
             queries = search_config.get("queries", [])
             context = search_config.get("analysis_context", "")
 
-            self.logger.info(f"    → Recherche contextuelle: {search_id} (priorité: {priority})")
+            self.logger.info(
+                f"    → Recherche contextuelle: {search_id} (priorité: {priority})"
+            )
 
             # Exécuter la recherche web
             search_results = self.web_researcher.search(
-                sujet=f"Contexte: {search_id}",
-                queries=queries,
-                context=context
+                sujet=f"Contexte: {search_id}", queries=queries, context=context
             )
 
             if not search_results:
@@ -702,7 +835,7 @@ class RiskAnalyzer:
                 search_id=search_id,
                 search_config=search_config,
                 search_results=search_results,
-                patrimoine_data=data
+                patrimoine_data=data,
             )
 
             contextual_risks.extend(risks)
@@ -715,7 +848,7 @@ class RiskAnalyzer:
         search_id: str,
         search_config: dict,
         search_results: List[Dict],
-        patrimoine_data: dict
+        patrimoine_data: dict,
     ) -> List[Dict[str, Any]]:
         """
         Analyse les résultats de recherche contextuelle pour générer des risques
@@ -751,16 +884,14 @@ class RiskAnalyzer:
                 "impact": risk_mapping["impact"],
                 "niveau": risk_mapping["niveau"],
                 "categorie": risk_mapping["categorie"],
-                "sources_web": search_results[:max_risks]  # Limiter les sources
+                "sources_web": search_results[:max_risks],  # Limiter les sources
             }
             risks.append(risk)
 
         return risks
 
     def _get_contextual_risk_mapping(
-        self,
-        search_id: str,
-        patrimoine_data: dict
+        self, search_id: str, patrimoine_data: dict
     ) -> Optional[Dict[str, Any]]:
         """
         Mappe un search_id vers les propriétés du risque contextuel
@@ -776,9 +907,11 @@ class RiskAnalyzer:
             Dictionnaire avec propriétés du risque ou None si non pertinent
         """
         total_patrimoine = (
-            patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0) +
-            patrimoine_data.get("patrimoine", {}).get("crypto", {}).get("total", 0) +
-            patrimoine_data.get("patrimoine", {}).get("immobilier", {}).get("total", 0)
+            patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0)
+            + patrimoine_data.get("patrimoine", {}).get("crypto", {}).get("total", 0)
+            + patrimoine_data.get("patrimoine", {})
+            .get("immobilier", {})
+            .get("total", 0)
         )
 
         # Mapping des recherches contextuelles vers risques
@@ -786,71 +919,77 @@ class RiskAnalyzer:
             "actualite_economique_france": {
                 "titre": "Évolution réglementaire économique France",
                 "description": "Des évolutions réglementaires ou économiques récentes en France "
-                              "peuvent impacter l'épargne et les investissements. "
-                              "Consulter les sources web pour plus de détails.",
+                "peuvent impacter l'épargne et les investissements. "
+                "Consulter les sources web pour plus de détails.",
                 "probabilite": "Moyenne",
                 "impact": "Moyen",
                 "niveau": "Moyen",
                 "categorie": "Réglementaire - Contexte",
-                "exposition_montant": patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0),
-                "exposition_pct": 0
+                "exposition_montant": patrimoine_data.get("patrimoine", {})
+                .get("financier", {})
+                .get("total", 0),
+                "exposition_pct": 0,
             },
             "risques_bancaires": {
                 "titre": "Risques système bancaire français",
                 "description": "Des signaux d'alerte concernant la stabilité du système bancaire "
-                              "ont été identifiés dans l'actualité récente. "
-                              "Une vigilance accrue est recommandée.",
+                "ont été identifiés dans l'actualité récente. "
+                "Une vigilance accrue est recommandée.",
                 "probabilite": "Faible",
                 "impact": "Élevé",
                 "niveau": "Élevé",
                 "categorie": "Concentration - Contexte",
-                "exposition_montant": patrimoine_data.get("patrimoine", {}).get("financier", {}).get("total", 0),
-                "exposition_pct": 0
+                "exposition_montant": patrimoine_data.get("patrimoine", {})
+                .get("financier", {})
+                .get("total", 0),
+                "exposition_pct": 0,
             },
             "evolution_fiscalite": {
                 "titre": "Évolutions fiscales en cours",
                 "description": "Des modifications fiscales récentes ou en projet peuvent affecter "
-                              "l'épargne et les investissements. Voir sources pour détails.",
+                "l'épargne et les investissements. Voir sources pour détails.",
                 "probabilite": "Moyenne",
                 "impact": "Moyen",
                 "niveau": "Moyen",
                 "categorie": "Fiscal - Contexte",
                 "exposition_montant": total_patrimoine,
-                "exposition_pct": 100
+                "exposition_pct": 100,
             },
             "risques_geopolitiques": {
                 "titre": "Risques géopolitiques actuels",
                 "description": "Des tensions géopolitiques actuelles peuvent impacter les marchés "
-                              "financiers et la valorisation du patrimoine.",
+                "financiers et la valorisation du patrimoine.",
                 "probabilite": "Moyenne",
                 "impact": "Moyen",
                 "niveau": "Faible",
                 "categorie": "Marché - Contexte",
                 "exposition_montant": total_patrimoine,
-                "exposition_pct": 0
+                "exposition_pct": 0,
             },
             "volatilite_marches": {
                 "titre": "Volatilité accrue des marchés",
                 "description": "Des signaux de volatilité accrue ou de risque de correction "
-                              "ont été identifiés sur les marchés financiers.",
+                "ont été identifiés sur les marchés financiers.",
                 "probabilite": "Moyenne",
                 "impact": "Moyen",
                 "niveau": "Moyen",
                 "categorie": "Marché - Contexte",
                 "exposition_montant": self._calculate_equity_exposure(patrimoine_data),
-                "exposition_pct": 0
+                "exposition_pct": 0,
             },
             "regulation_crypto": {
                 "titre": "Évolution réglementation crypto",
                 "description": "Des évolutions réglementaires concernant les cryptomonnaies "
-                              "peuvent impacter les détenteurs d'actifs numériques.",
+                "peuvent impacter les détenteurs d'actifs numériques.",
                 "probabilite": "Moyenne",
                 "impact": "Moyen",
                 "niveau": "Faible",
                 "categorie": "Réglementaire - Crypto",
-                "exposition_montant": patrimoine_data.get("patrimoine", {}).get("crypto", {}).get("total", 0),
-                "exposition_pct": 0
-            }
+                "exposition_montant": patrimoine_data.get("patrimoine", {})
+                .get("crypto", {})
+                .get("total", 0),
+                "exposition_pct": 0,
+            },
         }
 
         risk_data = mappings.get(search_id)
@@ -858,7 +997,9 @@ class RiskAnalyzer:
             return None
 
         # Filtrer les risques non pertinents (exposition = 0)
-        if risk_data.get("exposition_montant", 0) == 0 and search_id in ["regulation_crypto"]:
+        if risk_data.get("exposition_montant", 0) == 0 and search_id in [
+            "regulation_crypto"
+        ]:
             return None  # Pas de crypto, pas de risque crypto
 
         return risk_data
@@ -875,7 +1016,9 @@ class RiskAnalyzer:
         """
         exposition_actions = 0
 
-        for etab in data.get("patrimoine", {}).get("financier", {}).get("etablissements", []):
+        for etab in (
+            data.get("patrimoine", {}).get("financier", {}).get("etablissements", [])
+        ):
             for compte in etab.get("comptes", []):
                 if compte.get("type") in ["PEA", "PEA-PME", "CTO"]:
                     exposition_actions += compte.get("montant", 0)

@@ -135,7 +135,27 @@
             </table>
 
             <div class="alert" data-conditional="concentration_alert">
-                <span data-field="concentration_alert_content"></span>
+                <header class="header">
+                    <h3 data-field="concentration_alert_titre">
+                        Alerte de concentration
+                    </h3>
+                </header>
+                <p data-field="concentration_alert_description">
+                    Cette alerte indique une concentration excessive du
+                    patrimoine.
+                </p>
+                <p>
+                    <strong>Niveau de risque global :</strong>
+                    <span
+                        class="concentration badge"
+                        data-field="concentration_alert_severite"
+                        >…</span
+                    >
+                </p>
+                <p><strong>Risques identifiés :</strong></p>
+                <div data-field="concentration_alert_details">
+                    <!-- Liste de tous les risques détectés -->
+                </div>
             </div>
         </section>
 
@@ -172,9 +192,7 @@
                                 >…</span
                             >
                         </td>
-                        <td class="right" data-field="class_etablissement">
-                            …
-                        </td>
+                        <td data-field="class_etablissement">…</td>
                         <td class="right" data-field="class_amount">0 €</td>
                         <td class="right" data-field="class_pct">0 %</td>
                         <td class="center">
@@ -194,8 +212,11 @@
             </table>
 
             <!-- Méthodologie benchmark (structure identique à Markowitz) -->
-            <div class="markowitz-methodology">
-                <h3>Méthodologie — Écart benchmark</h3>
+            <div class="methodology">
+                <header class="header">
+                    <h3>Méthodologie — Écart benchmark</h3>
+                </header>
+
                 <div data-field="benchmark_methodology_content">
                     <!-- Contenu injecté par le generator (structure en 2 colonnes) -->
                 </div>
@@ -214,7 +235,9 @@
             <!-- Risques dynamiques injectés depuis le JSON -->
             <div class="risque" data-repeat="risque">
                 <div class="big-num" data-field="risque_num">…</div>
-                <h3 data-field="risque_titre">Titre du risque</h3>
+                <header class="header">
+                    <h3 data-field="risque_titre">Titre du risque</h3>
+                </header>
 
                 <p data-field="risque_description">…</p>
 
@@ -228,9 +251,13 @@
                     <strong>Sources web :</strong>
                     <ul data-field="sources_list">
                         <!-- Sources injectées dynamiquement -->
-                        <a href="https://example.com/source1" target="_blank"
-                            >…</a
-                        >
+                        <li>
+                            <a
+                                href="https://example.com/source1"
+                                target="_blank"
+                                >…</a
+                            >
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -249,7 +276,11 @@
                 <!-- Template recommandation - sera dupliqué pour chaque recommandation -->
                 <div class="reco" data-repeat="recommandation">
                     <div class="big-num" data-field="reco_num">…</div>
-                    <h3 data-field="reco_titre">Titre de la recommandation</h3>
+                    <header class="header">
+                        <h3 data-field="reco_titre">
+                            Titre de la recommandation
+                        </h3>
+                    </header>
 
                     <p data-field="reco_description">…</p>
 
@@ -263,10 +294,12 @@
                             <!-- Liste d'actions injectée dynamiquement -->
                         </ul>
                     </div>
-                    <small class="muted">
-                        Délai estimé :
-                        <span data-field="reco_delai">0 jour</span>
-                    </small>
+                    <p>
+                        <small class="muted">
+                            Délai estimé :
+                            <span data-field="reco_delai">0 jour</span>
+                        </small>
+                    </p>
                 </div>
             </div>
         </section>
@@ -282,17 +315,32 @@
             <div class="stack">
                 <!-- Template stress test - sera dupliqué pour chaque test -->
                 <div class="stress high" data-repeat="stress_test">
-                    <header class="stress-header">
+                    <header class="header">
                         <h3 class="scenario" data-field="test_scenario">…</h3>
                         <div class="badge">…</div>
                     </header>
 
-                    <div class="impact">
+                    <!-- Affichage pour tests de perte monétaire -->
+                    <div class="impact" data-field="test_impact_block">
                         <span class="price" data-field="test_impact_valeur"
                             >0 €</span
                         >
                         <span class="pct" data-field="test_impact_pct"
                             >0 %</span
+                        >
+                    </div>
+
+                    <!-- Affichage pour tests de résilience temporelle -->
+                    <div
+                        class="impact"
+                        data-field="test_resilience_block"
+                        style="display: none"
+                    >
+                        <span class="price" data-field="test_duree_mois"
+                            >0 mois</span
+                        >
+                        <span class="pct" data-field="test_cible_mois"
+                            >cible : 12 mois</span
                         >
                     </div>
 
@@ -319,60 +367,62 @@
                     data-field="markowitz_chart"
                     alt="Frontière efficiente de Markowitz"
                 />
-                <p class="chart-caption">
+                <p class="markowitz-chart-caption">
                     Frontière efficiente — Allocation optimale vs actuelle
                 </p>
             </div>
 
             <!-- Métriques comparatives -->
-            <div class="markowitz-cards">
+            <div class="grid">
                 <!-- Portefeuille actuel -->
-                <div class="mk-card-current">
-                    <h3>Portefeuille actuel</h3>
+                <div class="marko current">
+                    <header class="header">
+                        <h3>Portefeuille actuel</h3>
+                    </header>
+
                     <ul>
-                        <li class="mk-card li">
+                        <li>
                             <span>Rendement espéré :</span>
                             <strong data-field="markowitz_current_return"
                                 >0 %</strong
                             >
                         </li>
-                        <li class="mk-card li">
+                        <li>
                             <span>Volatilité annuelle :</span>
                             <strong data-field="markowitz_current_volatility"
                                 >0 %</strong
                             >
                         </li>
-                        <li class="mk-card li">
+                        <li>
                             <span>Ratio de Sharpe :</span>
-                            <strong
-                                class="mk-sharpe"
-                                data-field="markowitz_current_sharpe"
+                            <strong data-field="markowitz_current_sharpe"
                                 >0</strong
                             >
                         </li>
                     </ul>
                 </div>
                 <!-- Portefeuille optimal -->
-                <div class="mk-card-optimal">
-                    <h3>Portefeuille optimal</h3>
+                <div class="marko optimal">
+                    <header class="header">
+                        <h3>Portefeuille optimal</h3>
+                    </header>
+
                     <ul>
-                        <li class="mk-card-li">
+                        <li>
                             <span>Rendement espéré :</span>
                             <strong data-field="markowitz_optimal_return"
                                 >0 %</strong
                             >
                         </li>
-                        <li class="mk-card-li">
+                        <li>
                             <span>Volatilité annuelle :</span>
                             <strong data-field="markowitz_optimal_volatility"
                                 >0 %</strong
                             >
                         </li>
-                        <li class="mk-card-li">
+                        <li>
                             <span>Ratio de Sharpe :</span>
-                            <strong
-                                class="mk-sharpe"
-                                data-field="markowitz_optimal_sharpe"
+                            <strong data-field="markowitz_optimal_sharpe"
                                 >0</strong
                             >
                         </li>
@@ -382,19 +432,39 @@
 
             <!-- Interprétation -->
             <div class="alert">
-                <strong>⚠️ Amélioration modérée possible :</strong>
-                <span
-                    style="margin: 0; font-size: 10.5pt; line-height: 1.6"
-                    data-field="markowitz_interpretation"
-                >
-                    …
-                </span>
+                <header class="header">
+                    <h3 data-field="markowitz_alert_titre">
+                        Interprétation de l'optimisation
+                    </h3>
+                </header>
+                <p data-field="markowitz_interpretation">
+                    L'analyse Markowitz permet d'identifier les opportunités
+                    d'amélioration du ratio rendement/risque.
+                </p>
+                <p>
+                    <strong>Amélioration potentielle :</strong>
+                    <span
+                        class="optimization badge"
+                        data-field="markowitz_improvement_level"
+                        >…</span
+                    >
+                </p>
+                <p>
+                    <strong>Gain de Sharpe estimé :</strong>
+                    <span data-field="markowitz_sharpe_gain">+0.00</span>
+                </p>
+                <div data-field="markowitz_recommendation">
+                    <!-- Recommandations d'optimisation injectées dynamiquement -->
+                </div>
             </div>
 
             <!-- Note méthodologique -->
-            <div class="markowitz-methodology">
-                <h3>Méthodologie et limites</h3>
-                <div class="methodology-content">
+            <div class="methodology">
+                <header class="header">
+                    <h3>Méthodologie et limites</h3>
+                </header>
+
+                <div class="grid">
                     <div class="methods">
                         <h4>Méthodologie</h4>
                         <ul>
@@ -430,7 +500,7 @@
                                 ratio de Sharpe
                             </li>
                             <li>
-                                <strong>Contraintes :</strong> poids ≥ 0 ; somme
+                                <strong>Contraintes :</strong> Poids ≥ 0 ; somme
                                 = 100 %
                             </li>
                         </ul>
@@ -440,21 +510,21 @@
                         <ul>
                             <li>
                                 <strong>Pas de données réelles :</strong>
-                                utilisation de moyennes historiques génériques,
+                                Utilisation de moyennes historiques génériques,
                                 non spécifiques au portefeuille
                             </li>
                             <li>
                                 <strong>Corrélations simplifiées :</strong>
-                                matrice statique ne reflétant pas les évolutions
+                                Matrice statique ne reflétant pas les évolutions
                                 de marché
                             </li>
                             <li>
-                                <strong>Coûts non intégrés :</strong> frais de
+                                <strong>Coûts non intégrés :</strong> Frais de
                                 transaction, fiscalité et contraintes de
                                 liquidité ignorés
                             </li>
                             <li>
-                                <strong>Ruptures de régime :</strong> crises
+                                <strong>Ruptures de régime :</strong> Crises
                                 financières et changements structurels non
                                 modélisés
                             </li>
@@ -497,7 +567,9 @@
 
             <!-- Card unifiée des détails des scores -->
             <div class="scores-unified-card">
-                <h3>Détails des scores</h3>
+                <header class="header">
+                    <h3>Détails des scores</h3>
+                </header>
 
                 <div class="scores-container">
                     <!-- Score 1: Diversification -->
@@ -800,18 +872,18 @@
                                     borderColor: "#334155", // var(--text),
                                     borderWidth: 2,
                                     pointBackgroundColor: [
-                                        "#5c6c88", // var(--slate), // Diversification - Bleu ardoise
-                                        "#8b6b4f", // var(--taupe), // Résilience - Brun taupe
-                                        "#5e4b6a", // var(--plum), // Liquidité - Prune désaturée
-                                        "#a1aab5", // var(--silver), // Fiscalité - Argent bleuté
-                                        "#b46f5b", // var(--copper), // Croissance - Cuivre rosé
+                                        "#5c6c88", // var(--slate)
+                                        "#8b6b4f", // var(--taupe)
+                                        "#5e4b6a", // var(--plum)
+                                        "#a1aab5", // var(--silver)
+                                        "#b46f5b", // var(--copper)
                                     ],
                                     pointBorderColor: [
-                                        "#3e4a60", // var(--slate-dark), // Diversification - Bleu ardoise
-                                        "#5d4732", // var(--taupe-dark), // Résilience - Brun taupe
-                                        "#3e3248", // var(--plum-dark), // Liquidité - Prune désaturée
-                                        "#707781", // var(--silver-dark), // Fiscalité - Argent bleuté
-                                        "#7e4a3a", // var(--copper-dark), // Croissance - Cuivre rosé
+                                        "#3e4a60", // var(--slate-dark)
+                                        "#5d4732", // var(--taupe-dark)
+                                        "#3e3248", // var(--plum-dark)
+                                        "#707781", // var(--silver-dark)
+                                        "#7e4a3a", // var(--copper-dark)
                                     ],
                                     pointRadius: 6,
                                     pointBorderWidth: 2,

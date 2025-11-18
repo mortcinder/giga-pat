@@ -1,16 +1,30 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.1.0-orange.svg)
+![Version](https://img.shields.io/badge/version-2.1.3-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.1** - Architecture homogène avec custodian unifié et parsing multi-fichiers
+**Version 2.1.3** - Parser CrypCool v2026 avec déduction des frais
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
-## 🆕 Nouveautés v2.1 (Novembre 2025)
+## 🆕 Nouveautés v2.1.3 (Novembre 2025)
+
+### Parser CrypCool v2026 (v2.1.3) ⭐
+- ✅ **Format transactionnel** : Support du nouveau format CSV CrypCool (Timestamp, Operation type, Base amount, etc.)
+- ✅ **Déduction des frais** : Frais payés en crypto automatiquement déduits du solde
+- ✅ **Trades crypto-to-crypto** : Support complet (ex: BTC dépensé pour acheter VRO)
+- ✅ **Multi-crypto** : BTC, ETH, VRO et autres cryptos dans un seul fichier
+- ⚠️ **Note** : Valorisation ~2-3% inférieure à l'affichage CrypCool (frais réels déduits + prix CoinGecko)
+
+### Valorisation immobilière automatique (v2.1.2)
+- ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
+- ✅ **Extraction web** : Prix/m² depuis Brave API avec regex optimisés
+- ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
+- ⚠️ **Breaking change** : `valeur_actuelle` NE DOIT PLUS être dans manifest.json
 
 ### Architecture homogène v2.1
 - ✅ **Custodian unifié** : `custodian` + `custodian_name` + `custody_type` pour tous les actifs
@@ -22,6 +36,7 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **Pattern matching** : `source_pattern: "Bitstack/[BIT] - *.csv"` détecte automatiquement
 - ✅ **Performance** : 80% plus rapide avec cache (MD5-based invalidation)
 - ✅ **Crypto API** : Conversion BTC→EUR automatique via CoinGecko (gratuit)
+- ✅ **Parser BoursoBank PER** : Gestion encodage Unicode propriétaire (Private Use Area)
 
 ### Base v2.0
 - ✅ **Manifest-driven** : `manifest.json` comme source de vérité unique
@@ -210,7 +225,7 @@ Le `manifest.json` est le nouveau point d'entrée v2.0 qui définit :
 
 ### Comptes titres (PEA, CTO, AV, PER)
 
-Les juridictions des comptes parsés sont **enrichies automatiquement** depuis `sources/etablissements_financiers.json`.
+Les juridictions des comptes parsés sont **enrichies automatiquement** depuis `config/etablissements_financiers.yaml`.
 
 Le fichier contient 40+ établissements pré-configurés (banques françaises, courtiers internationaux, plateformes crypto, etc.).
 
@@ -298,11 +313,20 @@ tools/parsers/
 ├── registry.py                 # Registry + fallback
 ├── bitstack/                   # v2.1: Parser Bitstack
 │   └── transaction_history.py
+├── boursobank/                 # v2.1.1: Parser BoursoBank
+│   └── per_v2025.py           # Parser PER (encodage propriétaire)
+├── crypcool/                   # v2.1.3: Parsers CrypCool
+│   ├── csv_transaction_aggregator_v2025.py  # Format colonnaire (legacy)
+│   └── csv_transaction_aggregator_v2026.py  # Format transactionnel + fees
 ├── credit_agricole/
 │   ├── pea_v2025.py           # Parser PEA CA format 2025
 │   └── av_v2_lignes.py        # Parser AV CA 2 lignes
 └── generic/
     └── csv_flexible.py         # Parser CSV générique
+
+tools/utils/
+├── risk_analyzer.py           # Analyse des risques (7 catégories)
+└── real_estate_valorizer.py   # v2.1.2: Valorisation immobilière
 ```
 
 **Avantages** :

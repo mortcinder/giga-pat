@@ -27,14 +27,12 @@ risk_settings:
   # Version de la configuration
   version: "2.1.0"
 
-
 # ============================================================================
 # RISQUES STRUCTURELS (détection automatique basée sur le patrimoine)
 # ============================================================================
 # Ces risques sont toujours analysés. Ils sont activés/désactivés individuellement.
 
 structural_risks:
-
   # --------------------------------------------------------------------------
   # CONCENTRATION
   # --------------------------------------------------------------------------
@@ -45,7 +43,7 @@ structural_risks:
     detection:
       type: "threshold"
       metric: "establishment_percentage"
-      threshold: 50  # % du patrimoine financier
+      threshold: 50 # % du patrimoine financier
       operator: "gte"
     risk_properties:
       niveau: "Critique"
@@ -89,7 +87,7 @@ structural_risks:
       niveau: "Critique"
       probabilite: "Moyenne"
       impact: "Élevé"
-      titre_template: "Concentration géographique critique - {jurisdiction}"
+      titre_template: "Concentration géographique — {jurisdiction}"
       description_template: "La juridiction {jurisdiction} représente {percentage:.1f}% du patrimoine total, créant un risque pays important."
     web_research:
       enabled: true
@@ -108,7 +106,7 @@ structural_risks:
     detection:
       type: "threshold"
       metric: "assurance_vie_percentage"
-      threshold: 0  # Toujours vérifier si AV > 0
+      threshold: 0 # Toujours vérifier si AV > 0
       operator: "gt"
     risk_properties:
       # Niveau calculé dynamiquement : >= 25% = Critique, >= 15% = Élevé, sinon Moyen
@@ -130,7 +128,7 @@ structural_risks:
     detection:
       type: "threshold"
       metric: "deposits_per_establishment"
-      threshold: 100000  # Euros
+      threshold: 100000 # Euros
       operator: "gt"
     risk_properties:
       niveau: "Moyen"
@@ -287,7 +285,7 @@ structural_risks:
       niveau: "Faible"
       probabilite: "Faible"
       impact: "Moyen"
-      titre_template: "Risque politique concentration France"
+      titre_template: "Risque politique - France"
       description_template: "Très forte concentration en France ({percentage:.1f}%). Exposition aux décisions politiques françaises."
     web_research:
       enabled: true
@@ -307,7 +305,7 @@ structural_risks:
     detection:
       type: "threshold"
       metric: "foreign_currency_percentage"
-      threshold: 3  # % du patrimoine total
+      threshold: 3 # % du patrimoine total
       operator: "gt"
     risk_properties:
       # Niveau calculé dynamiquement : >= 20% = Élevé, >= 10% = Moyen, sinon Faible
@@ -321,7 +319,6 @@ structural_risks:
         - "couverture risque devise"
       max_sources: 2
 
-
 # ============================================================================
 # DÉTECTION CONTEXTUELLE (recherches web pour risques émergents)
 # ============================================================================
@@ -329,7 +326,6 @@ structural_risks:
 # risques liés à l'actualité récente (lois, crises, réformes, etc.)
 
 contextual_searches:
-
   # Actualité économique et financière France
   actualite_economique_france:
     enabled: true
@@ -340,7 +336,7 @@ contextual_searches:
       - "réformes fiscales France 2025 patrimoine"
       - "mesures gouvernement France investissements 2025"
     analysis_context: "Identifier les nouvelles réglementations ou réformes susceptibles d'impacter l'épargne et les investissements"
-    relevance_threshold: 0.7  # Score minimum pour générer un risque (0-1)
+    relevance_threshold: 0.7 # Score minimum pour générer un risque (0-1)
 
   # Risques bancaires et financiers
   risques_bancaires:
@@ -400,14 +396,13 @@ contextual_searches:
     analysis_context: "Identifier les nouvelles réglementations crypto susceptibles d'impacter les détenteurs"
     relevance_threshold: 0.7
 
-
 # ============================================================================
 # MÉTADONNÉES
 # ============================================================================
 
 metadata:
   # Fréquence de mise à jour recommandée
-  recommended_update_frequency: "quarterly"  # trimestriel
+  recommended_update_frequency: "quarterly" # trimestriel
 
   # Prochaine revue suggérée
   next_review_date: "2025-02-06"
