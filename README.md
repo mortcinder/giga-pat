@@ -1,18 +1,38 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.1.3-orange.svg)
+![Version](https://img.shields.io/badge/version-2.2.1-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.1.3** - Parser CrypCool v2026 avec déduction des frais
+**Version 2.2.1** - Multi-provider web search avec spécialisation par catégorie
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
+## 🆕 Nouveautés v2.2 (Novembre 2025)
+
+### Spécialisation par catégorie (v2.2.1) 🎯
+- ✅ **Optimisation qualité** : Chaque provider utilisé pour son domaine d'excellence
+- ✅ **4 catégories** : factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+- ✅ **10 recherches catégorisées** : risk_analyzer.py optimisé avec `search_by_category()`
+- ✅ **Répartition quotas** : Distribution intelligente (5 factual, 2 quantitative, 3 contextual)
+- ✅ **Traçabilité** : Catégorie enregistrée dans l'historique de recherche
+- ✅ **Nouvelle API** : Méthode `search_by_category()` additive (100% rétrocompatible)
+- 📄 **Guide migration** : `update/Migration-Multi-Provider-v2.0.md` section v2.2.1
+
+### Architecture Web Search Multi-Provider (v2.2.0) ⭐
+- ✅ **4 providers supportés** : Brave Search, Serper (Google), Tavily (AI-native), DuckDuckGo
+- ✅ **Fallback automatique** : Brave → Serper → Tavily → DuckDuckGo (continuité de service garantie)
+- ✅ **5500+ requêtes/mois gratuites** : Répartition intelligente entre providers (vs 2000 avec Brave seul)
+- ✅ **Architecture pluggable** : Ajouter un provider = créer une classe
+- ✅ **Configuration centralisée** : Ordre de fallback, rate limits, timeouts dans `config.yaml`
+- ✅ **100% rétrocompatible** : API publique inchangée
+- 📄 **Documentation** : `tools/utils/search_providers/README.md` pour détails architecture
+
 ## 🆕 Nouveautés v2.1.3 (Novembre 2025)
 
-### Parser CrypCool v2026 (v2.1.3) ⭐
+### Parser CrypCool v2026 (v2.1.3)
 - ✅ **Format transactionnel** : Support du nouveau format CSV CrypCool (Timestamp, Operation type, Base amount, etc.)
 - ✅ **Déduction des frais** : Frais payés en crypto automatiquement déduits du solde
 - ✅ **Trades crypto-to-crypto** : Support complet (ex: BTC dépensé pour acheter VRO)
@@ -21,7 +41,7 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 
 ### Valorisation immobilière automatique (v2.1.2)
 - ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
-- ✅ **Extraction web** : Prix/m² depuis Brave API avec regex optimisés
+- ✅ **Extraction web** : Prix/m² depuis recherche web multi-provider avec regex optimisés
 - ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
 - ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
 - ⚠️ **Breaking change** : `valeur_actuelle` NE DOIT PLUS être dans manifest.json
@@ -147,9 +167,10 @@ cd giga-pat
 # 2. Installer les dépendances
 pip install -r requirements.txt
 
-# 3. Configurer l'API Brave Search
+# 3. Configurer les API de recherche web (optionnel)
 cp .env.example .env
-# Éditer .env et ajouter votre BRAVE_API_KEY
+# Éditer .env et ajouter vos clés API
+# Brave, Serper, Tavily (DuckDuckGo fonctionne sans clé)
 ```
 
 ## 🔄 Migration v1 → v2 (utilisateurs existants)
@@ -564,6 +585,12 @@ Gilles HOFF - Développeur informatique
 
 ## 🔗 Liens utiles
 
-- Documentation Brave Search API : https://api.search.brave.com/
+### Web Search APIs
+- Brave Search API : https://api.search.brave.com/ (2000 req/mois gratuit)
+- Serper API : https://serper.dev/ (2500 req/mois gratuit)
+- Tavily API : https://tavily.com/ (1000 req/mois gratuit)
+- DuckDuckGo Search : https://pypi.org/project/duckduckgo-search/ (illimité gratuit)
+
+### Autres
 - PDFPlumber : https://github.com/jsvine/pdfplumber
 - Pandas : https://pandas.pydata.org/
