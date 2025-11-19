@@ -6,7 +6,7 @@
 
 Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment.
 
-**Version**: v2.1.3 (November 2025) - CrypCool v2026 parser with fee deduction
+**Version**: v2.2.1 (November 2025) - Multi-provider web search with category specialization
 
 **Architecture**: 3-stage pipeline with NO user interaction during execution
 
@@ -44,8 +44,27 @@ python tests/test_generator.py
 
 # Setup
 pip install -r requirements.txt
-cp .env.example .env    # Add BRAVE_API_KEY
+cp .env.example .env    # Add API keys (Brave, Serper, Tavily - DuckDuckGo works without key)
 ```
+
+## v2.2 Key Changes (November 2025)
+
+1. **Multi-Provider Web Search Architecture** (v2.2.0)
+   - **4 providers**: Brave (2000 req/month), Serper (2500 req/month), Tavily (1000 req/month), DuckDuckGo (unlimited)
+   - **Automatic fallback**: Brave → Serper → Tavily → DuckDuckGo
+   - **Pluggable architecture**: Add new providers by creating a single class
+   - **Configuration-driven**: All settings in `config.yaml` (rate limits, timeouts, priorities)
+   - **Backward compatible**: API unchanged, no modifications required in analyzer.py
+   - See `tools/utils/search_providers/README.md` for architecture details
+
+2. **Category-Based Provider Specialization** (v2.2.1)
+   - **Optimized quality**: Each provider used for its domain of excellence
+   - **4 categories**: factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+   - **10 searches categorized**: risk_analyzer.py now uses `search_by_category()`
+   - **Quota distribution**: Intelligent spreading across providers
+   - **Traceability**: Category recorded in search history
+   - **Additive API**: `search_by_category()` added, `search()` unchanged
+   - See `update/Migration-Multi-Provider-v2.0.md` for migration details
 
 ## v2.1 Key Changes (November 2025)
 
@@ -68,7 +87,7 @@ cp .env.example .env    # Add BRAVE_API_KEY
 
 4. **Automatic Real Estate Valorization** (v2.1.2+)
    - **Dynamic revaluation**: Property values recalculated at EVERY report generation
-   - **Web extraction**: Parses price/m² from Brave API search results
+   - **Web extraction**: Parses price/m² from web search results (multi-provider)
    - **Intelligent fallback**: City-specific prices when API unavailable (Nanterre: 5300€/m², Paris: 10500€/m²)
    - **Plus-value tracking**: Auto-calculates appreciation since acquisition
    - **⚠️ DO NOT** include `valeur_actuelle` in manifest.json - only `prix_acquisition` + `surface_m2`
@@ -128,7 +147,7 @@ cp .env.example .env    # Add BRAVE_API_KEY
 ### Stage 2: Analyzer (`tools/analyzer.py`)
 - 7 risk categories (concentration, regulatory, fiscal, market, liquidity, political, currency)
 - 5 enriched scores (0-10 scale with labels and breakdowns)
-- Web research via Brave API (rate limiting 1.1-1.5s)
+- Web research via multi-provider architecture (Brave/Serper/Tavily/DuckDuckGo with automatic fallback)
 - Portfolio optimization (Markowitz), stress tests (5 scenarios)
 - Recommendations (scored by criticité/impact/facilité)
 - Benchmark gaps (5 status levels)

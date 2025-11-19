@@ -30,8 +30,9 @@ openpyxl>=3.1.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
 
-# API
+# API & Web Search
 requests>=2.31.0
+duckduckgo-search>=6.0.0  # DuckDuckGo search provider (optional fallback)
 
 # Config
 pyyaml>=6.0
