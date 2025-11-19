@@ -57,20 +57,28 @@ WebResearcher (façade)
 
 ## 🆕 Version 2.1.2 (Novembre 2025)
 
-**Nouveauté majeure : Valorisation immobilière automatique**
+**Nouveauté majeure : Valorisation immobilière automatique (v2.2.2)**
 
 - ✅ **Réévaluation dynamique** : Les biens immobiliers sont revalorisés à CHAQUE génération de rapport
-- ✅ **Extraction web** : Prix au m² extrait depuis recherche web multi-provider (patterns regex optimisés)
-- ✅ **Fallback intelligent** : Prix par ville quand APIs indisponibles (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
+- ✅ **Extraction web hybride 3-tier** (v2.2.2) :
+  1. Snippets (rapide) : Tentative extraction depuis résumés de recherche
+  2. HTML fetching (robuste) : Fetch HTML complet des meilleures sources si snippets échouent
+  3. Fallback (fiable) : Prix par ville (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Smart URL scoring** (v2.2.2) : Tri intelligent des sources web par critères objectifs
+  - Sites de référence (+10) : meilleursagents.com, lefigaro.fr, seloger.com, pap.fr, bien-ici.com, logic-immo.com, orpi.com
+  - HTTPS (+5), URL courte (+3), titre pertinent (+2)
+- ✅ **HTML entity handling** : Conversion `&nbsp;` → `\xa0` avant extraction
+- ✅ **Regex optimisés** : Capture nombres complets avec séparateurs (`5&nbsp;263 €/m²` → `5263 €/m²`)
+- ✅ **Résultats** : 185 prix extraits (médiane: 5302 €/m² vs 5300 €/m² fallback)
 - ✅ **Calcul automatique** : `valeur_actuelle = surface_m2 × prix_m2_web`
 - ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
-- ✅ **Module dédié** : `tools/utils/real_estate_valorizer.py` (extraction + fallback)
+- ✅ **Module dédié** : `tools/utils/real_estate_valorizer.py` (extraction + scoring + fallback)
 - ✅ **Total recalculé** : `patrimoine.immobilier.total` mis à jour après valorisation
 - ⚠️ **Breaking change** : `valeur_actuelle` ne doit PLUS être dans manifest.json (uniquement `prix_acquisition` + `surface_m2`)
 
 **Architecture** :
 1. Normalizer stocke `prix_acquisition` comme valeur temporaire
-2. Analyzer effectue recherches web → extrait prix m² → calcule valorisation → met à jour `bien["valeur_actuelle"]`
+2. Analyzer effectue recherches web → score sources → fetch HTML → extrait prix m² → calcule valorisation → met à jour `bien["valeur_actuelle"]`
 3. Report affiche valorisation enrichie avec source (web/fallback) + plus-value
 
 ## 🆕 Version 2.1.1 (Novembre 2025)

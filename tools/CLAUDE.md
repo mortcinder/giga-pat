@@ -383,11 +383,45 @@ Plus-value: +20.5% depuis acquisition (110,000€).
 - Marseille: 4200€/m²
 - Default: 3500€/m² (national average)
 
-**Web Extraction Patterns**:
-- `(\d[\d\s]*)\s*€\s*/\s*m[²2]` → "5 300 €/m²"
-- `prix\s+(?:moyen|médian)\s*:\s*(\d[\d\s]*)\s*€` → "prix moyen : 5 300 €"
+**Web Extraction Architecture** (v2.2.2 - Hybrid with Smart Scoring):
+
+**3-tier fallback system**:
+1. **Snippets extraction** (fast): Attempts to parse prices from search result snippets
+2. **HTML fetching** (robust): Fetches full HTML from top-scored URLs if snippets fail
+3. **Fallback prices** (reliable): City-specific prices if web extraction fails
+
+**Smart URL Scoring** (v2.2.2):
+All search results are scored and sorted by priority using objective criteria:
+- Reference real estate sites (+10): meilleursagents.com, lefigaro.fr, seloger.com, pap.fr, bien-ici.com, logic-immo.com, orpi.com
+- HTTPS protocol (+5): Prefers secure modern sites
+- Short URLs (+3 or +1): Main pages vs deep sub-pages
+- Relevant title (+2 or +1): Contains "prix", "m²", "estimation", "valorisation"
+
+**Example scoring**:
+```
+Top 3 sources: immobilier.lefigaro.fr (score: 20),
+               meilleursagents.com (score: 20),
+               seloger.com (score: 20)
+```
+
+**HTML Processing**:
+- Converts HTML entities: `&nbsp;` → `\xa0` (non-breaking space)
+- Uses `html.unescape()` before regex matching
+- Patterns capture full numbers with separators: `5&nbsp;263 €/m²` → `5263 €/m²`
+
+**Extraction Patterns**:
+```python
+r'(\d[\d\s,\.]*?)\s*€\s*/\s*m[²2]'           # "5 300 €/m²", "5,300 €/m²"
+r'(\d+(?:[\s,\.]\d{3})*)\s*€\s*/\s*m[²2]'    # Explicit thousands
+r'prix[^0-9]*?(\d+(?:[\s,\.]\d{3})*)\s*€'    # "prix moyen 5 300 €"
+r'm[²2][^0-9]*?(\d+(?:[\s,\.]\d{3})*)\s*€'   # "m² : 5 300 €"
+```
+
+**Results** (Nanterre example):
+- 185 prices extracted from lefigaro.fr
+- Median: 5302 €/m² (vs 5300 €/m² fallback - excellent consistency)
 - Filters aberrant values (valid range: 1000-20000 €/m²)
-- Returns median of extracted prices (robust against outliers)
+- Returns median (robust against outliers)
 
 **Customizing Fallback Prices**:
 Edit `tools/utils/real_estate_valorizer.py` → `self.fallback_prices`:

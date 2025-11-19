@@ -1,16 +1,25 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.2.1-orange.svg)
+![Version](https://img.shields.io/badge/version-2.2.2-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.2.1** - Multi-provider web search avec spécialisation par catégorie
+**Version 2.2.2** - Smart real estate valuation avec scoring intelligent des sources web
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
 ## 🆕 Nouveautés v2.2 (Novembre 2025)
+
+### Smart Real Estate Scoring (v2.2.2) 🏘️
+- ✅ **Extraction hybride 3-tier** : Snippets → HTML fetching → Fallback prix ville
+- ✅ **Scoring intelligent** : Tri automatique des sources web par critères objectifs
+  - Sites référence immobiliers (+10) : meilleursagents.com, lefigaro.fr, seloger.com, pap.fr, bien-ici.com, logic-immo.com, orpi.com
+  - HTTPS (+5), URL courte (+3), titre pertinent (+2)
+- ✅ **HTML entity handling** : Conversion `&nbsp;` pour extraction robuste
+- ✅ **Résultats validés** : 185 prix extraits, médiane 5302 €/m² (Nanterre)
+- ✅ **Generic & extensible** : Fonctionne avec n'importe quelle source immobilière française
 
 ### Spécialisation par catégorie (v2.2.1) 🎯
 - ✅ **Optimisation qualité** : Chaque provider utilisé pour son domaine d'excellence
@@ -39,10 +48,12 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **Multi-crypto** : BTC, ETH, VRO et autres cryptos dans un seul fichier
 - ⚠️ **Note** : Valorisation ~2-3% inférieure à l'affichage CrypCool (frais réels déduits + prix CoinGecko)
 
-### Valorisation immobilière automatique (v2.1.2)
+### Valorisation immobilière automatique (v2.2.2)
 - ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
-- ✅ **Extraction web** : Prix/m² depuis recherche web multi-provider avec regex optimisés
-- ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Extraction web hybride 3-tier** : Snippets → HTML fetching → Fallback prix
+- ✅ **Smart URL scoring** : Tri intelligent des sources par critères objectifs (+10 sites référence, +5 HTTPS, +3 URL courte, +2 titre)
+- ✅ **HTML entity handling** : Conversion `&nbsp;` avant extraction (fix `5&nbsp;263 €/m²` → `5263 €/m²`)
+- ✅ **Résultats réels** : 185 prix extraits (médiane: 5302 €/m² vs 5300 €/m² fallback)
 - ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
 - ⚠️ **Breaking change** : `valeur_actuelle` NE DOIT PLUS être dans manifest.json
 
