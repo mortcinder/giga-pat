@@ -1,16 +1,25 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.2.0-orange.svg)
+![Version](https://img.shields.io/badge/version-2.2.1-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.2.0** - Architecture Web Search Multi-Provider avec fallback automatique
+**Version 2.2.1** - Multi-provider web search avec spécialisation par catégorie
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
-## 🆕 Nouveautés v2.2.0 (Novembre 2025)
+## 🆕 Nouveautés v2.2 (Novembre 2025)
+
+### Spécialisation par catégorie (v2.2.1) 🎯
+- ✅ **Optimisation qualité** : Chaque provider utilisé pour son domaine d'excellence
+- ✅ **4 catégories** : factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+- ✅ **10 recherches catégorisées** : risk_analyzer.py optimisé avec `search_by_category()`
+- ✅ **Répartition quotas** : Distribution intelligente (5 factual, 2 quantitative, 3 contextual)
+- ✅ **Traçabilité** : Catégorie enregistrée dans l'historique de recherche
+- ✅ **Nouvelle API** : Méthode `search_by_category()` additive (100% rétrocompatible)
+- 📄 **Guide migration** : `update/Migration-Multi-Provider-v2.0.md` section v2.2.1
 
 ### Architecture Web Search Multi-Provider (v2.2.0) ⭐
 - ✅ **4 providers supportés** : Brave Search, Serper (Google), Tavily (AI-native), DuckDuckGo
@@ -18,7 +27,7 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **5500+ requêtes/mois gratuites** : Répartition intelligente entre providers (vs 2000 avec Brave seul)
 - ✅ **Architecture pluggable** : Ajouter un provider = créer une classe
 - ✅ **Configuration centralisée** : Ordre de fallback, rate limits, timeouts dans `config.yaml`
-- ✅ **100% rétrocompatible** : API publique inchangée, aucune modification requise dans analyzer.py
+- ✅ **100% rétrocompatible** : API publique inchangée
 - 📄 **Documentation** : `tools/utils/search_providers/README.md` pour détails architecture
 
 ## 🆕 Nouveautés v2.1.3 (Novembre 2025)

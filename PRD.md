@@ -1,8 +1,35 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 2.2.0
+**Version** : 2.2.1
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
+
+## 🆕 Version 2.2.1 (Novembre 2025)
+
+**Nouveauté : Spécialisation par catégorie de recherche**
+
+- ✅ **Optimisation qualité** : Chaque provider utilisé pour son domaine d'excellence
+- ✅ **4 catégories** : factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+- ✅ **10 recherches catégorisées** : `risk_analyzer.py` utilise `search_by_category()`
+  - Factual (5) : concentration bancaire, risque pays, Loi Sapin 2, garantie dépôts, fiscalité
+  - Quantitative (2) : valorisation immobilière, risque de change
+  - Contextual (3) : risque actions, risque politique, recherches contextuelles
+- ✅ **Répartition quotas** : Distribution intelligente des requêtes entre providers
+- ✅ **Traçabilité** : Catégorie enregistrée dans l'historique de recherche
+- ✅ **API additive** : Nouvelle méthode `search_by_category()`, méthode `search()` inchangée
+- ✅ **Configuration** : `provider_mapping` et `enable_category_fallback` dans `config.yaml`
+- 📄 **Documentation** : `update/Migration-Multi-Provider-v2.0.md` section v2.2.1
+
+**Exemple d'utilisation** :
+```python
+# Recherche factuelle (utilise Brave)
+sources = web_researcher.search_by_category(
+    category="factual",
+    sujet="Loi Sapin 2",
+    queries=["Loi Sapin 2 blocage assurance-vie 2025"],
+    context="Vérification réglementaire"
+)
+```
 
 ## 🆕 Version 2.2.0 (Novembre 2025)
 
@@ -12,7 +39,7 @@
 - ✅ **Fallback automatique** : Brave → Serper → Tavily → DuckDuckGo (continuité de service)
 - ✅ **Architecture pluggable** : Package `tools/utils/search_providers/` avec BaseSearchProvider, Factory, 4 implémentations
 - ✅ **Configuration centralisée** : `config.yaml` définit ordre de fallback, rate limits, timeouts par provider
-- ✅ **Backward compatible** : API publique de WebResearcher inchangée (analyzer.py ne change pas)
+- ✅ **Backward compatible** : API publique de WebResearcher inchangée
 - ✅ **Résilience** : Si quota Brave épuisé → bascule automatique sur Serper sans interruption
 - ✅ **5500+ requêtes/mois gratuites** : Répartition intelligente entre providers
 - 📄 **Documentation** : `tools/utils/search_providers/README.md` + `update/Migration-Multi-Provider-v2.0.md`
