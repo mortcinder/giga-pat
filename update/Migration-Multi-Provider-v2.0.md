@@ -1,8 +1,8 @@
-# Migration vers Architecture Multi-Provider v2.0
+# Migration vers Architecture Multi-Provider v2.0 → v2.2.1
 
-**Date** : 2025-11-18
-**Version** : 2.1.3 → 2.2.0 (architecture)
-**Impact** : Module de recherche web (`tools/utils/web_research.py`)
+**Date** : 2025-11-18 (v2.2.0) → 2025-11-19 (v2.2.1)
+**Version** : 2.1.3 → 2.2.0 → 2.2.1 (category specialization)
+**Impact** : Modules `web_research.py` et `risk_analyzer.py`
 
 ---
 
@@ -264,4 +264,155 @@ $ python tests/test_search_providers.py
 - [x] Documentation complète
 - [x] Code prêt à être commité
 
-**Status** : ✅ Migration réussie, prêt pour production
+**Status** : ✅ Migration v2.2.0 réussie, prêt pour production
+
+---
+
+# Migration v2.2.1 - Spécialisation par Catégorie
+
+**Date** : 2025-11-19
+**Version** : 2.2.0 → 2.2.1
+**Impact** : `web_research.py`, `risk_analyzer.py`
+
+## 🎯 Objectif
+
+Optimiser la qualité des résultats et répartir les quotas en utilisant des providers spécialisés selon le type de recherche.
+
+## 💡 Concept
+
+Chaque provider a ses forces :
+- **Brave** : Recherches factuelles/réglementaires (ex: Loi Sapin 2)
+- **Serper** : Données quantitatives (ex: prix immobilier)
+- **Tavily** : Analyses contextuelles AI-native (ex: risque politique)
+- **DuckDuckGo** : Immobilier spécifique (gratuit illimité)
+
+## 🔄 Changements v2.2.1
+
+### Fichiers modifiés
+
+| Fichier | Changement |
+|---------|-----------|
+| `config/config.yaml` | Ajout `provider_mapping` et `enable_category_fallback` |
+| `tools/utils/web_research.py` | Ajout méthode `search_by_category()` |
+| `tools/utils/risk_analyzer.py` | 10 appels convertis vers `search_by_category()` |
+| `tools/utils/search_providers/README.md` | Documentation catégories |
+| `tests/test_category_search.py` | Test unitaire nouveau |
+
+### Configuration ajoutée (config.yaml)
+
+```yaml
+analyzer:
+  web_research:
+    # Spécialisation par catégorie (v2.2.1)
+    provider_mapping:
+      factual: "brave"          # Recherches factuelles/réglementaires
+      quantitative: "serper"    # Données quantitatives
+      contextual: "tavily"      # Analyses contextuelles
+      real_estate: "ddgs"       # Immobilier spécifique
+
+    enable_category_fallback: true
+```
+
+### Nouvelle API (web_research.py)
+
+```python
+# Nouvelle méthode search_by_category()
+def search_by_category(
+    self, category: str, sujet: str, queries: List[str], context: str = ""
+) -> List[Dict[str, Any]]:
+    """
+    Effectue recherches avec provider spécialisé par catégorie
+
+    Args:
+        category: "factual", "quantitative", "contextual", "real_estate"
+        sujet: Thème général
+        queries: Liste de requêtes
+        context: Contexte additionnel
+    """
+```
+
+### Modifications risk_analyzer.py
+
+**10 recherches catégorisées** :
+
+| Ligne | Recherche | Catégorie | Provider |
+|-------|-----------|-----------|----------|
+| 199 | Concentration bancaire | factual | Brave |
+| 260 | Risque pays | factual | Brave |
+| 307 | Loi Sapin 2 | factual | Brave |
+| 343 | Garantie dépôts | factual | Brave |
+| 406 | Fiscalité épargne | factual | Brave |
+| 464 | Risque actions | contextual | Tavily |
+| 516 | Valorisation immobilière | quantitative | Serper |
+| 671 | Risque politique France | contextual | Tavily |
+| 744 | Risque de change | quantitative | Serper |
+| 834 | Recherches contextuelles | contextual | Tavily |
+
+## ✅ Compatibilité
+
+**100% rétrocompatible** :
+- Méthode `search()` inchangée (API v2.0 conservée)
+- Nouvelle méthode `search_by_category()` additive
+- Fallback automatique si provider catégorie indisponible
+
+## 📊 Avantages v2.2.1
+
+1. **Qualité optimisée** : Chaque provider utilisé pour son excellence
+2. **Répartition quotas** : Distribution intelligente des 10 recherches
+3. **Traçabilité** : Catégorie enregistrée dans historique
+4. **Préparation parallélisation** : Base pour futures optimisations
+5. **Flexibilité** : Mapping modifiable dans config.yaml
+
+## 🧪 Tests
+
+```bash
+$ python tests/test_category_search.py
+
+======================================================================
+TEST: search_by_category() - v2.2.1
+======================================================================
+
+✓ WebResearcher créé avec 1 provider(s)
+✓ Méthode search_by_category() existe
+✓ Configuration provider_mapping:
+  factual: brave
+  quantitative: serper
+  contextual: tavily
+  real_estate: ddgs
+✓ Historique enregistré avec category: factual
+✓ Provider utilisé: ddgs (fallback)
+
+======================================================================
+TEST RÉUSSI ✓
+======================================================================
+```
+
+## 📝 Checklist migration v2.2.1
+
+- [x] Configuration `provider_mapping` ajoutée
+- [x] Méthode `search_by_category()` implémentée
+- [x] 10 recherches dans `risk_analyzer.py` migrées
+- [x] Tests unitaires créés
+- [x] Tests d'intégration passent
+- [x] Documentation mise à jour
+- [x] Backward compatible (API v2.0 préservée)
+
+## 🔮 Évolution future (optionnelle)
+
+**Phase 4 - Parallélisation** :
+- Exécuter recherches par catégorie en parallèle
+- 3 threads : factual (5 recherches), quantitative (2), contextual (3)
+- Gain temps estimé : ~40% sur analyse complète
+
+**Non implémenté dans v2.2.1** (peut être ajouté ultérieurement si besoin)
+
+## ✅ Validation
+
+- [x] Tests passent
+- [x] Configuration fonctionnelle
+- [x] 10 recherches catégorisées
+- [x] Fallback opérationnel
+- [x] Documentation complète
+- [x] Code prêt à être commité
+
+**Status** : ✅ Migration v2.2.1 réussie, prêt pour production

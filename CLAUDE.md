@@ -6,7 +6,7 @@
 
 Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment.
 
-**Version**: v2.2.0 (November 2025) - Multi-provider web search with automatic fallback
+**Version**: v2.2.1 (November 2025) - Multi-provider web search with category specialization
 
 **Architecture**: 3-stage pipeline with NO user interaction during execution
 
@@ -49,13 +49,22 @@ cp .env.example .env    # Add API keys (Brave, Serper, Tavily - DuckDuckGo works
 
 ## v2.2 Key Changes (November 2025)
 
-1. **Multi-Provider Web Search Architecture**
+1. **Multi-Provider Web Search Architecture** (v2.2.0)
    - **4 providers**: Brave (2000 req/month), Serper (2500 req/month), Tavily (1000 req/month), DuckDuckGo (unlimited)
    - **Automatic fallback**: Brave → Serper → Tavily → DuckDuckGo
    - **Pluggable architecture**: Add new providers by creating a single class
    - **Configuration-driven**: All settings in `config.yaml` (rate limits, timeouts, priorities)
    - **Backward compatible**: API unchanged, no modifications required in analyzer.py
    - See `tools/utils/search_providers/README.md` for architecture details
+
+2. **Category-Based Provider Specialization** (v2.2.1)
+   - **Optimized quality**: Each provider used for its domain of excellence
+   - **4 categories**: factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+   - **10 searches categorized**: risk_analyzer.py now uses `search_by_category()`
+   - **Quota distribution**: Intelligent spreading across providers
+   - **Traceability**: Category recorded in search history
+   - **Additive API**: `search_by_category()` added, `search()` unchanged
+   - See `update/Migration-Multi-Provider-v2.0.md` for migration details
 
 ## v2.1 Key Changes (November 2025)
 

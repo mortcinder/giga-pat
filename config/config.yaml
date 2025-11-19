@@ -44,6 +44,21 @@ analyzer:
       - "tavily"
       - "ddgs"
 
+    # ========================================
+    # Spécialisation par catégorie (v2.2.1)
+    # ========================================
+
+    # Assignation de providers par catégorie de recherche
+    # Permet d'optimiser la qualité des résultats et de répartir les quotas
+    provider_mapping:
+      factual: "brave"          # Recherches factuelles/réglementaires (ex: Loi Sapin 2, garantie dépôts)
+      quantitative: "serper"    # Données quantitatives (ex: prix immobilier, volatilité)
+      contextual: "tavily"      # Analyses contextuelles (ex: risques politiques, tendances marché)
+      real_estate: "ddgs"       # Immobilier spécifique (gratuit illimité)
+
+    # Fallback si provider assigné à la catégorie échoue
+    enable_category_fallback: true
+
     # Paramètres par défaut (utilisés si non spécifiés par provider)
     default_rate_limit: 1.3    # Secondes entre requêtes
     default_timeout: 30        # Timeout en secondes

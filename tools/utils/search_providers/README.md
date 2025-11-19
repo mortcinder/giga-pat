@@ -1,8 +1,8 @@
-# Search Providers - Architecture Multi-Provider v2.0
+# Search Providers - Architecture Multi-Provider v2.2.1
 
 ## Vue d'ensemble
 
-Architecture pluggable pour les recherches web avec support de multiples providers et fallback automatique.
+Architecture pluggable pour les recherches web avec support de multiples providers, fallback automatique et **spécialisation par catégorie de recherche** (v2.2.1).
 
 **Providers supportés** :
 1. **Brave Search** - API officielle (2000 req/mois gratuit)
@@ -45,6 +45,20 @@ analyzer:
       - "tavily"   # Priorité 3
       - "ddgs"     # Priorité 4 (dernier recours)
 
+    # ========================================
+    # Spécialisation par catégorie (v2.2.1)
+    # ========================================
+
+    # Assignation de providers par catégorie de recherche
+    provider_mapping:
+      factual: "brave"          # Recherches factuelles/réglementaires
+      quantitative: "serper"    # Données quantitatives
+      contextual: "tavily"      # Analyses contextuelles
+      real_estate: "ddgs"       # Immobilier spécifique
+
+    # Fallback si provider assigné échoue
+    enable_category_fallback: true
+
     # Configuration par provider
     providers:
       brave:
@@ -77,12 +91,25 @@ from tools.utils.web_research import WebResearcher
 config = load_config()
 researcher = WebResearcher(config)
 
-# Rechercher (API publique inchangée)
+# ========================================
+# Option 1: Recherche simple (v2.0)
+# ========================================
 sources = researcher.search(
     sujet="Test",
     queries=["query 1", "query 2"],
     context="contexte"
 )
+
+# ========================================
+# Option 2: Recherche par catégorie (v2.2.1) - RECOMMANDÉ
+# ========================================
+sources = researcher.search_by_category(
+    category="factual",  # "factual", "quantitative", "contextual", "real_estate"
+    sujet="Loi Sapin 2",
+    queries=["Loi Sapin 2 blocage assurance-vie 2025"],
+    context="Vérification réglementaire"
+)
+# → Utilise automatiquement le provider optimal (Brave pour factual)
 ```
 
 ### Utilisation directe d'un provider
@@ -303,6 +330,71 @@ pip install duckduckgo-search>=6.0.0  # Pour DDGS
 - **SSL** : Vérification activée pour toutes les requêtes
 - **Variables d'environnement** : Jamais committées (`.env` dans `.gitignore`)
 
+## Spécialisation par catégorie (v2.2.1)
+
+### Concept
+
+Différents providers sont optimaux pour différents types de recherches :
+- **Brave** : Recherches factuelles/réglementaires (ex: Loi Sapin 2, garantie dépôts)
+- **Serper** : Données quantitatives (ex: prix immobilier, volatilité EUR/USD)
+- **Tavily** : Analyses contextuelles AI-native (ex: risque politique, tendances marché)
+- **DuckDuckGo** : Immobilier spécifique (gratuit illimité)
+
+### Configuration
+
+```yaml
+provider_mapping:
+  factual: "brave"
+  quantitative: "serper"
+  contextual: "tavily"
+  real_estate: "ddgs"
+
+enable_category_fallback: true
+```
+
+### Utilisation dans risk_analyzer.py
+
+```python
+# Recherche factuelle (utilise Brave)
+sources = self.web_researcher.search_by_category(
+    category="factual",
+    sujet="Loi Sapin 2",
+    queries=["Loi Sapin 2 blocage assurance-vie 2025"],
+    context="Vérification réglementaire"
+)
+
+# Recherche quantitative (utilise Serper)
+sources = self.web_researcher.search_by_category(
+    category="quantitative",
+    sujet="Valorisation immobilière Nanterre",
+    queries=["prix immobilier m² Nanterre 2025"],
+    context="Calcul valeur actuelle"
+)
+
+# Recherche contextuelle (utilise Tavily)
+sources = self.web_researcher.search_by_category(
+    category="contextual",
+    sujet="Risque politique France",
+    queries=["risque politique France investissements"],
+    context="Analyse contextuelle"
+)
+```
+
+### Avantages
+
+1. **Qualité optimisée** : Chaque provider utilisé pour son domaine d'excellence
+2. **Répartition des quotas** : Distribution intelligente des requêtes
+3. **Fallback spécialisé** : Si provider catégorie indisponible → chaîne standard
+4. **Parallélisation future** : Base pour recherches parallèles par catégorie
+5. **Traçabilité** : Catégorie enregistrée dans l'historique
+
+### Implémentation actuelle
+
+**10 recherches catégorisées dans risk_analyzer.py** :
+- **Factual (5)** : Concentration bancaire, risque pays, Loi Sapin 2, garantie dépôts, fiscalité
+- **Quantitative (2)** : Valorisation immobilière, risque de change
+- **Contextual (3)** : Risque actions, risque politique, recherches contextuelles dynamiques
+
 ## Licence
 
-Fait partie du projet Patrimoine Analyzer v2.1.3
+Fait partie du projet Patrimoine Analyzer v2.2.1
