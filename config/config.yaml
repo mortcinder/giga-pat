@@ -69,7 +69,7 @@ analyzer:
         priority: 2
 
       tavily:
-        enabled: false         # Désactivé par défaut (activer quand clé API disponible)
+        enabled: true          # Activé (clé API disponible)
         rate_limit: 1.0
         timeout: 30
         retry_count: 3
