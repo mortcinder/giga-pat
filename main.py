@@ -10,6 +10,12 @@ Type hints modernes, méthodes str récentes, dépendances incompatibles avec Py
 # CHECK VERSION PYTHON (AVANT TOUS LES IMPORTS)
 # ============================================================
 import sys
+import io
+
+# Configuration encodage UTF-8 pour Windows
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 REQUIRED_PYTHON = (3, 10)
 if sys.version_info < REQUIRED_PYTHON:

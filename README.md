@@ -1,39 +1,59 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.1.4-orange.svg)
+![Version](https://img.shields.io/badge/version-2.2.2-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.1.4** - Recommandations dynamiques avec validation web
+**Version 2.2.2** - Smart real estate valuation avec scoring intelligent des sources web
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
-## 🆕 Nouveautés v2.1.4 (Novembre 2025)
+## 🆕 Nouveautés v2.2 (Novembre 2025)
 
-### Recommandations dynamiques avec validation web (v2.1.4) ⭐ NOUVEAU
-- ✅ **Recommandations ciblées** : Actions spécifiques comme "Clôturer le Livret A X (1 200€)" au lieu de conseils génériques
-- ✅ **Validation web** : Seuils validés par consensus depuis sources fiables (AMF, CGP, médias finance)
-- ✅ **Double moteur** : Tavily (recherche AI optimisée) + Brave (données marché)
-- ✅ **Cache intelligent** : 3 mois pour bonnes pratiques, 1 mois pour frais/rendements
-- ✅ **Sources transparentes** : Citations web dans le rapport (comme pour les risques)
-- ✅ **Rétrocompatible** : Système désactivé automatiquement si fichiers config absents
-- 📋 **Extensible** : Architecture prête pour détection PEA/AV faibles, frais excessifs, optimisations fiscales
+### Smart Real Estate Scoring (v2.2.2) 🏘️
+- ✅ **Extraction hybride 3-tier** : Snippets → HTML fetching → Fallback prix ville
+- ✅ **Scoring intelligent** : Tri automatique des sources web par critères objectifs
+  - Sites référence immobiliers (+10) : meilleursagents.com, lefigaro.fr, seloger.com, pap.fr, bien-ici.com, logic-immo.com, orpi.com
+  - HTTPS (+5), URL courte (+3), titre pertinent (+2)
+- ✅ **HTML entity handling** : Conversion `&nbsp;` pour extraction robuste
+- ✅ **Résultats validés** : 185 prix extraits, médiane 5302 €/m² (Nanterre)
+- ✅ **Generic & extensible** : Fonctionne avec n'importe quelle source immobilière française
+
+### Spécialisation par catégorie (v2.2.1) 🎯
+- ✅ **Optimisation qualité** : Chaque provider utilisé pour son domaine d'excellence
+- ✅ **4 catégories** : factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+- ✅ **10 recherches catégorisées** : risk_analyzer.py optimisé avec `search_by_category()`
+- ✅ **Répartition quotas** : Distribution intelligente (5 factual, 2 quantitative, 3 contextual)
+- ✅ **Traçabilité** : Catégorie enregistrée dans l'historique de recherche
+- ✅ **Nouvelle API** : Méthode `search_by_category()` additive (100% rétrocompatible)
+- 📄 **Guide migration** : `update/Migration-Multi-Provider-v2.0.md` section v2.2.1
+
+### Architecture Web Search Multi-Provider (v2.2.0) ⭐
+- ✅ **4 providers supportés** : Brave Search, Serper (Google), Tavily (AI-native), DuckDuckGo
+- ✅ **Fallback automatique** : Brave → Serper → Tavily → DuckDuckGo (continuité de service garantie)
+- ✅ **5500+ requêtes/mois gratuites** : Répartition intelligente entre providers (vs 2000 avec Brave seul)
+- ✅ **Architecture pluggable** : Ajouter un provider = créer une classe
+- ✅ **Configuration centralisée** : Ordre de fallback, rate limits, timeouts dans `config.yaml`
+- ✅ **100% rétrocompatible** : API publique inchangée
+- 📄 **Documentation** : `tools/utils/search_providers/README.md` pour détails architecture
 
 ## 🆕 Nouveautés v2.1.3 (Novembre 2025)
 
-### Parser CrypCool v2026 (v2.1.3) ⭐
+### Parser CrypCool v2026 (v2.1.3)
 - ✅ **Format transactionnel** : Support du nouveau format CSV CrypCool (Timestamp, Operation type, Base amount, etc.)
 - ✅ **Déduction des frais** : Frais payés en crypto automatiquement déduits du solde
 - ✅ **Trades crypto-to-crypto** : Support complet (ex: BTC dépensé pour acheter VRO)
 - ✅ **Multi-crypto** : BTC, ETH, VRO et autres cryptos dans un seul fichier
 - ⚠️ **Note** : Valorisation ~2-3% inférieure à l'affichage CrypCool (frais réels déduits + prix CoinGecko)
 
-### Valorisation immobilière automatique (v2.1.2)
+### Valorisation immobilière automatique (v2.2.2)
 - ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
-- ✅ **Extraction web** : Prix/m² depuis Brave API avec regex optimisés
-- ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Extraction web hybride 3-tier** : Snippets → HTML fetching → Fallback prix
+- ✅ **Smart URL scoring** : Tri intelligent des sources par critères objectifs (+10 sites référence, +5 HTTPS, +3 URL courte, +2 titre)
+- ✅ **HTML entity handling** : Conversion `&nbsp;` avant extraction (fix `5&nbsp;263 €/m²` → `5263 €/m²`)
+- ✅ **Résultats réels** : 185 prix extraits (médiane: 5302 €/m² vs 5300 €/m² fallback)
 - ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
 - ⚠️ **Breaking change** : `valeur_actuelle` NE DOIT PLUS être dans manifest.json
 
@@ -158,11 +178,10 @@ cd giga-pat
 # 2. Installer les dépendances
 pip install -r requirements.txt
 
-# 3. Configurer les API keys
+# 3. Configurer les API de recherche web (optionnel)
 cp .env.example .env
-# Éditer .env et ajouter :
-# - BRAVE_API_KEY (requis pour recherches web et risques)
-# - TAVILY_API_KEY (optionnel, pour recommandations dynamiques v2.1.4+)
+# Éditer .env et ajouter vos clés API
+# Brave, Serper, Tavily (DuckDuckGo fonctionne sans clé)
 ```
 
 ## 🔄 Migration v1 → v2 (utilisateurs existants)
@@ -577,6 +596,12 @@ Gilles HOFF - Développeur informatique
 
 ## 🔗 Liens utiles
 
-- Documentation Brave Search API : https://api.search.brave.com/
+### Web Search APIs
+- Brave Search API : https://api.search.brave.com/ (2000 req/mois gratuit)
+- Serper API : https://serper.dev/ (2500 req/mois gratuit)
+- Tavily API : https://tavily.com/ (1000 req/mois gratuit)
+- DuckDuckGo Search : https://pypi.org/project/duckduckgo-search/ (illimité gratuit)
+
+### Autres
 - PDFPlumber : https://github.com/jsvine/pdfplumber
 - Pandas : https://pandas.pydata.org/

@@ -6,7 +6,7 @@
 
 Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment.
 
-**Version**: v2.1.4 (November 2025) - Dynamic recommendations with web validation
+**Version**: v2.2.1 (November 2025) - Multi-provider web search with category specialization
 
 **Architecture**: 3-stage pipeline with NO user interaction during execution
 
@@ -44,9 +44,27 @@ python tests/test_generator.py
 
 # Setup
 pip install -r requirements.txt
-cp .env.example .env    # Add BRAVE_API_KEY (required)
-                        # Add TAVILY_API_KEY (optional, for dynamic recommendations)
+cp .env.example .env    # Add API keys (Brave, Serper, Tavily - DuckDuckGo works without key)
 ```
+
+## v2.2 Key Changes (November 2025)
+
+1. **Multi-Provider Web Search Architecture** (v2.2.0)
+   - **4 providers**: Brave (2000 req/month), Serper (2500 req/month), Tavily (1000 req/month), DuckDuckGo (unlimited)
+   - **Automatic fallback**: Brave → Serper → Tavily → DuckDuckGo
+   - **Pluggable architecture**: Add new providers by creating a single class
+   - **Configuration-driven**: All settings in `config.yaml` (rate limits, timeouts, priorities)
+   - **Backward compatible**: API unchanged, no modifications required in analyzer.py
+   - See `tools/utils/search_providers/README.md` for architecture details
+
+2. **Category-Based Provider Specialization** (v2.2.1)
+   - **Optimized quality**: Each provider used for its domain of excellence
+   - **4 categories**: factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+   - **10 searches categorized**: risk_analyzer.py now uses `search_by_category()`
+   - **Quota distribution**: Intelligent spreading across providers
+   - **Traceability**: Category recorded in search history
+   - **Additive API**: `search_by_category()` added, `search()` unchanged
+   - See `update/Migration-Multi-Provider-v2.0.md` for migration details
 
 ## v2.1 Key Changes (November 2025)
 
@@ -69,7 +87,7 @@ cp .env.example .env    # Add BRAVE_API_KEY (required)
 
 4. **Automatic Real Estate Valorization** (v2.1.2+)
    - **Dynamic revaluation**: Property values recalculated at EVERY report generation
-   - **Web extraction**: Parses price/m² from Brave API search results
+   - **Web extraction**: Parses price/m² from web search results (multi-provider)
    - **Intelligent fallback**: City-specific prices when API unavailable (Nanterre: 5300€/m², Paris: 10500€/m²)
    - **Plus-value tracking**: Auto-calculates appreciation since acquisition
    - **⚠️ DO NOT** include `valeur_actuelle` in manifest.json - only `prix_acquisition` + `surface_m2`
@@ -81,14 +99,6 @@ cp .env.example .env    # Add BRAVE_API_KEY (required)
    - **Crypto-to-crypto trades**: Full support (e.g., BTC spent to buy VRO)
    - **Accurate valuation**: Shows real liquidable value (~2-3% lower than CrypCool display)
    - See `tools/CLAUDE.md` → "Crypto Parsers" for details
-
-6. **Dynamic Recommendations with Web Validation** (v2.1.4+)
-   - **Targeted recommendations**: Specific actions like "Close Livret A X (1,200€)" instead of generic advice
-   - **Web-validated thresholds**: Consensus from trusted sources (AMF, CGP, finance media)
-   - **Dual search engines**: Tavily (AI-optimized) + Brave (market data)
-   - **Smart caching**: 3 months for best practices, 1 month for fees/yields
-   - **Source transparency**: Web sources cited in report (like risk sources)
-   - **Backward compatible**: Auto-disabled if config files missing
 
 ## Key Design Principles
 
@@ -115,10 +125,6 @@ cp .env.example .env    # Add BRAVE_API_KEY (required)
 - Structural risk thresholds
 - Contextual search queries (web-based detection)
 
-**Recommendations** (v2.1.4+):
-- `config/regulatory_facts.yaml`: Legal limits (FGDR, PEA, AV, PFU) - no web search needed
-- `config/recommendations_knowledge.yaml`: Web validation queries for best practices
-
 **Schema**: `config/manifest.schema.json`
 - JSON Schema validation for v2.1 manifest structure
 
@@ -141,11 +147,9 @@ cp .env.example .env    # Add BRAVE_API_KEY (required)
 ### Stage 2: Analyzer (`tools/analyzer.py`)
 - 7 risk categories (concentration, regulatory, fiscal, market, liquidity, political, currency)
 - 5 enriched scores (0-10 scale with labels and breakdowns)
-- Web research via Brave API (rate limiting 1.1-1.5s)
+- Web research via multi-provider architecture (Brave/Serper/Tavily/DuckDuckGo with automatic fallback)
 - Portfolio optimization (Markowitz), stress tests (5 scenarios)
-- **Recommendations** (v2.1.4+): Dynamic + risk-based, scored by criticité/impact/facilité
-  - Phase 1: Dynamic recommendations (web-validated thresholds, targeted actions)
-  - Phase 2: Risk-based recommendations (concentration, Sapin 2, liquidity)
+- Recommendations (scored by criticité/impact/facilité)
 - Benchmark gaps (5 status levels)
 
 **Detailed docs**: `tools/CLAUDE.md`
@@ -184,12 +188,6 @@ cp .env.example .env    # Add BRAVE_API_KEY (required)
 **Customize scores/benchmarks**:
 - Edit `config/analysis.yaml` → `scores.*` or `benchmarks.*`
 → Details: `config/CLAUDE.md` → "Scores" / "Benchmarks"
-
-**Add dynamic recommendation** (v2.1.4+):
-1. Add validation query in `config/recommendations_knowledge.yaml`
-2. Implement detection method in `recommendations.py` (pattern: `_detect_X()`)
-3. Optional: Add regulatory limit in `config/regulatory_facts.yaml`
-→ Example: Low-value account detection with web-validated threshold
 
 ## Testing
 
@@ -231,8 +229,3 @@ python tests/test_generator.py   # Check rapport_*.html
 **Crypto prices**: CoinGecko API (free, auto-conversion BTC→EUR)
 
 **Benchmark gaps**: 5 statuses (dans_la_cible, sous/sur_pondere_modere/fort)
-
-**Recommendations** (v2.1.4+): 2-phase system (dynamic + risk-based)
-- **Knowledge validation**: Web consensus (min 2 sources), median value extraction
-- **Search engines**: Tavily (AI-optimized) + Brave (market comparisons)
-- **Cache**: Time-based expiration (3 months best practices, 1 month fees/yields)

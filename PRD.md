@@ -1,91 +1,84 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 2.1.4
+**Version** : 2.2.1
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
 
-## 🆕 Version 2.1.4 (Novembre 2025)
+## 🆕 Version 2.2.1 (Novembre 2025)
 
-**Nouveauté majeure : Recommandations dynamiques avec validation web**
+**Nouveauté : Spécialisation par catégorie de recherche**
 
-Cette version introduit un système de recommandations contextuelles validées par recherche web, rendant les conseils patrimoniaux spécifiques et ciblés.
+- ✅ **Optimisation qualité** : Chaque provider utilisé pour son domaine d'excellence
+- ✅ **4 catégories** : factual (Brave), quantitative (Serper), contextual (Tavily), real_estate (DuckDuckGo)
+- ✅ **10 recherches catégorisées** : `risk_analyzer.py` utilise `search_by_category()`
+  - Factual (5) : concentration bancaire, risque pays, Loi Sapin 2, garantie dépôts, fiscalité
+  - Quantitative (2) : valorisation immobilière, risque de change
+  - Contextual (3) : risque actions, risque politique, recherches contextuelles
+- ✅ **Répartition quotas** : Distribution intelligente des requêtes entre providers
+- ✅ **Traçabilité** : Catégorie enregistrée dans l'historique de recherche
+- ✅ **API additive** : Nouvelle méthode `search_by_category()`, méthode `search()` inchangée
+- ✅ **Configuration** : `provider_mapping` et `enable_category_fallback` dans `config.yaml`
+- 📄 **Documentation** : `update/Migration-Multi-Provider-v2.0.md` section v2.2.1
 
-**Architecture 2-phases** :
-- ✅ **Phase 1 (Dynamique)** : Recommandations ciblées basées sur détection automatique (comptes faible valeur, frais excessifs, etc.)
-- ✅ **Phase 2 (Basée sur risques)** : Recommandations existantes issues de l'analyse des risques structurels
-- ✅ **Sources web** : Toutes les recommandations dynamiques sont validées par recherche web (minimum 2 sources concordantes)
-- ✅ **Consensus automatique** : Extraction de seuils depuis sources fiables (AMF, CGP, média finance) via médiane
-- ✅ **Double moteur** : Tavily (recherches optimisées IA) + Brave (données marché actualisées)
-- ✅ **Cache intelligent** : Durées adaptées au type de donnée (3 mois pour bonnes pratiques, 1 mois pour taux/frais)
-- ✅ **Backward compatible** : Auto-désactivation si configs absentes, pas de breaking change
-
-**Exemples de recommandations générées** :
-- "Clôturer le Livret A BforBank (1 200€)" - doublon + sous seuil minimum validé web
-- "Transférer le PEA Boursobank (2 300€)" - montant non viable selon recherche CGP
-- "Réduire liquidités compte courant" - montant excessif par rapport aux bonnes pratiques
-
-**Nouveaux composants** :
-1. **`config/regulatory_facts.yaml`** : Faits réglementaires officiels (garantie FGDR, plafonds PEA/Livret A, fiscalité AV) - PAS de recherche web
-2. **`config/recommendations_knowledge.yaml`** : 12 requêtes de validation (diversification, liquidités, seuils minimum, frais, rendements) avec fourchettes attendues
-3. **`tools/utils/knowledge_validator.py`** : Validateur de seuils avec extraction consensus et priorisation sources institutionnelles
-4. **`tools/utils/tavily_search.py`** : Intégration Tavily API pour recherches optimisées IA avec résumés automatiques
-
-**Workflow de validation** :
-```
-Détection → Recherche web (Tavily/Brave) → Extraction consensus (regex + médiane)
-    → Filtrage sources (institutions > media > autres)
-    → Génération recommandation ciblée avec sources
-```
-
-**Exemple technique** :
+**Exemple d'utilisation** :
 ```python
-# Detection dans recommendations.py
-threshold_data = self.knowledge_validator.validate_threshold("montant_minimum_livret")
-# → Web search: "montant minimum livret épargne rentable"
-# → Extraction: 5000€, 8000€, 7000€, 6000€ → Médiane: 6500€
-# → Confiance: high (4 sources dont 2 institutionnelles)
-
-if montant < threshold_data["valeur"]:
-    recommendations.append({
-        "titre": f"Clôturer le Livret A {custodian} ({montant:,.0f}€)",
-        "description": f"Montant sous seuil minimum de rentabilité ({threshold:,.0f}€)",
-        "sources": threshold_data["sources"],  # URLs + extraits
-        "confiance": "high"
-    })
+# Recherche factuelle (utilise Brave)
+sources = web_researcher.search_by_category(
+    category="factual",
+    sujet="Loi Sapin 2",
+    queries=["Loi Sapin 2 blocage assurance-vie 2025"],
+    context="Vérification réglementaire"
+)
 ```
 
-**Catégories extensibles** :
-- Comptes individuels (livrets doublons, PEA/AV faible valeur)
-- Optimisation fiscale (opportunités AV 8 ans, PEA plafonnement)
-- Optimisation rendement (fonds euros sous-performants, frais excessifs)
-- Simplification (comptes inactifs, établissements redondants)
+## 🆕 Version 2.2.0 (Novembre 2025)
 
-**Configuration requise** :
-- `TAVILY_API_KEY` (optionnel) : Recherches optimisées IA
-- `BRAVE_API_KEY` (existant) : Données marché actualisées
-- Sans clés API : système se désactive proprement (log warning)
+**Nouveauté majeure : Architecture Web Search Multi-Provider**
 
-**Intégration HTML** :
-- Sources web affichées sous chaque recommandation (format identique aux risques)
-- Liens cliquables vers sources + extraits pertinents
-- Badge de confiance (high/medium/low) basé sur nombre et cohérence des sources
+- ✅ **4 providers** : Brave (2000 req/mois), Serper (2500 req/mois), Tavily (1000 req/mois), DuckDuckGo (illimité)
+- ✅ **Fallback automatique** : Brave → Serper → Tavily → DuckDuckGo (continuité de service)
+- ✅ **Architecture pluggable** : Package `tools/utils/search_providers/` avec BaseSearchProvider, Factory, 4 implémentations
+- ✅ **Configuration centralisée** : `config.yaml` définit ordre de fallback, rate limits, timeouts par provider
+- ✅ **Backward compatible** : API publique de WebResearcher inchangée
+- ✅ **Résilience** : Si quota Brave épuisé → bascule automatique sur Serper sans interruption
+- ✅ **5500+ requêtes/mois gratuites** : Répartition intelligente entre providers
+- 📄 **Documentation** : `tools/utils/search_providers/README.md` + `update/Migration-Multi-Provider-v2.0.md`
+
+**Architecture** :
+```
+WebResearcher (façade)
+└── SearchProviderFactory
+    └── Chaîne de fallback [Brave, Serper, Tavily, DuckDuckGo]
+        ├── BraveSearchProvider (priorité 1)
+        ├── SerperSearchProvider (priorité 2)
+        ├── TavilySearchProvider (priorité 3)
+        └── DDGSSearchProvider (priorité 4)
+```
 
 ## 🆕 Version 2.1.2 (Novembre 2025)
 
-**Nouveauté majeure : Valorisation immobilière automatique**
+**Nouveauté majeure : Valorisation immobilière automatique (v2.2.2)**
 
 - ✅ **Réévaluation dynamique** : Les biens immobiliers sont revalorisés à CHAQUE génération de rapport
-- ✅ **Extraction web** : Prix au m² extrait depuis résultats Brave API (patterns regex optimisés)
-- ✅ **Fallback intelligent** : Prix par ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m², etc.)
+- ✅ **Extraction web hybride 3-tier** (v2.2.2) :
+  1. Snippets (rapide) : Tentative extraction depuis résumés de recherche
+  2. HTML fetching (robuste) : Fetch HTML complet des meilleures sources si snippets échouent
+  3. Fallback (fiable) : Prix par ville (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Smart URL scoring** (v2.2.2) : Tri intelligent des sources web par critères objectifs
+  - Sites de référence (+10) : meilleursagents.com, lefigaro.fr, seloger.com, pap.fr, bien-ici.com, logic-immo.com, orpi.com
+  - HTTPS (+5), URL courte (+3), titre pertinent (+2)
+- ✅ **HTML entity handling** : Conversion `&nbsp;` → `\xa0` avant extraction
+- ✅ **Regex optimisés** : Capture nombres complets avec séparateurs (`5&nbsp;263 €/m²` → `5263 €/m²`)
+- ✅ **Résultats** : 185 prix extraits (médiane: 5302 €/m² vs 5300 €/m² fallback)
 - ✅ **Calcul automatique** : `valeur_actuelle = surface_m2 × prix_m2_web`
 - ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
-- ✅ **Module dédié** : `tools/utils/real_estate_valorizer.py` (extraction + fallback)
+- ✅ **Module dédié** : `tools/utils/real_estate_valorizer.py` (extraction + scoring + fallback)
 - ✅ **Total recalculé** : `patrimoine.immobilier.total` mis à jour après valorisation
 - ⚠️ **Breaking change** : `valeur_actuelle` ne doit PLUS être dans manifest.json (uniquement `prix_acquisition` + `surface_m2`)
 
 **Architecture** :
 1. Normalizer stocke `prix_acquisition` comme valeur temporaire
-2. Analyzer effectue recherches web → extrait prix m² → calcule valorisation → met à jour `bien["valeur_actuelle"]`
+2. Analyzer effectue recherches web → score sources → fetch HTML → extrait prix m² → calcule valorisation → met à jour `bien["valeur_actuelle"]`
 3. Report affiche valorisation enrichie avec source (web/fallback) + plus-value
 
 ## 🆕 Version 2.1.1 (Novembre 2025)
@@ -227,7 +220,14 @@ patrimoine-analyzer/
 │   └── utils/
 │       ├── __init__.py
 │       ├── file_parser.py             # Parsing CSV/PDF/JSON
-│       ├── web_research.py            # Recherches web (Brave API)
+│       ├── web_research.py            # Recherches web multi-provider (v2.0)
+│       ├── search_providers/          # Architecture pluggable (v2.2.0)
+│       │   ├── base.py                # BaseSearchProvider
+│       │   ├── factory.py             # Factory + fallback chain
+│       │   ├── brave_provider.py      # Brave Search API
+│       │   ├── serper_provider.py     # Serper (Google) API
+│       │   ├── tavily_provider.py     # Tavily AI-native API
+│       │   └── ddgs_provider.py       # DuckDuckGo (no API key)
 │       ├── risk_analyzer.py           # Analyse de risques
 │       ├── recommendations.py         # Génération recommandations
 │       ├── stress_tester.py           # Stress tests
@@ -791,7 +791,14 @@ Scénarios à simuler :
 4. **Hausse fiscalité** : PFU 30% → 35%
 5. **Crise immobilière -20%** : Correction marché local
 
-##### 3.2.5.5 Recherches web (`tools/utils/web_research.py`)
+##### 3.2.5.5 Recherches web (`tools/utils/web_research.py` + `search_providers/`)
+
+**Architecture v2.2.0** :
+- **Façade** : `WebResearcher` (API publique inchangée pour compatibilité)
+- **Factory** : `SearchProviderFactory` crée la chaîne de providers
+- **Providers** : 4 implémentations (Brave, Serper, Tavily, DuckDuckGo)
+- **Fallback** : Automatique en cas d'échec (quota, réseau, erreur)
+- **Configuration** : `config.yaml` définit ordre et paramètres
 
 **Sujets de recherche** :
 
@@ -815,11 +822,13 @@ Scénarios à simuler :
    - Risques macro (inflation, récession)
    - Évolutions réglementaires
 
-**Implémentation** :
-- Utilisation API Brave Search (L'utilisateur dispose de sa clé API)
-- Attendre entre 1,1 et 1,5 secondes entre chaque requête (C'est une limitation Brave)
-- 10-15 recherches ciblées
-- Toutes sources citées avec URL + date
+**Implémentation v2.2.0** :
+- **Multi-provider** : Brave (priorité 1), Serper (2), Tavily (3), DuckDuckGo (4)
+- **Rate limiting** : Configurable par provider dans config.yaml (ex: Brave 1.3s, Serper 1.0s, DDGS 2.0s)
+- **Fallback automatique** : Si provider échoue → essaie le suivant dans la chaîne
+- **10-15 recherches ciblées** : Réparties entre providers disponibles
+- **Toutes sources citées** : URL + date + provider utilisé
+- **Clés API** : Optionnelles (BRAVE_API_KEY, SERPER_API_KEY, TAVILY_API_KEY) - DuckDuckGo fonctionne sans clé
 - Pas d'invention, uniquement sources vérifiables
 
 **Format des sources** :
@@ -1660,20 +1669,43 @@ Tous les logs sont sauvegardés dans `logs/rapport_YYYYMMDD_HHMMSS.log`.
 Le projet nécessite un fichier `.env` à la racine contenant les clés API requises :
 
 ```bash
-# Brave Search API (requise pour les recherches web)
-BRAVE_API_KEY=your-api-key-here
+# Web Search APIs (v2.2.0 - Multi-provider)
+# Au moins une clé API recommandée, DuckDuckGo fonctionne sans clé
+
+# Brave Search API (2000 req/mois gratuit - Priorité 1)
+BRAVE_API_KEY=your-brave-api-key-here
+
+# Serper API (2500 req/mois gratuit - Priorité 2)
+SERPER_API_KEY=your-serper-api-key-here
+
+# Tavily API (1000 req/mois gratuit - Priorité 3)
+TAVILY_API_KEY=your-tavily-api-key-here
+
+# DuckDuckGo : Pas de clé requise (Priorité 4, fallback illimité)
 ```
 
-**Obtenir une clé Brave Search API** :
-1. Créer un compte sur https://brave.com/search/api/
-2. Tableau de bord : https://api.search.brave.com/app/dashboard
-3. Plan gratuit disponible : 2000 requêtes/mois
-4. Copier la clé API et l'ajouter au fichier `.env`
+**Obtenir les clés API** :
+
+1. **Brave Search API** (recommandé - 2000 req/mois) :
+   - Créer un compte : https://brave.com/search/api/
+   - Dashboard : https://api.search.brave.com/app/dashboard
+
+2. **Serper API** (Google Search - 2500 req/mois) :
+   - Créer un compte : https://serper.dev/
+   - Dashboard : https://serper.dev/dashboard
+
+3. **Tavily API** (AI-native - 1000 req/mois) :
+   - Créer un compte : https://tavily.com/
+   - Dashboard : https://app.tavily.com/
+
+4. **DuckDuckGo** : Aucune clé requise (bibliothèque Python gratuite)
+
+**Note** : Au moins une clé API est recommandée pour fonctionnement optimal. Si aucune clé n'est fournie, le système utilisera uniquement DuckDuckGo.
 
 **Important** :
 - Le fichier `.env` est dans `.gitignore` (ne pas committer les clés)
-- Sans `BRAVE_API_KEY`, les recherches web seront désactivées
-- L'analyse de risques continuera mais sans sources web
+- Sans aucune clé API, le système utilisera DuckDuckGo (gratuit illimité)
+- Avec au moins une clé, le système bascule automatiquement entre providers disponibles
 
 ---
 

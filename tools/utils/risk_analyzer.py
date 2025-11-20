@@ -196,9 +196,10 @@ class RiskAnalyzer:
 
             if pct >= self.seuils.get("concentration_etablissement_critique", 50):
                 # Recherche web sur risques concentration
-                sources = self.web_researcher.search(
-                    "Concentration bancaire",
-                    [
+                sources = self.web_researcher.search_by_category(
+                    category="factual",
+                    sujet="Concentration bancaire",
+                    queries=[
                         f"risques concentration bancaire {etab['nom']}",
                         "diversification établissements bancaires France",
                     ],
@@ -256,9 +257,10 @@ class RiskAnalyzer:
                 pct = (montant / total_global) * 100
 
                 if pct >= self.seuils.get("concentration_juridiction_critique", 80):
-                    sources = self.web_researcher.search(
-                        "Risque pays",
-                        [
+                    sources = self.web_researcher.search_by_category(
+                        category="factual",
+                        sujet="Risque pays",
+                        queries=[
                             f"risque pays {jur}",
                             f"diversification géographique patrimoine",
                         ],
@@ -302,9 +304,10 @@ class RiskAnalyzer:
             pct_av = (av_total / total_financier) * 100
 
             # Recherche web sur Loi Sapin 2
-            sources = self.web_researcher.search(
-                "Loi Sapin 2",
-                [
+            sources = self.web_researcher.search_by_category(
+                category="factual",
+                sujet="Loi Sapin 2",
+                queries=[
                     "Loi Sapin 2 blocage assurance-vie 2025",
                     "HCSF article 21 Loi Sapin 2",
                     "risques assurance-vie gel rachats",
@@ -337,9 +340,10 @@ class RiskAnalyzer:
             )
 
         # Garantie des dépôts (100k€ par établissement)
-        sources_garantie = self.web_researcher.search(
-            "Garantie dépôts",
-            [
+        sources_garantie = self.web_researcher.search_by_category(
+            category="factual",
+            sujet="Garantie dépôts",
+            queries=[
                 "garantie dépôts bancaires France 100000 euros",
                 "FGDR fonds garantie dépôts résolution",
             ],
@@ -399,9 +403,10 @@ class RiskAnalyzer:
         risks = []
 
         # Recherche sur évolution fiscalité
-        sources_fiscal = self.web_researcher.search(
-            "Fiscalité épargne",
-            [
+        sources_fiscal = self.web_researcher.search_by_category(
+            category="factual",
+            sujet="Fiscalité épargne",
+            queries=[
                 "PFU prélèvement forfaitaire unique évolution 2025",
                 "fiscalité assurance-vie France",
                 "flat tax 30% réforme fiscale",
@@ -456,9 +461,10 @@ class RiskAnalyzer:
             pct_actions = (exposition_actions / total_patrimoine) * 100
 
             if pct_actions > 70:
-                sources_marche = self.web_researcher.search(
-                    "Risque actions",
-                    [
+                sources_marche = self.web_researcher.search_by_category(
+                    category="contextual",
+                    sujet="Risque actions",
+                    queries=[
                         "volatilité marchés actions risques",
                         "diversification actions obligations",
                     ],
@@ -507,9 +513,10 @@ class RiskAnalyzer:
                 # Recherche web sur la valorisation immobilière
                 sources_immo = []
                 if ville:
-                    sources_immo = self.web_researcher.search(
-                        f"Valorisation immobilière {ville}",
-                        [
+                    sources_immo = self.web_researcher.search_by_category(
+                        category="quantitative",
+                        sujet=f"Valorisation immobilière {ville}",
+                        queries=[
                             f"prix immobilier m² {ville} 2025",
                             f"marché immobilier {ville} évolution",
                             f"valorisation {bien_type.lower()} {ville}",
@@ -661,9 +668,10 @@ class RiskAnalyzer:
                 pct = (montant / total) * 100
                 if pct > 90 and jur == "France":
                     # Recherche web sur risque politique France
-                    sources = self.web_researcher.search(
-                        "Risque politique France",
-                        [
+                    sources = self.web_researcher.search_by_category(
+                        category="contextual",
+                        sujet="Risque politique France",
+                        queries=[
                             "risque politique France investissements",
                             "concentration géographique patrimoine France",
                             "diversification internationale patrimoine",
@@ -733,9 +741,10 @@ class RiskAnalyzer:
 
             # Recherche web sur volatilité EUR/USD et crypto
             if pct_exposition > 3:  # Seuil 3%
-                sources = self.web_researcher.search(
-                    "Risque de change EUR/USD",
-                    [
+                sources = self.web_researcher.search_by_category(
+                    category="quantitative",
+                    sujet="Risque de change EUR/USD",
+                    queries=[
                         "volatilité EUR USD 2025",
                         "risque de change investissement",
                         "couverture risque devise",
@@ -822,8 +831,11 @@ class RiskAnalyzer:
             )
 
             # Exécuter la recherche web
-            search_results = self.web_researcher.search(
-                sujet=f"Contexte: {search_id}", queries=queries, context=context
+            search_results = self.web_researcher.search_by_category(
+                category="contextual",
+                sujet=f"Contexte: {search_id}",
+                queries=queries,
+                context=context,
             )
 
             if not search_results:
