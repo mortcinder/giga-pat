@@ -1,8 +1,74 @@
 # PRD : Générateur de Rapport Patrimonial Automatisé
 
-**Version** : 2.1.2
+**Version** : 2.1.4
 **Date** : Novembre 2025
 **Auteur** : Spécifications pour Claude Code
+
+## 🆕 Version 2.1.4 (Novembre 2025)
+
+**Nouveauté majeure : Recommandations dynamiques avec validation web**
+
+Cette version introduit un système de recommandations contextuelles validées par recherche web, rendant les conseils patrimoniaux spécifiques et ciblés.
+
+**Architecture 2-phases** :
+- ✅ **Phase 1 (Dynamique)** : Recommandations ciblées basées sur détection automatique (comptes faible valeur, frais excessifs, etc.)
+- ✅ **Phase 2 (Basée sur risques)** : Recommandations existantes issues de l'analyse des risques structurels
+- ✅ **Sources web** : Toutes les recommandations dynamiques sont validées par recherche web (minimum 2 sources concordantes)
+- ✅ **Consensus automatique** : Extraction de seuils depuis sources fiables (AMF, CGP, média finance) via médiane
+- ✅ **Double moteur** : Tavily (recherches optimisées IA) + Brave (données marché actualisées)
+- ✅ **Cache intelligent** : Durées adaptées au type de donnée (3 mois pour bonnes pratiques, 1 mois pour taux/frais)
+- ✅ **Backward compatible** : Auto-désactivation si configs absentes, pas de breaking change
+
+**Exemples de recommandations générées** :
+- "Clôturer le Livret A BforBank (1 200€)" - doublon + sous seuil minimum validé web
+- "Transférer le PEA Boursobank (2 300€)" - montant non viable selon recherche CGP
+- "Réduire liquidités compte courant" - montant excessif par rapport aux bonnes pratiques
+
+**Nouveaux composants** :
+1. **`config/regulatory_facts.yaml`** : Faits réglementaires officiels (garantie FGDR, plafonds PEA/Livret A, fiscalité AV) - PAS de recherche web
+2. **`config/recommendations_knowledge.yaml`** : 12 requêtes de validation (diversification, liquidités, seuils minimum, frais, rendements) avec fourchettes attendues
+3. **`tools/utils/knowledge_validator.py`** : Validateur de seuils avec extraction consensus et priorisation sources institutionnelles
+4. **`tools/utils/tavily_search.py`** : Intégration Tavily API pour recherches optimisées IA avec résumés automatiques
+
+**Workflow de validation** :
+```
+Détection → Recherche web (Tavily/Brave) → Extraction consensus (regex + médiane)
+    → Filtrage sources (institutions > media > autres)
+    → Génération recommandation ciblée avec sources
+```
+
+**Exemple technique** :
+```python
+# Detection dans recommendations.py
+threshold_data = self.knowledge_validator.validate_threshold("montant_minimum_livret")
+# → Web search: "montant minimum livret épargne rentable"
+# → Extraction: 5000€, 8000€, 7000€, 6000€ → Médiane: 6500€
+# → Confiance: high (4 sources dont 2 institutionnelles)
+
+if montant < threshold_data["valeur"]:
+    recommendations.append({
+        "titre": f"Clôturer le Livret A {custodian} ({montant:,.0f}€)",
+        "description": f"Montant sous seuil minimum de rentabilité ({threshold:,.0f}€)",
+        "sources": threshold_data["sources"],  # URLs + extraits
+        "confiance": "high"
+    })
+```
+
+**Catégories extensibles** :
+- Comptes individuels (livrets doublons, PEA/AV faible valeur)
+- Optimisation fiscale (opportunités AV 8 ans, PEA plafonnement)
+- Optimisation rendement (fonds euros sous-performants, frais excessifs)
+- Simplification (comptes inactifs, établissements redondants)
+
+**Configuration requise** :
+- `TAVILY_API_KEY` (optionnel) : Recherches optimisées IA
+- `BRAVE_API_KEY` (existant) : Données marché actualisées
+- Sans clés API : système se désactive proprement (log warning)
+
+**Intégration HTML** :
+- Sources web affichées sous chaque recommandation (format identique aux risques)
+- Liens cliquables vers sources + extraits pertinents
+- Badge de confiance (high/medium/low) basé sur nombre et cohérence des sources
 
 ## 🆕 Version 2.1.2 (Novembre 2025)
 
