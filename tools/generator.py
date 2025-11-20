@@ -730,6 +730,33 @@ class ReportGenerator:
                     li.string = action
                     actions_ul.append(li)
 
+            # Sources web (v2.1+)
+            sources_list_el = new_div.find(attrs={"data-field": "reco_sources"})
+            if sources_list_el:
+                sources = reco.get("sources", [])
+                if sources:
+                    sources_list_el.clear()
+                    for source in sources[:3]:  # Max 3 sources
+                        li = soup.new_tag("li")
+                        a = soup.new_tag("a", href=source.get("url", ""), target="_blank")
+                        a.string = source.get("titre", "Source")
+
+                        li.append(a)
+
+                        # Optionnel : ajouter extrait
+                        extrait = source.get("extrait", "")
+                        if extrait:
+                            small = soup.new_tag("small")
+                            small.string = f" — {extrait[:100]}..."
+                            li.append(small)
+
+                        sources_list_el.append(li)
+                else:
+                    # Pas de sources, masquer la section
+                    sources_container = sources_list_el.find_parent()
+                    if sources_container:
+                        sources_container.decompose()
+
             parent.append(new_div)
 
         self.logger.debug(f"  → {min(5, len(recos))} recommandations injectées")

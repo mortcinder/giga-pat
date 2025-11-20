@@ -1,0 +1,229 @@
+# ============================================================================
+# BASE DE CONNAISSANCE POUR RECOMMANDATIONS DYNAMIQUES
+# ============================================================================
+# Requêtes web pour valider bonnes pratiques de gestion patrimoniale.
+# Ces seuils nécessitent une validation par recherche web (sources CGP, AMF, etc.)
+#
+# Fonctionnement :
+# 1. Chaque query est exécutée via Brave ou Tavily
+# 2. Les sources sont analysées pour extraire un consensus
+# 3. Le résultat est mis en cache pendant cache_duree_mois
+# 4. Minimum min_sources concordantes requises pour valider
+# ============================================================================
+
+version: "1.0.0"
+description: "Requêtes de validation pour bonnes pratiques patrimoniales"
+last_updated: "2025-11-20"
+
+# ============================================================================
+# PARAMÈTRES GLOBAUX
+# ============================================================================
+
+parametres:
+  cache_duree_mois: 3           # Durée de validité du cache
+  min_sources: 2                # Nombre minimum de sources concordantes
+  moteur_par_defaut: "tavily"   # brave ou tavily
+
+# ============================================================================
+# SOURCES FIABLES PRIORITAIRES
+# ============================================================================
+# Sources à prioriser lors de l'extraction de consensus
+
+sources_fiables:
+  institutions:
+    - "amf-france.org"
+    - "banque-france.fr"
+    - "lafinancepourtous.com"
+    - "garantiedesdepots.fr"
+    - "service-public.fr"
+    - "economie.gouv.fr"
+
+  media_finance:
+    - "lesechos.fr"
+    - "capital.fr"
+    - "challenges.fr"
+    - "moneyvox.fr"
+    - "boursorama.com"
+
+  conseillers_ligne:
+    - "nalo.fr"
+    - "yomoni.fr"
+    - "meilleurtaux.com"
+    - "fortuneo.fr"
+    - "boursobank.com"
+
+# ============================================================================
+# REQUÊTES DE VALIDATION PAR CATÉGORIE
+# ============================================================================
+
+requetes_validation:
+  # --------------------------------------------------------------------------
+  # DIVERSIFICATION
+  # --------------------------------------------------------------------------
+
+  seuil_concentration_etablissement:
+    description: "Seuil de concentration bancaire critique"
+    queries:
+      - "seuil concentration établissement bancaire patrimoine"
+      - "diversification combien banques recommandation CGP"
+      - "pourcentage maximum patrimoine une banque"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [40, 60]
+    cache_duree_mois: 3
+
+  nombre_etablissements_optimal:
+    description: "Nombre d'établissements bancaires recommandé"
+    queries:
+      - "nombre établissements bancaires patrimoine optimal"
+      - "combien comptes bancaires diversification conseiller"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "entier"
+      fourchette: [3, 5]
+    cache_duree_mois: 3
+
+  # --------------------------------------------------------------------------
+  # LIQUIDITÉS ET ÉPARGNE DE PRÉCAUTION
+  # --------------------------------------------------------------------------
+
+  fonds_urgence_mois:
+    description: "Fonds d'urgence en mois de dépenses"
+    queries:
+      - "fonds urgence combien mois salaire recommandation"
+      - "épargne précaution mois dépenses CGP"
+      - "liquidités minimum patrimoine conseiller"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "mois"
+      fourchette: [6, 12]
+    cache_duree_mois: 6  # Plus stable
+
+  montant_minimum_compte_courant:
+    description: "Montant maximum recommandé sur compte courant"
+    queries:
+      - "montant maximum compte courant non rémunéré"
+      - "trop liquidités compte courant rendement perdu"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [5000, 15000]
+    cache_duree_mois: 3
+
+  # --------------------------------------------------------------------------
+  # COMPTES INEFFICACES
+  # --------------------------------------------------------------------------
+
+  montant_minimum_livret:
+    description: "Montant minimum rentable pour un livret"
+    queries:
+      - "montant minimum livret épargne rentable"
+      - "fermer livret faible montant recommandation CGP"
+      - "livret doublon montant seuil"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [3000, 10000]
+    cache_duree_mois: 3
+
+  montant_minimum_pea:
+    description: "Montant minimum viable pour un PEA"
+    queries:
+      - "montant minimum PEA viable frais courtage"
+      - "fermer PEA faible montant conseiller patrimoine"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [5000, 15000]
+    cache_duree_mois: 3
+
+  montant_minimum_av:
+    description: "Montant minimum pour une assurance-vie"
+    queries:
+      - "montant minimum assurance-vie rentable"
+      - "frais gestion AV montant faible"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [5000, 20000]
+    cache_duree_mois: 3
+
+  # --------------------------------------------------------------------------
+  # FRAIS
+  # --------------------------------------------------------------------------
+
+  frais_pea_acceptables:
+    description: "Frais PEA annuels acceptables en €/an"
+    queries:
+      - "frais PEA courtage moyens 2025"
+      - "meilleurs PEA sans frais comparatif"
+      - "frais garde PEA acceptables"
+    moteur: "brave"  # Mieux pour comparateurs actualisés
+    valeur_attendue:
+      type: "montant"
+      fourchette: [0, 30]
+    cache_duree_mois: 1  # Actualité importante
+
+  frais_gestion_av_maximum:
+    description: "Frais de gestion AV maximaux acceptables (%)"
+    queries:
+      - "frais gestion assurance-vie moyens 2025"
+      - "meilleurs contrats assurance-vie frais faibles"
+    moteur: "brave"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [0.5, 1.0]
+    cache_duree_mois: 1
+
+  frais_tenue_compte_acceptables:
+    description: "Frais de tenue de compte mensuels acceptables"
+    queries:
+      - "frais tenue compte bancaire moyens 2025"
+      - "banques sans frais tenue compte comparatif"
+    moteur: "brave"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [0, 5]
+    cache_duree_mois: 1
+
+  # --------------------------------------------------------------------------
+  # RENDEMENT
+  # --------------------------------------------------------------------------
+
+  rendement_fonds_euro_moyen:
+    description: "Rendement moyen fonds euros en 2025 (%)"
+    queries:
+      - "rendement fonds euros 2025 moyenne"
+      - "meilleurs fonds euros rendement 2025"
+      - "taux fonds euros assurance-vie 2025"
+    moteur: "brave"  # Actualité critique
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [2.0, 4.0]
+    cache_duree_mois: 1  # Très court : données volatiles
+
+  taux_livret_a_actuel:
+    description: "Taux actuel du Livret A (%)"
+    queries:
+      - "taux livret A 2025"
+      - "rémunération livret A actuel"
+    moteur: "brave"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [2.0, 5.0]
+    cache_duree_mois: 1
+
+# ============================================================================
+# RECOMMANDATIONS DE MAINTENANCE
+# ============================================================================
+
+maintenance:
+  frequence_revision: "trimestrielle"
+  prochaine_revision: "2026-02-20"
+  responsable: "Patrimoine Analyzer"
+
+  notes:
+    - "Les requêtes sur frais/rendement nécessitent cache court (1 mois)"
+    - "Les requêtes sur bonnes pratiques CGP peuvent avoir cache long (3-6 mois)"
+    - "Vérifier régulièrement la pertinence des sources fiables"
