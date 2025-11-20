@@ -1,14 +1,25 @@
 # 💼 Patrimoine Analyzer
 
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
-![Version](https://img.shields.io/badge/version-2.1.3-orange.svg)
+![Version](https://img.shields.io/badge/version-2.1.4-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.1.3** - Parser CrypCool v2026 avec déduction des frais
+**Version 2.1.4** - Recommandations dynamiques avec validation web
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
+
+## 🆕 Nouveautés v2.1.4 (Novembre 2025)
+
+### Recommandations dynamiques avec validation web (v2.1.4) ⭐ NOUVEAU
+- ✅ **Recommandations ciblées** : Actions spécifiques comme "Clôturer le Livret A X (1 200€)" au lieu de conseils génériques
+- ✅ **Validation web** : Seuils validés par consensus depuis sources fiables (AMF, CGP, médias finance)
+- ✅ **Double moteur** : Tavily (recherche AI optimisée) + Brave (données marché)
+- ✅ **Cache intelligent** : 3 mois pour bonnes pratiques, 1 mois pour frais/rendements
+- ✅ **Sources transparentes** : Citations web dans le rapport (comme pour les risques)
+- ✅ **Rétrocompatible** : Système désactivé automatiquement si fichiers config absents
+- 📋 **Extensible** : Architecture prête pour détection PEA/AV faibles, frais excessifs, optimisations fiscales
 
 ## 🆕 Nouveautés v2.1.3 (Novembre 2025)
 
@@ -147,9 +158,11 @@ cd giga-pat
 # 2. Installer les dépendances
 pip install -r requirements.txt
 
-# 3. Configurer l'API Brave Search
+# 3. Configurer les API keys
 cp .env.example .env
-# Éditer .env et ajouter votre BRAVE_API_KEY
+# Éditer .env et ajouter :
+# - BRAVE_API_KEY (requis pour recherches web et risques)
+# - TAVILY_API_KEY (optionnel, pour recommandations dynamiques v2.1.4+)
 ```
 
 ## 🔄 Migration v1 → v2 (utilisateurs existants)

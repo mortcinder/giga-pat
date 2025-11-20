@@ -6,7 +6,7 @@
 
 Patrimoine Analyzer is an automated wealth report generator that transforms source files (CSV, PDF, Markdown) into professional HTML reports with deep analysis, web research, and risk assessment.
 
-**Version**: v2.1.3 (November 2025) - CrypCool v2026 parser with fee deduction
+**Version**: v2.1.4 (November 2025) - Dynamic recommendations with web validation
 
 **Architecture**: 3-stage pipeline with NO user interaction during execution
 
@@ -44,7 +44,8 @@ python tests/test_generator.py
 
 # Setup
 pip install -r requirements.txt
-cp .env.example .env    # Add BRAVE_API_KEY
+cp .env.example .env    # Add BRAVE_API_KEY (required)
+                        # Add TAVILY_API_KEY (optional, for dynamic recommendations)
 ```
 
 ## v2.1 Key Changes (November 2025)
@@ -81,6 +82,14 @@ cp .env.example .env    # Add BRAVE_API_KEY
    - **Accurate valuation**: Shows real liquidable value (~2-3% lower than CrypCool display)
    - See `tools/CLAUDE.md` → "Crypto Parsers" for details
 
+6. **Dynamic Recommendations with Web Validation** (v2.1.4+)
+   - **Targeted recommendations**: Specific actions like "Close Livret A X (1,200€)" instead of generic advice
+   - **Web-validated thresholds**: Consensus from trusted sources (AMF, CGP, finance media)
+   - **Dual search engines**: Tavily (AI-optimized) + Brave (market data)
+   - **Smart caching**: 3 months for best practices, 1 month for fees/yields
+   - **Source transparency**: Web sources cited in report (like risk sources)
+   - **Backward compatible**: Auto-disabled if config files missing
+
 ## Key Design Principles
 
 1. **No file modification**: Never modify source files or templates
@@ -106,6 +115,10 @@ cp .env.example .env    # Add BRAVE_API_KEY
 - Structural risk thresholds
 - Contextual search queries (web-based detection)
 
+**Recommendations** (v2.1.4+):
+- `config/regulatory_facts.yaml`: Legal limits (FGDR, PEA, AV, PFU) - no web search needed
+- `config/recommendations_knowledge.yaml`: Web validation queries for best practices
+
 **Schema**: `config/manifest.schema.json`
 - JSON Schema validation for v2.1 manifest structure
 
@@ -130,7 +143,9 @@ cp .env.example .env    # Add BRAVE_API_KEY
 - 5 enriched scores (0-10 scale with labels and breakdowns)
 - Web research via Brave API (rate limiting 1.1-1.5s)
 - Portfolio optimization (Markowitz), stress tests (5 scenarios)
-- Recommendations (scored by criticité/impact/facilité)
+- **Recommendations** (v2.1.4+): Dynamic + risk-based, scored by criticité/impact/facilité
+  - Phase 1: Dynamic recommendations (web-validated thresholds, targeted actions)
+  - Phase 2: Risk-based recommendations (concentration, Sapin 2, liquidity)
 - Benchmark gaps (5 status levels)
 
 **Detailed docs**: `tools/CLAUDE.md`
@@ -169,6 +184,12 @@ cp .env.example .env    # Add BRAVE_API_KEY
 **Customize scores/benchmarks**:
 - Edit `config/analysis.yaml` → `scores.*` or `benchmarks.*`
 → Details: `config/CLAUDE.md` → "Scores" / "Benchmarks"
+
+**Add dynamic recommendation** (v2.1.4+):
+1. Add validation query in `config/recommendations_knowledge.yaml`
+2. Implement detection method in `recommendations.py` (pattern: `_detect_X()`)
+3. Optional: Add regulatory limit in `config/regulatory_facts.yaml`
+→ Example: Low-value account detection with web-validated threshold
 
 ## Testing
 
@@ -210,3 +231,8 @@ python tests/test_generator.py   # Check rapport_*.html
 **Crypto prices**: CoinGecko API (free, auto-conversion BTC→EUR)
 
 **Benchmark gaps**: 5 statuses (dans_la_cible, sous/sur_pondere_modere/fort)
+
+**Recommendations** (v2.1.4+): 2-phase system (dynamic + risk-based)
+- **Knowledge validation**: Web consensus (min 2 sources), median value extraction
+- **Search engines**: Tavily (AI-optimized) + Brave (market comparisons)
+- **Cache**: Time-based expiration (3 months best practices, 1 month fees/yields)
