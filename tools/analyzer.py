@@ -366,27 +366,27 @@ class PatrimoineAnalyzer:
                         detail = f"{etab_nom} (CTO)"
                     elif "assurance" in type_compte and "vie" in type_compte:
                         # Assurance-vie: diviser entre UC (actions) et fonds euro (obligations)
-                        fonds = compte.get("fonds", [])
-                        if fonds:
-                            # AV avec détail des fonds
-                            for fond in fonds:
-                                fond_montant = fond.get("montant", 0)
-                                fond_nom = fond.get("nom", "").lower()
-                                if "euro" in fond_nom:
+                        positions = compte.get("positions", [])
+                        if positions:
+                            # AV avec détail des positions
+                            for position in positions:
+                                position_montant = position.get("montant", 0)
+                                position_nom = position.get("nom", "").lower()
+                                if "euro" in position_nom:
                                     actifs_detailles.append({
                                         "type_actif": "Obligations",
                                         "etablissement": f"{etab_nom} (AV - Fonds Euro)",
-                                        "montant": fond_montant
+                                        "montant": position_montant
                                     })
                                 else:
                                     actifs_detailles.append({
                                         "type_actif": "Actions",
                                         "etablissement": f"{etab_nom} (AV - UC)",
-                                        "montant": fond_montant
+                                        "montant": position_montant
                                     })
                             continue  # Skip l'ajout global de l'AV
                         else:
-                            # AV sans détail des fonds: considérer comme mixte (50% UC / 50% Fonds Euro)
+                            # AV sans détail des positions: considérer comme mixte (50% UC / 50% Fonds Euro)
                             # ou simplement comme Actions si pas d'info
                             type_actif = "Actions"
                             detail = f"{etab_nom} (Assurance-vie)"
@@ -1040,9 +1040,9 @@ class PatrimoineAnalyzer:
                     exposition_actions += montant
                 elif type_compte == "Assurance-vie":
                     # Compter UC comme actions
-                    for fond in compte.get("fonds", []):
-                        if "euro" not in fond.get("nom", "").lower():
-                            exposition_actions += fond.get("montant", 0)
+                    for position in compte.get("positions", []):
+                        if "euro" not in position.get("nom", "").lower():
+                            exposition_actions += position.get("montant", 0)
 
         # Ajouter les cryptomonnaies (pondération partielle - croissance alternative)
         # Pondération 50% : reflète potentiel long terme sans surestimer

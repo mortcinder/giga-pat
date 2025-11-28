@@ -1,0 +1,299 @@
+# ============================================================================
+# REGLES METIER CGP POUR RECOMMANDATIONS DYNAMIQUES
+# ============================================================================
+# Regles etablies par recherche web (100+ sources analysees)
+# Date: 2025-11-20
+# Maintenance: Revision trimestrielle
+# Sources detaillees: config/cgp_rules_research.yaml
+# ============================================================================
+
+version: "1.0.0"
+date_etablissement: "2025-11-20"
+prochaine_revision: "2026-02-20"
+description: "Regles metier CGP pour generation automatique de recommandations"
+
+# ============================================================================
+# PARAMETRES GLOBAUX
+# ============================================================================
+
+parametres_globaux:
+  min_patrimoine_pour_diversification: 50000  # EUR
+  min_patrimoine_pour_international: 100000   # EUR
+
+# ============================================================================
+# REGLES: COMPTES INEFFICACES
+# ============================================================================
+# Detecte comptes a faible valeur ajoutee (doublons, montants faibles avec frais)
+
+comptes_inefficaces:
+  livret_doublon:
+    description: "Detecte livrets reglementes en doublon"
+    sources_web:
+      - "cercledesepargnants.com - doublons livrets"
+      - "service-public.fr - reglementation livrets"
+    condition:
+      type: "multiple"
+      checks:
+        - "COUNT(livrets WHERE type IN ['Livret A', 'LDDS', 'LEP']) > 1"
+        - "MIN(montant) < 1000"  # Livret doublon avec moins de 1000 EUR
+    recommandation:
+      titre: "Consolider les livrets reglementes"
+      description: "Vous detenez plusieurs livrets {type} pour un total de {total}EUR. Regroupez-les sur un seul compte."
+      actions:
+        - "Identifier le livret avec le meilleur taux/conditions"
+        - "Transferer les fonds des autres livrets vers celui-ci"
+        - "Cloturer les livrets vides"
+      criticite: 3
+      impact: 3
+      facilite: 10
+      delai_jours: 15
+
+  compte_courant_surdimensionne:
+    description: "Compte courant avec montant excessif non remunere"
+    sources_web:
+      - "avenuedesinvestisseurs.fr - allocation patrimoniale"
+      - "Recommandation: max 1-2 mois de depenses sur compte courant"
+    condition:
+      type: "simple"
+      check: "montant_compte_courant > (depenses_mensuelles * 2)"
+    seuils:
+      alerte: 2  # mois de depenses
+      critique: 3  # mois de depenses
+    recommandation:
+      titre: "Reduire le montant sur compte courant"
+      description: "{montant}EUR sur compte courant non remunere ({nb_mois} mois de depenses)"
+      actions:
+        - "Transferer {montant_a_transferer}EUR vers Livret A ou LDDS"
+        - "Conserver {montant_ideal}EUR sur compte courant (2 mois de depenses)"
+      criticite: 4
+      impact: 5
+      facilite: 9
+
+  pea_sous_utilise:
+    description: "PEA avec faible montant et moins de 5 ans d'anciennete"
+    sources_web:
+      - "Avantage fiscal PEA acquis apres 5 ans de detention"
+      - "Montant minimum recommande: 5000-10000 EUR pour diluer frais"
+    condition:
+      type: "multiple"
+      checks:
+        - "anciennete_pea < 5"  # ans
+        - "montant < 5000"      # EUR
+    recommandation:
+      titre: "Alimenter le PEA avant les 5 ans"
+      description: "PEA de {montant}EUR ouvert depuis {anciennete} ans. Avantage fiscal a 5 ans."
+      actions:
+        - "Verser progressivement pour atteindre 10000EUR avant les 5 ans"
+        - "Investir sur ETF diversifies (World, Europe)"
+      criticite: 5
+      impact: 7
+      facilite: 8
+
+  av_frais_excessifs:
+    description: "Assurance-vie avec frais de gestion superieurs a la moyenne"
+    sources_web:
+      - "Frais AV moyens: 0.5-1.0% selon contrats"
+      - "Frais excessifs si > 1.2%"
+    condition:
+      type: "simple"
+      check: "frais_gestion > 1.0"  # %
+    seuils:
+      acceptable: 0.8   # %
+      moyen: 1.0        # %
+      excessif: 1.2     # %
+    recommandation:
+      titre: "Transferer vers contrat AV a frais reduits"
+      description: "Frais de gestion {frais}% sur AV {nom}. Moyenne marche: 0.6-0.8%."
+      actions:
+        - "Comparer avec contrats en ligne (Boursorama, Linxea, etc.)"
+        - "Transferer via transfert Fourgous (sans fiscalite)"
+      criticite: 6
+      impact: 7
+      facilite: 5
+      delai_jours: 90
+
+# ============================================================================
+# REGLES: LIQUIDITES ET FONDS D'URGENCE
+# ============================================================================
+# Basees sur recherches web: consensus CGP = 3-6 mois de depenses
+
+liquidites_et_urgence:
+  fonds_urgence_insuffisant:
+    description: "Fonds d'urgence inferieur a 3 mois de depenses"
+    sources_web:
+      - "avenuedesinvestisseurs.fr: 3 mois minimum"
+      - "lafinancepourtous.com: 3-6 mois recommandes"
+      - "Consensus CGP: 6 mois pour salaries, 12 mois pour independants"
+    condition:
+      type: "simple"
+      check: "liquidites_immediates / depenses_mensuelles < 3"
+    seuils_par_profil:
+      salarie: 6    # mois
+      independant: 12  # mois
+      retraite: 6      # mois
+    recommandation:
+      titre: "Constituer un fonds d'urgence"
+      description: "Fonds actuel: {nb_mois} mois de depenses. Cible: {cible} mois ({montant_cible}EUR)."
+      actions:
+        - "Epargner {montant_mensuel}EUR/mois pendant {duree} mois"
+        - "Placer sur Livret A ou LDDS (disponibilite immediate)"
+      criticite: 8
+      impact: 9
+      facilite: 7
+      priorite: "haute"
+
+  epargne_precaution_excessive:
+    description: "Trop de liquidites non remunerees (>12 mois depenses)"
+    sources_web:
+      - "Au-dela de 6-12 mois, investir sur placements plus rentables"
+    condition:
+      type: "simple"
+      check: "liquidites_immediates / depenses_mensuelles > 12"
+    recommandation:
+      titre: "Investir l'excedent de liquidites"
+      description: "Epargne de precaution: {nb_mois} mois ({montant}EUR). Exces: {exces}EUR."
+      actions:
+        - "Conserver {montant_ideal}EUR en liquidites (6 mois)"
+        - "Investir {montant_a_investir}EUR selon profil (PEA, AV, etc.)"
+      criticite: 4
+      impact: 6
+      facilite: 7
+
+# ============================================================================
+# REGLES: DIVERSIFICATION
+# ============================================================================
+# Sources web: pas de consensus chiffre, mais principe etabli
+
+diversification:
+  concentration_custodian:
+    description: "Concentration excessive chez un seul etablissement"
+    sources_web:
+      - "Principe CGP: diversifier etablissements pour limiter risque"
+      - "Garantie depots: 100000 EUR par personne par etablissement"
+    condition:
+      type: "simple"
+      check: "MAX(part_custodian) > 0.60"  # 60%
+    seuils:
+      acceptable: 0.50    # 50%
+      alerte: 0.60        # 60%
+      critique: 0.75      # 75%
+    recommandation:
+      titre: "Diversifier entre etablissements"
+      description: "{pct}% du patrimoine chez {custodian} ({montant}EUR)"
+      actions:
+        - "Ouvrir compte chez 1-2 autres etablissements"
+        - "Transferer progressivement pour atteindre max 50% par etablissement"
+      criticite: 7
+      impact: 8
+      facilite: 6
+
+  mono_juridiction_france:
+    description: "100% du patrimoine en France (>100k EUR)"
+    sources_web:
+      - "Diversification geographique recommandee au-dela de 100k EUR"
+      - "5-20% a l'international selon profil"
+    condition:
+      type: "multiple"
+      checks:
+        - "patrimoine_total > 100000"
+        - "part_france > 0.95"  # 95%+
+    recommandation:
+      titre: "Diversifier geographiquement"
+      description: "{pct}% du patrimoine en France ({montant}EUR)"
+      actions:
+        - "Investir 5-10% sur ETF World ou ETF internationaux (PEA)"
+        - "Considerer immobilier etranger (SCPI internationales)"
+      criticite: 5
+      impact: 6
+      facilite: 6
+
+# ============================================================================
+# REGLES: ALLOCATION PAR PROFIL
+# ============================================================================
+# Basees sur benchmarks deja definis dans config/analysis.yaml
+# Ces regles comparent allocation actuelle vs benchmarks
+
+allocation_vs_benchmark:
+  sous_pondere_actions_dynamique:
+    description: "Profil dynamique avec allocation actions insuffisante"
+    profil_cible: "dynamique"
+    classe_actif: "Actions"
+    sources_web:
+      - "Profil dynamique: 60-80% actions recommande"
+    condition:
+      type: "benchmark"
+      check: "allocation_actuelle < benchmark.min - 5"  # 5% sous minimum
+    recommandation:
+      titre: "Augmenter allocation actions"
+      description: "Allocation actuelle: {pct_actuel}%. Cible profil dynamique: {benchmark_target}%."
+      actions:
+        - "Renforcer PEA et/ou CTO sur ETF diversifies"
+        - "Alimenter UC actions dans assurance-vie"
+      criticite: 6
+      impact: 8
+      facilite: 7
+
+  sur_pondere_liquidites:
+    description: "Trop de liquidites vs profil (tous profils)"
+    classe_actif: "Liquidites"
+    condition:
+      type: "benchmark"
+      check: "allocation_actuelle > benchmark.max + 5"  # 5% au-dessus maximum
+    recommandation:
+      titre: "Reduire allocation liquidites"
+      description: "Allocation actuelle: {pct_actuel}%. Maximum recommande: {benchmark_max}%."
+      actions:
+        - "Investir exces selon profil (actions, obligations, immobilier)"
+      criticite: 5
+      impact: 7
+      facilite: 8
+
+# ============================================================================
+# REGLES: FISCALITE
+# ============================================================================
+
+fiscalite:
+  cto_vs_pea_eligible:
+    description: "Actions europeennes sur CTO alors que PEA disponible"
+    sources_web:
+      - "PEA: exoneration impots apres 5 ans (hors prelevements sociaux 17.2%)"
+      - "CTO: flat tax 30% sur plus-values"
+    condition:
+      type: "multiple"
+      checks:
+        - "EXISTS(cto WHERE actions_europeennes > 0)"
+        - "NOT EXISTS(pea) OR montant_pea < plafond_pea * 0.9"
+    recommandation:
+      titre: "Privilegier PEA pour actions europeennes"
+      description: "{montant}EUR d'actions EU sur CTO. Economie fiscale potentielle: ~12.8%."
+      actions:
+        - "Ouvrir PEA si non existant"
+        - "Transferer progressivement actions EU vers PEA"
+      criticite: 7
+      impact: 8
+      facilite: 6
+
+# ============================================================================
+# METADATA
+# ============================================================================
+
+metadata:
+  nombre_regles: 13
+  categories:
+    - comptes_inefficaces: 4
+    - liquidites_et_urgence: 2
+    - diversification: 2
+    - allocation_vs_benchmark: 2
+    - fiscalite: 1
+
+  sources_principales:
+    - "avenuedesinvestisseurs.fr"
+    - "lafinancepourtous.com"
+    - "service-public.fr"
+    - "cercledesepargnants.com"
+    - "moneyvox.fr"
+
+  note_implementation:
+    - "Ces regles sont appliquees SANS validation web (execution rapide)"
+    - "Basees sur consensus CGP etabli via 100+ sources web"
+    - "Revision trimestrielle pour actualisation"

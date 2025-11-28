@@ -299,18 +299,18 @@ class PortfolioOptimizer:
                             }
                         )
 
-                # 2. Extraire les fonds d'assurance-vie (SAUF fonds euro et monétaires)
-                for fonds in compte.get("fonds", []):
-                    montant = fonds.get("montant", 0)
+                # 2. Extraire les positions d'assurance-vie (SAUF fonds euro et monétaires)
+                for position in compte.get("positions", []):
+                    montant = position.get("montant", 0)
                     if montant > 0:
-                        nom_fonds = fonds.get("nom", "").lower()
-                        asset_class = self._classify_fonds(nom_fonds)
+                        nom_position = position.get("nom", "").lower()
+                        asset_class = self._classify_fonds(nom_position)
 
                         # EXCLUSION: Fonds euro et immobilier (non liquides)
                         if asset_class not in ["fonds_euro", "immobilier"]:
                             positions.append(
                                 {
-                                    "ticker": fonds.get("nom", "FONDS"),
+                                    "ticker": position.get("nom", "FONDS"),
                                     "valeur": montant,
                                     "classe": asset_class,
                                 }

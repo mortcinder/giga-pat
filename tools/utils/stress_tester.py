@@ -123,9 +123,9 @@ class StressTester:
 
                 elif compte_type == "Assurance-vie":
                     # Extraction UC (hors fonds euro)
-                    for fond in compte.get("fonds", []):
-                        if "euro" not in fond.get("nom", "").lower():
-                            exposition_actions += fond.get("montant", 0)
+                    for position in compte.get("positions", []):
+                        if "euro" not in position.get("nom", "").lower():
+                            exposition_actions += position.get("montant", 0)
 
         # Impact -30% sur actions
         perte = exposition_actions * 0.30

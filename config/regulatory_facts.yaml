@@ -1,0 +1,118 @@
+# ============================================================================
+# FAITS RÉGLEMENTAIRES OFFICIELS
+# ============================================================================
+# Sources légales et réglementaires vérifiées manuellement.
+# Ces données sont figées et ne nécessitent PAS de recherche web.
+# Mise à jour manuelle recommandée : 1 fois/an
+#
+# Note : Ce fichier utilise des sources officielles (Code monétaire, CGI, etc.)
+# pour éviter des appels API inutiles sur des données stables.
+# ============================================================================
+
+version: "1.0.0"
+description: "Limites légales et réglementaires pour recommandations patrimoniales"
+last_updated: "2025-11-20"
+
+# ============================================================================
+# LIMITES RÉGLEMENTAIRES OFFICIELLES
+# ============================================================================
+
+limites_reglementaires:
+  # --------------------------------------------------------------------------
+  # Garanties et protections
+  # --------------------------------------------------------------------------
+
+  garantie_depots_fgdr:
+    valeur: 100000
+    devise: "EUR"
+    source: "FGDR - Fonds de Garantie des Dépôts et de Résolution"
+    url: "https://www.garantiedesdepots.fr/"
+    reference_legale: "Directive 2014/49/UE"
+    description: "Garantie des dépôts par établissement bancaire"
+    type: "protection"
+
+  # --------------------------------------------------------------------------
+  # Plafonds de versement
+  # --------------------------------------------------------------------------
+
+  plafond_pea:
+    valeur: 150000
+    devise: "EUR"
+    source: "Code monétaire et financier"
+    url: "https://www.legifrance.gouv.fr/"
+    reference_legale: "Article L221-30 CMF"
+    description: "Plafond de versement sur Plan d'Épargne en Actions"
+    type: "plafond"
+
+  plafond_livret_a:
+    valeur: 22950
+    devise: "EUR"
+    source: "Ministère de l'Économie"
+    url: "https://www.economie.gouv.fr/particuliers/livret-epargne-populaire"
+    reference_legale: "Décret n°2008-1261"
+    description: "Plafond de dépôt sur Livret A"
+    type: "plafond"
+    date_derniere_modification: "2021-08-01"
+
+  plafond_ldd:
+    valeur: 12000
+    devise: "EUR"
+    source: "Ministère de l'Économie"
+    url: "https://www.economie.gouv.fr/"
+    reference_legale: "Article L221-27 CMF"
+    description: "Plafond de dépôt sur Livret de Développement Durable"
+    type: "plafond"
+
+  # --------------------------------------------------------------------------
+  # Fiscalité
+  # --------------------------------------------------------------------------
+
+  abattement_av_8ans:
+    valeur: 4600
+    devise: "EUR"
+    source: "Code général des impôts"
+    url: "https://www.impots.gouv.fr/"
+    reference_legale: "Article 125-0 A du CGI"
+    description: "Abattement annuel sur rachat assurance-vie de plus de 8 ans (personne seule)"
+    type: "fiscalite"
+    note: "9 200 € pour un couple marié ou pacsé"
+
+  abattement_av_8ans_couple:
+    valeur: 9200
+    devise: "EUR"
+    source: "Code général des impôts"
+    url: "https://www.impots.gouv.fr/"
+    reference_legale: "Article 125-0 A du CGI"
+    description: "Abattement annuel sur rachat assurance-vie de plus de 8 ans (couple)"
+    type: "fiscalite"
+
+  taux_pfu:
+    valeur: 30
+    unite: "pourcentage"
+    source: "Prélèvement Forfaitaire Unique (Flat Tax)"
+    url: "https://www.service-public.fr/particuliers/vosdroits/F2329"
+    reference_legale: "Article 200 A du CGI"
+    description: "Taux du PFU sur revenus mobiliers (12,8% IR + 17,2% PS)"
+    type: "fiscalite"
+    detail:
+      impot_revenu: 12.8
+      prelevements_sociaux: 17.2
+
+# ============================================================================
+# RECOMMANDATIONS DE MAINTENANCE
+# ============================================================================
+
+maintenance:
+  frequence_revision: "annuelle"
+  prochaine_revision: "2026-11-20"
+  responsable: "Patrimoine Analyzer"
+
+  alertes:
+    # Générer une alerte si last_updated > 12 mois
+    delai_alerte_mois: 12
+    message: "Vérifier que les limites réglementaires sont toujours d'actualité"
+
+  sources_surveillance:
+    - "https://www.legifrance.gouv.fr/ (modifications CMF/CGI)"
+    - "https://www.amf-france.org/ (nouvelles réglementations)"
+    - "https://www.economie.gouv.fr/ (plafonds livrets réglementés)"

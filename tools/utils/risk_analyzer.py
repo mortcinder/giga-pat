@@ -452,9 +452,9 @@ class RiskAnalyzer:
                     exposition_actions += compte.get("montant", 0)
                 elif compte.get("type") == "Assurance-vie":
                     # UC sauf fonds euro
-                    for fond in compte.get("fonds", []):
-                        if "euro" not in fond.get("nom", "").lower():
-                            exposition_actions += fond.get("montant", 0)
+                    for position in compte.get("positions", []):
+                        if "euro" not in position.get("nom", "").lower():
+                            exposition_actions += position.get("montant", 0)
 
         total_patrimoine = data["patrimoine"]["financier"]["total"]
         if total_patrimoine > 0:
@@ -721,11 +721,17 @@ class RiskAnalyzer:
         # 2. Actifs crypto (volatilité devise)
         montant_crypto = data.get("patrimoine", {}).get("crypto", {}).get("total", 0)
 
-        # 3. Immobilier étranger
+        # 3. Immobilier étranger (basé sur currency ou juridiction_pays)
         montant_immo_etranger = 0
         for bien in data.get("patrimoine", {}).get("immobilier", {}).get("biens", []):
-            adresse = bien.get("adresse", "").lower()
-            if "france" not in adresse and bien.get("valeur_actuelle", 0) > 0:
+            # Vérifier currency (EUR = France) ou juridiction_pays dans metadata
+            currency = bien.get("currency", "EUR").upper()
+            juridiction_pays = bien.get("metadata", {}).get("juridiction_pays", "France")
+
+            # Considérer comme étranger uniquement si currency != EUR ou juridiction_pays != France
+            is_foreign = currency != "EUR" or (juridiction_pays and juridiction_pays.lower() != "france")
+
+            if is_foreign and bien.get("valeur_actuelle", 0) > 0:
                 montant_immo_etranger += bien.get("valeur_actuelle", 0)
 
         total_exposition = montant_usd + montant_crypto + montant_immo_etranger
@@ -1036,8 +1042,8 @@ class RiskAnalyzer:
                     exposition_actions += compte.get("montant", 0)
                 elif compte.get("type") == "Assurance-vie":
                     # UC sauf fonds euro
-                    for fond in compte.get("fonds", []):
-                        if "euro" not in fond.get("nom", "").lower():
-                            exposition_actions += fond.get("montant", 0)
+                    for position in compte.get("positions", []):
+                        if "euro" not in position.get("nom", "").lower():
+                            exposition_actions += position.get("montant", 0)
 
         return exposition_actions

@@ -230,7 +230,9 @@ class PatrimoineNormalizer:
                 parsed["source_file"] = compte_def.get("source_file", compte_def.get("source_pattern", ""))
 
                 comptes_parsed.append(parsed)
-                self.logger.info(f"    ✓ {len(parsed.get('positions', parsed.get('fonds', [])))} éléments parsés")
+                # Parser retourne "positions" (normalisé)
+                elements = parsed.get('positions', [])
+                self.logger.info(f"    ✓ {len(elements)} éléments parsés")
 
             except Exception as e:
                 self.logger.error(f"    ✗ Échec parsing {compte_id}: {e}")
@@ -311,7 +313,8 @@ class PatrimoineNormalizer:
             # Parser le fichier
             self.logger.info(f"      Parsing {file_name}...")
             parsed = self._parse_compte_with_strategy(compte_def, filepath)
-            positions = parsed.get('positions', parsed.get('fonds', []))
+            # Récupérer positions (structure normalisée)
+            positions = parsed.get('positions', [])
             all_positions.extend(positions)
 
             # Sauvegarder dans le cache si applicable
@@ -508,11 +511,12 @@ class PatrimoineNormalizer:
                 "montant": compte.get("montant", 0)
             }
 
-            # Ajouter positions ou fonds si présents
+            # Ajouter positions (normaliser "fonds" en "positions" pour homogénéité)
             if "positions" in compte:
                 compte_entry["positions"] = compte["positions"]
-            if "fonds" in compte:
-                compte_entry["fonds"] = compte["fonds"]
+            elif "fonds" in compte:
+                # Convertir "fonds" en "positions" pour homogénéité de structure
+                compte_entry["positions"] = compte["fonds"]
             if "solde_especes" in compte:
                 compte_entry["solde_especes"] = compte["solde_especes"]
             if "source_file" in compte:
@@ -592,8 +596,8 @@ class PatrimoineNormalizer:
                             continue
                         parsed = self._parse_compte_with_strategy(crypto, filepath)
 
-                    # Traiter chaque position parsée
-                    positions = parsed.get('positions', parsed.get('fonds', []))
+                    # Traiter chaque position parsée (structure normalisée)
+                    positions = parsed.get('positions', [])
                     for pos in positions:
                         ticker = pos.get('ticker', pos.get('nom', 'UNKNOWN'))
                         quantite = pos.get('quantite', 0)

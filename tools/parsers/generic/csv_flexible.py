@@ -16,9 +16,9 @@ class GenericCSVParser(BaseParser):
     COLUMN_MAPPINGS = {
         'ticker': ['ticker', 'symbole', 'code', 'isin', 'ticker/isin'],
         'quantite': ['quantite', 'quantity', 'qté', 'nombre', 'quantité'],
-        'prix': ['prix', 'price', 'cours', 'valeur_unitaire', 'prix_unitaire', 'prix unitaire'],
+        'prix': ['prix', 'price', 'cours', 'valeur_unitaire', 'prix_unitaire', 'prix unitaire', 'clôture'],
         'valeur': ['valeur', 'value', 'montant', 'total', 'valeur_totale', 'valeur totale', 'montant en eur'],
-        'nom': ['nom', 'name', 'libelle', 'libellé', 'description', 'designation', 'désignation']
+        'nom': ['nom', 'name', 'libelle', 'libellé', 'description', 'designation', 'désignation', 'produit']
     }
 
     @property

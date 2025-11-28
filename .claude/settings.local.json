@@ -30,7 +30,11 @@
       "Bash(git branch:*)",
       "Bash(git commit:*)",
       "Bash(timeout 90 python3:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(C:/Python310/python.exe main.py)",
+      "Bash(C:/Python310/python.exe:*)",
+      "Bash(findstr:*)",
+      "Bash(where:*)"
     ],
     "deny": [],
     "ask": []
