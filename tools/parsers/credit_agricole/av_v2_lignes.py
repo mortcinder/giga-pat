@@ -88,20 +88,20 @@ class CreditAgricoleAV2LignesParser(BaseParser):
                         if table:
                             all_tables.append(table)
 
-                # Parser les fonds
-                fonds = self._parse_av_tables(all_tables)
+                # Parser les fonds (positions dans l'AV)
+                positions = self._parse_av_tables(all_tables)
 
                 # Calculer montant total
-                montant_total = sum(f["montant"] for f in fonds)
+                montant_total = sum(f["montant"] for f in positions)
 
                 return {
                     "type": "Assurance-vie",
                     "montant": montant_total,
-                    "fonds": fonds,
+                    "positions": positions,  # Utiliser "positions" pour homogénéité
                     "metadata_parsing": {
                         "parser_used": self.strategy_name,
                         "parsed_at": datetime.now().isoformat(),
-                        "nb_fonds": len(fonds),
+                        "nb_positions": len(positions),
                         "warnings": []
                     }
                 }
@@ -114,7 +114,7 @@ class CreditAgricoleAV2LignesParser(BaseParser):
         anomalies = []
 
         # Vérifier cohérence montant
-        total_calc = sum(f["montant"] for f in parsed_data.get("fonds", []))
+        total_calc = sum(f["montant"] for f in parsed_data.get("positions", []))
         montant_declare = parsed_data.get("montant", 0)
 
         if abs(total_calc - montant_declare) > 1.0:  # Tolérance 1€
@@ -123,17 +123,17 @@ class CreditAgricoleAV2LignesParser(BaseParser):
                 f"(calculé: {total_calc:.2f}€ vs déclaré: {montant_declare:.2f}€)"
             )
 
-        # Vérifier au moins un fonds
-        if not parsed_data.get("fonds"):
-            anomalies.append("Aucun fonds détecté dans le PDF")
+        # Vérifier au moins une position
+        if not parsed_data.get("positions"):
+            anomalies.append("Aucune position détectée dans le PDF")
 
         # Vérifier valeurs positives
         if montant_declare < 0:
             anomalies.append(f"Montant total négatif : {montant_declare:.2f}€")
 
-        for fonds in parsed_data.get("fonds", []):
-            if fonds.get("montant", 0) < 0:
-                anomalies.append(f"Valeur négative pour fonds : {fonds.get('nom')}")
+        for position in parsed_data.get("positions", []):
+            if position.get("montant", 0) < 0:
+                anomalies.append(f"Valeur négative pour position : {position.get('nom')}")
 
         return anomalies
 

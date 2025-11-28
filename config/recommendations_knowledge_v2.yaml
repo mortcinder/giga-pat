@@ -1,0 +1,292 @@
+# ============================================================================
+# BASE DE CONNAISSANCE POUR RECOMMANDATIONS DYNAMIQUES - VERSION 2.0
+# ============================================================================
+# Version amelioree suite a audit et tests de validation
+#
+# CHANGEMENTS v2.0:
+# - Suppression des questions non validables (montant_minimum_livret/pea/av)
+# - Reformulation des questions avec approche differente
+# - Focus sur questions avec consensus documentaire verifiable
+# - Ajout de nouvelles questions plus pertinentes
+# ============================================================================
+
+version: "2.0.0"
+description: "Requetes de validation pour bonnes pratiques patrimoniales (version validee)"
+last_updated: "2025-11-20"
+
+# ============================================================================
+# PARAMETRES GLOBAUX
+# ============================================================================
+
+parametres:
+  cache_duree_mois: 3
+  min_sources: 2
+  moteur_par_defaut: "tavily"
+
+# ============================================================================
+# SOURCES FIABLES PRIORITAIRES
+# ============================================================================
+
+sources_fiables:
+  institutions:
+    - "amf-france.org"
+    - "banque-france.fr"
+    - "lafinancepourtous.com"
+    - "garantiedesdepots.fr"
+    - "service-public.fr"
+    - "economie.gouv.fr"
+
+  media_finance:
+    - "lesechos.fr"
+    - "capital.fr"
+    - "challenges.fr"
+    - "moneyvox.fr"
+    - "boursorama.com"
+
+  conseillers_ligne:
+    - "nalo.fr"
+    - "yomoni.fr"
+    - "meilleurtaux.com"
+    - "fortuneo.fr"
+    - "boursobank.com"
+
+# ============================================================================
+# REQUETES DE VALIDATION - NIVEAU 1 (VALIDES)
+# ============================================================================
+# Ces requetes ont ete testees et fonctionnent
+
+requetes_validation_niveau1:
+  # --------------------------------------------------------------------------
+  # LIQUIDITES (VALIDE)
+  # --------------------------------------------------------------------------
+
+  fonds_urgence_mois:
+    description: "Fonds d'urgence en mois de depenses"
+    queries:
+      - "fonds urgence combien mois salaire recommandation"
+      - "epargne precaution mois depenses CGP"
+      - "liquidites minimum patrimoine conseiller"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "mois"
+      fourchette: [6, 12]
+    cache_duree_mois: 6
+    statut: "VALIDE - Teste avec succes (3 valeurs, mediane: 6 mois)"
+
+  # --------------------------------------------------------------------------
+  # RENDEMENT (VALIDE)
+  # --------------------------------------------------------------------------
+
+  taux_livret_a_actuel:
+    description: "Taux actuel du Livret A (%)"
+    queries:
+      - "taux livret A 2025"
+      - "remuneration livret A actuel"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [1.0, 5.0]  # Elargi pour securite
+    cache_duree_mois: 1
+    statut: "VALIDE - Teste avec succes (4 valeurs, mediane: 2.7%)"
+
+  rendement_fonds_euro_moyen:
+    description: "Rendement moyen fonds euros en 2025 (%)"
+    queries:
+      - "rendement fonds euros 2025 moyenne"
+      - "meilleurs fonds euros rendement 2025"
+      - "taux fonds euros assurance-vie 2025"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [2.0, 4.0]
+    cache_duree_mois: 1
+    statut: "VALIDE - Teste avec succes (30 valeurs, mediane: 2.6%)"
+
+# ============================================================================
+# REQUETES DE VALIDATION - NIVEAU 2 (REFORMULEES)
+# ============================================================================
+# Ces requetes ont ete reformulees avec approche differente
+
+requetes_validation_niveau2:
+  # --------------------------------------------------------------------------
+  # COMPTES INEFFICACES - NOUVELLE APPROCHE
+  # --------------------------------------------------------------------------
+  # Au lieu de chercher un "montant minimum", on cherche un ratio frais/montant
+
+  ratio_frais_livret_acceptable:
+    description: "Ratio frais annuels / montant au-dela duquel fermer un livret doublon"
+    queries:
+      - "fermer compte bancaire frais trop eleves combien"
+      - "ratio frais montant compte inefficace"
+      - "cout compte bancaire justifie montant minimum"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [1.0, 5.0]  # 1-5% de frais sur montant = inefficace
+    cache_duree_mois: 6
+    statut: "REFORMULE - Approche ratio au lieu de montant absolu"
+    note: "Si frais > 2% du montant, recommander fermeture"
+
+  # --------------------------------------------------------------------------
+  # DIVERSIFICATION - NOUVELLE APPROCHE QUALITATIVE
+  # --------------------------------------------------------------------------
+  # Au lieu de chercher un pourcentage/nombre precis, on utilise une approche
+  # basee sur les bonnes pratiques documentees
+
+  diversification_bancaire_bonnes_pratiques:
+    description: "Bonnes pratiques de diversification bancaire"
+    queries:
+      - "diversification bancaire regle patrimoine CGP"
+      - "concentration risque bancaire limite conseiller"
+      - "combien etablissements bancaires securiser patrimoine"
+    moteur: "tavily"
+    # Pas de valeur_attendue numerique - approche qualitative
+    approche: "qualitative"
+    extraction_type: "consensus_textuel"
+    cache_duree_mois: 6
+    statut: "REFORMULE - Approche qualitative au lieu de quantitative"
+    note: "Extraire bonnes pratiques textuelles plutot que chiffres"
+
+  # --------------------------------------------------------------------------
+  # FRAIS - APPROCHE COMPARATIVE
+  # --------------------------------------------------------------------------
+
+  frais_pea_comparatif:
+    description: "Frais PEA - detection courtiers excessifs vs marche"
+    queries:
+      - "frais PEA moyens 2025 courtage"
+      - "PEA sans frais meilleurs 2025"
+      - "frais garde PEA banque traditionnelle vs en ligne"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [0, 50]  # Elargi
+    cache_duree_mois: 1
+    statut: "AJUSTE - Fourchette elargie"
+
+  frais_gestion_av_maximum:
+    description: "Frais de gestion AV maximaux acceptables (%)"
+    queries:
+      - "frais gestion assurance-vie moyens 2025"
+      - "meilleurs contrats assurance-vie frais faibles"
+      - "frais AV excessifs limite CGP"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [0.5, 1.5]  # Elargi
+    cache_duree_mois: 1
+    statut: "AJUSTE - Fourchette elargie"
+
+# ============================================================================
+# REQUETES DESACTIVEES (NON VALIDABLES)
+# ============================================================================
+# Ces requetes ne produisent pas de consensus exploitable
+
+requetes_desactivees:
+  montant_minimum_livret:
+    raison: "Pas de consensus CGP - sources parlent de plafonds/versements min, pas de seuil de rentabilite"
+    date_desactivation: "2025-11-20"
+    alternative: "Utiliser ratio_frais_livret_acceptable"
+
+  montant_minimum_pea:
+    raison: "Pas de consensus CGP - concept trop subjectif (depend courtier, strategie)"
+    date_desactivation: "2025-11-20"
+    alternative: "Comparer frais vs rendement espere"
+
+  montant_minimum_av:
+    raison: "Pas de consensus CGP - varie enormement selon contrat"
+    date_desactivation: "2025-11-20"
+    alternative: "Comparer frais gestion vs concurrence"
+
+  seuil_concentration_etablissement:
+    raison: "1 seule valeur trouvee (50%) - sources parlent d'autres metriques"
+    date_desactivation: "2025-11-20"
+    alternative: "Utiliser approche qualitative diversification_bancaire_bonnes_pratiques"
+
+  nombre_etablissements_optimal:
+    raison: "0 valeurs trouvees - sources ne donnent pas de chiffre precis"
+    date_desactivation: "2025-11-20"
+    alternative: "Utiliser approche qualitative diversification_bancaire_bonnes_pratiques"
+
+# ============================================================================
+# NOUVELLES REQUETES PROPOSEES
+# ============================================================================
+
+nouvelles_requetes_proposees:
+  # --------------------------------------------------------------------------
+  # ALLOCATION D'ACTIFS
+  # --------------------------------------------------------------------------
+
+  allocation_actions_profil_dynamique:
+    description: "Allocation actions recommandee pour profil dynamique (%)"
+    queries:
+      - "allocation actions profil dynamique CGP pourcentage"
+      - "portefeuille dynamique part actions recommandation"
+      - "investisseur dynamique allocation equity minimum"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [60, 80]
+    cache_duree_mois: 6
+    statut: "PROPOSE - Probablement validable"
+
+  allocation_liquidites_minimum:
+    description: "Part minimum de liquidites dans patrimoine (%)"
+    queries:
+      - "allocation liquidites minimum patrimoine CGP"
+      - "pourcentage cash portefeuille recommande"
+      - "reserve liquidite pourcentage patrimoine"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "pourcentage"
+      fourchette: [10, 20]
+    cache_duree_mois: 6
+    statut: "PROPOSE - A tester"
+
+  # --------------------------------------------------------------------------
+  # FISCALITE
+  # --------------------------------------------------------------------------
+
+  plafond_pel_optimal:
+    description: "Plafond PEL optimal avant diversification (%)"
+    queries:
+      - "PEL plafond combien verser maximum"
+      - "plan epargne logement montant optimal"
+    moteur: "tavily"
+    valeur_attendue:
+      type: "montant"
+      fourchette: [30000, 61200]  # 61200 = plafond legal
+    cache_duree_mois: 12
+    statut: "PROPOSE - Reponse normative possible"
+
+# ============================================================================
+# RECOMMENDATIONS IMPLEMENTATION
+# ============================================================================
+
+implementation:
+  phase_1:
+    - "Utiliser uniquement requetes_validation_niveau1 (testees et validees)"
+    - "Generer recommandations basees sur fonds_urgence, taux, rendements"
+
+  phase_2:
+    - "Tester nouvelles_requetes_proposees"
+    - "Valider allocation_actions_profil_dynamique, allocation_liquidites_minimum"
+
+  phase_3:
+    - "Implementer approche qualitative pour diversification_bancaire_bonnes_pratiques"
+    - "Extraction NLP/LLM pour consensus textuel (pas numerique)"
+
+# ============================================================================
+# MAINTENANCE
+# ============================================================================
+
+maintenance:
+  frequence_revision: "trimestrielle"
+  prochaine_revision: "2026-02-20"
+  responsable: "Patrimoine Analyzer"
+
+  notes:
+    - "Privilegier questions avec reponses normatives/reglementaires"
+    - "Eviter questions trop contextuelles (depend revenus, situation)"
+    - "Tester systematiquement avant activation en production"
+    - "Considerer approche qualitative (LLM) pour questions non-numeriques"

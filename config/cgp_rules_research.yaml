@@ -1,0 +1,413 @@
+version: 1.0.0
+date_recherche: '2025-11-20'
+description: Regles metier CGP etablies par recherche web
+maintenance: Revision trimestrielle
+regles:
+  comptes_inefficaces:
+    description: Regles pour detecter comptes a faible valeur ajoutee
+    sources:
+    - url: https://www.lafinancepourtous.com/pratique/banque/le-compte-bancaire/ouvrir-et-fermer-un-compte/fermer-un-compte-bancaire/
+      titre: 'Fermeture d''un compte bancaire : comment clôturer son ...'
+      extrait: Selon la loi, la convention de compte peut être résiliée à tout moment,
+        sauf si la convention prévoit un préavis qui ne peut dépasser 30 jours (
+    - url: https://www.inc-conso.fr/content/le-compte-bancaire-la-cloture-du-compte
+      titre: 'Le compte bancaire : la clôture du compte'
+      extrait: La banque peut clôturer votre compte à tout moment, en respectant un
+        préavis raisonnable (un mois minimum) entre la notification de la décision
+    - url: https://www.service-public.gouv.fr/particuliers/vosdroits/F31456
+      titre: Clôture d'un compte bancaire par la banque - Service Public
+      extrait: La banque doit vous en informer par écrit. Elle doit respecter un délai
+        de 2 mois minimum avant la clôture du compte. Ce délai de préavis doit vous
+        permettre d
+    - url: https://www.notretemps.com/droit-argent/banque/banque-peut-fermer-compte-courant-vrai-faux-42682
+      titre: Votre banque peut fermer votre compte courant, vrai ou faux?
+      extrait: La loi prévoit un préavis de 60 jours minimum, à rappeler dans la convention
+        de compte. · La banque doit informer le client par courriel ou
+    - url: https://www.legifrance.gouv.fr/codes/id/LEGISCTA000020866609/
+      titre: Relations des établissements de crédit avec le client (Articles L312
+        ...
+      extrait: Au-delà de six mois, la convention de compte de dépôt peut être résiliée
+        sans frais. Dans les autres cas, les frais de résiliation doivent être proportionnés
+    - url: https://avenuedesinvestisseurs.fr/allocation-patrimoniale-repartition-allocation-ideale-actifs/
+      titre: 'Allocation patrimoniale : répartition/allocation idéale des ...'
+      extrait: 'Le monétaire : livret A, LDDS, autres livrets. Les français adorent,
+        mais il faut se contenter du minimum (3 mois de dépenses maximum en guise
+        d’épargne de précaution) car le rendement est ridicule, souvent sous l’inflation.
+        Comparez avec notre guide : les meilleurs placements sans risque. [...] ###'
+    - url: https://www.moneyvox.fr/placement/actualites/101737/livret-a-assurance-vie-lep-21-30-ou-100-ans-combien-annees-pour-doubler-votre-epargne
+      titre: Livret A, assurance vie, LEP... 21, 30 ou 100 ans ? ...
+      extrait: 'Trois ans en arrière, il vous fallait plus d''un demi-siècle pour
+        doubler votre patrimoine, 66 ans, plus exactement : désormais 34 ans « suffisent
+        ». Cela reste moins long que l''attente actuelle des Français pour avoir un
+        successeur à Bernard Hinault sur le Tour de France.
+
+
+        | Fonds euros au taux moye'
+    - url: https://www.cercledesepargnants.com/post/gare-aux-doublons-sur-les-livrets-d-%C3%A9pargne
+      titre: Gare aux doublons sur les livrets d'épargne
+      extrait: En cas de détention de plusieurs livrets d'épargne identiques, le titulaire
+        dispose de 2 mois pour régulariser sa situation. Passé ce délai, le
+    - url: https://placement.meilleurtaux.com/livret-epargne/actualites/2024-mars/detention-deux-livrets-epargne-reglementes-similaires-n-est-plus-autorisee.html
+      titre: La détention de deux livrets similaires n'est plus autorisée
+      extrait: Depuis le 1er janvier 2024, la détention de deux livrets d'épargne
+        réglementés similaires n'est plus autorisée par la loi.
+    - url: https://www.goodvest.fr/blog/livret/quels-livrets-depargne-cumuler
+      titre: Quels livrets d'épargne peut-on cumuler ?
+      extrait: Toutefois, une fois ce plafond atteint, vous pouvez compléter votre
+        épargne avec un Livret A, qui dispose d'un plafond plus élevé de 22 950 €.
+    date_etablissement: '2025-11-20'
+    regles_identifiees: A determiner apres analyse manuelle des sources
+  diversification_bancaire:
+    description: Regles de diversification entre etablissements
+    sources:
+    - url: https://www.observatoire-metiers-banque.fr/wp-content/uploads/2022/11/Referentieldesmetierscadresdanslabanque_apec-1.pdf
+      titre: '[PDF] –LES MÉTIERS DU SECTEUR DE LA BANQUE–'
+      extrait: particuliers et aux entre-prises, ainsi que la prise de participation,
+        des activités non bancaires… Début 2012, il existait 357 établissements de
+        crédit, dont les succursales d’entreprises de l’Espace écono-mique européen
+        exerçant en libre établissement (66). [...] atteint son pic en 1997-1998,
+        frap
+    - url: https://www.bankingsupervision.europa.eu/press/other-publications/annual-report/html/ssm.ar2024~700cba1314.fr.html
+      titre: Rapport annuel de la BCE sur ses activités prudentielles 2024
+      extrait: En 2024, la BCE a complété son évaluation du risque de taux d’intérêt
+        et du risque de spread de crédit dans le portefeuille bancaire, ainsi que
+        du risque de liquidité, par le biais de ses campagnes d’inspection sur place.
+        34 établissements importants ont été inclus dans cette évaluation, sélectionné
+    - url: https://complyadvantage.com/fr/insights/commission-de-surveillance-du-secteur-financier-cssf/
+      titre: Qu'est-ce que la Commission de Surveillance du Secteur ...
+      extrait: '| Banques et établissements de crédit :   Banques commerciales.  Banques
+        d’investissement.  Caisses d’épargne.   Établissements d’investissement :    Courtiers.  Négociants.  Sociétés
+        de gestion:   .Organismes de placement collectif (OPC) :    Fonds d’investissement.  Fonds
+        communs de placement.  Fo'
+    - url: https://www.cssf.lu/fr/
+      titre: CSSF – La Commission de Surveillance du Secteur Financier est un ...
+      extrait: 'Chargement en cours...
+
+
+        ## À la une
+
+
+        Chargement en cours...
+
+
+        ### Publication des résultats de la revue thématique concernant les mesures
+        mises en œuvre par les gestionnaires de fonds d’investissement luxembourgeois
+        pour lutter contre le risque de financement de la prolifération (uniquement
+        en anglai'
+    - url: https://www.cssf.lu/fr/reporting-prudentiel-etablissements-de-credit/
+      titre: Reporting prudentiel des établissements de crédit - CSSF
+      extrait: La Commission de Surveillance du Secteur Financier est un établissement
+        public qui assure la surveillance des professionnels et des produits du secteur
+    - url: https://www.rtbf.be/article/explosion-des-inegalites-de-richesse-comment-les-pays-d-europe-taxent-la-fortune-et-avec-quel-resultat-11608773
+      titre: 'Explosion des inégalités de richesse : comment les pays d''Europe ...'
+      extrait: Depuis 2021, ce patrimoine est soumis à une taxe annuelle de 0,15%
+        sur les comptes-titres (un compte bancaire dédié à la détention et à la
+    - url: https://www.banque-france.fr/system/files/2025-07/ER-2024_Rapport.pdf
+      titre: '[PDF] L''épargne réglementée - Rapport annuel 2024 - Banque de France'
+      extrait: 'grâce aux flux et aux effets de valorisation. À un niveau plus détaillé,
+        les réallocations entre les diverses formes de dépôts bancaires ont fait un
+        peu évoluer leurs parts dans le patrimoine des ménages : les dépôts à vue
+        représentent 11,7 %, contre 12 % fin 2023, tandis que la part des comptes
+        à t'
+    - url: https://www.lafinancepourtous.com/decryptages/marches-financiers/acteurs-de-la-finance/comite-de-bale/ratio-de-solvabilite-bancaire/
+      titre: 'Ratio de solvabilité bancaire : le ratio de fonds propres'
+      extrait: 'Supposons qu’une banque ait le profil d’actifs suivant : 100 de prêts
+        à des États de l’OCDE, 40 de crédits immobiliers, et 30 d’autres crédits.
+        Les fonds propres minimum qu’elle doit détenir est de :
+
+
+        8 % \ (100 \ 0 % + 40 \ 50 % + 30 \ 100 %) = 8 % \ 50 = 4
+
+
+        Dans ces 4 de fonds propres, au moins 2 '
+    - url: https://e-immobilier.credit-agricole.fr/conseils/marche/le-patrimoine-moyen-dun-menage-francais-est-de-248000-euros
+      titre: Patrimoine moyen des Français en 2025 - Crédit Agricole e-immobilier
+      extrait: "10 % des ménages détiennent plus de 50 % du patrimoine total en France.\n\
+        \ À l’inverse, la moitié des ménages les moins bien dotés ne possèdent que\
+        \ 8 % du patrimoine national.\n L’écart entre le patrimoine médian (≈ 185\
+        \ 000 €) et moyen (≈ 450 000 €) traduit cette concentration.\n\nBon à savoir\
+        \ :\n\nLe patr"
+    - url: https://www.economie.gouv.fr/facileco/banque-est-regulee
+      titre: La banque est régulée | Ministère de l'Économie des Finances et de ...
+      extrait: 'Un ratio appelé ratio Ble I a été défini dès 1988 visant à couvrir
+        les risques de crédit : il prévoit que les fonds propres de chaque banque
+        doivent représenter un pourcentage minimum de 8 % du montant des crédits distribués,
+        ceux-ci étant pondérés par leur caractère plus ou moins risqué. Une réform'
+    date_etablissement: '2025-11-20'
+    regles_identifiees: A determiner apres analyse manuelle des sources
+  allocation_dynamique:
+    description: Allocation d'actifs pour profil dynamique
+    sources:
+    - url: https://avenuedesinvestisseurs.fr/allocation-patrimoniale-repartition-allocation-ideale-actifs/
+      titre: 'Allocation patrimoniale : répartition/allocation idéale des ...'
+      extrait: "Répondre\n\n    - Chris\n\n      Merci pour votre confirmation \U0001F642\
+        \n\n      Répondre\n Sébastien\n\n  Bonjour Nicolas,  \n   Un CGP m’affirme\
+        \ que leurs clients tournent à environ 10% de rendement par an sur l’ensemble\
+        \ de leur patrimoine. Réaliste ou fallacieux, selon vous ?\n\n  Répondre\n\
+        \n  + Nicolas Auteur de l’"
+    - url: https://www.vie-publique.fr/files/rapport/pdf/024000622.pdf
+      titre: '[PDF] La place des actions dans le patrimoine des ménages - Vie publique'
+      extrait: 'Graphique 4 Part des actions dans le patrimoine financier des ménages
+        0 % 10 % 20 % 30 % 40 % 50 % 60 % 1977 1978 1979 1980 1981 1982 1983 1984
+        1985 1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999
+        2000 2001 2002  France États-Unis Royaume-Uni Allemagne Espagne Italie Source
+        : c'
+    - url: https://www.wealthcome.fr/blog/capacite-dacquisition-un-indicateur-cle-pour-piloter-la-strategie-dinvestissement-en-gestion-patrimoniale
+      titre: 'Capacité d''acquisition : Un indicateur clé pour piloter la stratégie
+        d ...'
+      extrait: Pour un CGP, elle ne se limite pas à un calcul de solvabilité. C'est
+        une mesure opérationnelle, dynamique et documentée, qui relie les flux
+    - url: https://prosper-conseil.fr/placements/comment-investir-en-bourse/
+      titre: Comment investir en bourse et maximiser ses gains ? Nos ...
+      extrait: En faisant le choix d'un conseiller en gestion de patrimoine (CGP)
+        indépendant, vous bénéficiez d'une allocation patrimoniale sur mesure, qui
+    - url: https://cirano.qc.ca/files/publications/2017MO-04.pdf
+      titre: '[PDF] MÉTHODES AVANCÉES D''ÉVALUATION D''INVESTISSEMENTS ...'
+      extrait: 1.29 1.29 1.29 Importation (TWh) 3.01 3.01 3.01 3.01 3.02 Production
+        à gaz (TWh) 1.62 1.62 1.61 1.62 1.61 Profit total (M$) 2 931.90 2 930.50 2
+        928.50 2 931.00 2 930.70 0.15 Exportation (TWh) 1.28 1.28 1.28 1.28 1.28 Importation
+        (TWh) 3.03 3.03 3.03 3.04 3.03 Production à gaz (TWh) 1.62 1.61 1.61 1.
+    - url: https://www.cibcassetmanagement.com/email/assets/documents/pdfs/PortfolioConstruction_RoleofStrategicAssetAllocation_FR.pdf
+      titre: '[PDF] Le rôle de la répartition stratégique de l''actif'
+      extrait: de portefeuille​​ La répartition stratégique de l'actif repose sur
+        l'idée qu'une vaste diversification améliore le profil risque-rendement d'un
+        portefeuille, c'
+    - url: https://info.empire.ca/asset-allocation-strategies-fr
+      titre: Stratégie de répartition de l'actif de l'Empire Vie
+      extrait: 'La répartition de l’actif est une stratégie de placement ayant pour
+        but d’offrir un équilibre entre le risque et la croissance en offrant une
+        structure à votre portefeuille de placements qui est établie selon vos objectifs,
+        votre tolérance au risque et votre horizon temporel.
+
+
+        Fonds de repartition d'
+    - url: https://www.gestion-patrimoine.finance/investissement/actualite/investissement-exemples-de-portefeuilles-en-fonction-de-votre-profil-de-risque/
+      titre: Exemple de portefeuilles en fonction de votre profil de risque
+      extrait: 'Même dans un portefeuille dynamique, il est judicieux d’avoir une
+        partie fonds euros. Eh oui, celle-ci permettra de pondérer le portefeuille
+        en fonction de la conjoncture financière.
+
+
+        Dans tous les cas,une stratégie doit être pensée pour chaque investisseur.
+        En effet, le sur-mesure est réellement pr'
+    - url: https://dynamic.ca/content/dam/docs/marketing/brochures/investing-strategies/20DYN051_DF_ActiveManagement_Inv_FR.pdf
+      titre: 'Gestion active : plus avantageuse pour votre portefeuille'
+      extrait: 'Logo : Fonds Dynamique. Investissez dans les bons conseils Gestion
+        active : plus avantageuse pour votre portefeuille Vous entendez probablement
+        beaucoup de messages différents en ce qui concerne la valeur de vos placements.
+        Les frais et les coûts soulèvent souvent des questions, et vous vous demande'
+    - url: https://privatebank.jpmorgan.com/eur/fr/insights/markets-and-investing/5-key-strategies-to-fortify-portfolios
+      titre: 5 stratégies clés pour renforcer les portefeuilles
+      extrait: — · Les produits structurés peuvent être utilisés pour investir et
+        rester investi · — · Les placements alternatifs présentent des rendements
+        supérieurs à ceux de
+    date_etablissement: '2025-11-20'
+    regles_identifiees: A determiner apres analyse manuelle des sources
+  allocation_equilibre:
+    description: Allocation d'actifs pour profil equilibre
+    sources:
+    - url: https://www.patrimoine24.com/images/n3d/files/PRCG_-_France_Barometer_Sept_2018_FINAL.pdf
+      titre: '[PDF] Le Baromètre des conseillers financiers - PATRIMOINE24'
+      extrait: L'allocation aux Actions se situe à 27% pour les portefeuilles « Équilibré
+        » des CGP, tandis qu'elle s'élève à 29% en Espagne et même 55% au
+    - url: https://avenuedesinvestisseurs.fr/definir-son-profil-d-investisseur/
+      titre: 'Définir son profil d''investisseur : ce qu''il faut savoir'
+      extrait: Et un profil équilibré peut placer 50 % en fonds euro et 50 % en fonds
+        actions. Avec une telle allocation, l'épargnant s'expose aux 2
+    - url: https://avenuedesinvestisseurs.fr/allocation-patrimoniale-repartition-allocation-ideale-actifs/
+      titre: 'Allocation patrimoniale : répartition/allocation idéale des actifs'
+      extrait: "Répondre\n\n    - Chris\n\n      Merci pour votre confirmation \U0001F642\
+        \n\n      Répondre\n Sébastien\n\n  Bonjour Nicolas,  \n   Un CGP m’affirme\
+        \ que leurs clients tournent à environ 10% de rendement par an sur l’ensemble\
+        \ de leur patrimoine. Réaliste ou fallacieux, selon vous ?\n\n  Répondre\n\
+        \n  + Nicolas Auteur de l’"
+    - url: https://www.gestion-patrimoine.finance/investissement/actualite/investissement-exemples-de-portefeuilles-en-fonction-de-votre-profil-de-risque/
+      titre: Exemple de portefeuilles en fonction de votre profil de risque
+      extrait: "### | Exemples de portefeuille\n\nPour un investisseur au profil prudent,\
+        \ l’allocation d’actifs pourrait ressembler à cela :\n\n 50 % de fonds euros\
+        \ ;\n 25 % d’OPC obligations ;\n 20 % de parts de SCPI ;\n 5 % d’OPC actions\n\
+        \nPour un investisseur au profil équilibré, l’allocation d’actifs pourrait\
+        \ ressemble"
+    - url: https://fortunyconseil.fr/blog/profil-investisseur-prudent-equilibre-dynamique/
+      titre: 'Profil investisseur : prudent, équilibré, dynamique, quel est ...'
+      extrait: Pour autant, ce profil investisseur n’interdit pas de consacrer une
+        partie de son allocation d’actifs à des placements sans garantie. Il s’agit
+        alors d’une poche limitée de l’ordre de 15 à 20 % de l’épargne, qui peut être
+        placée dans l’immobilier ou les actions. Cette poche de diversification peut
+        c
+    - url: https://www.cronosfinance.ch/wp-content/uploads/2020/10/2020_02_20_CRONOS_ETUDE_Rim_fevrier_2020_VF_WEB_Page-1.pdf
+      titre: '[PDF] Rééquilibrage de Portefeuille : Théorie, Simulations, et Données
+        ...'
+      extrait: L'objectif du rééquilibrage est de maintenir la répartition d'actif
+        cible et, par conséquent, de maintenir les caractéristiques de risque du portefeuille
+        en
+    - url: https://www.bnc.ca/particuliers/epargne-placements/profil-investisseur/equilibre.html
+      titre: Investissement portefeuille équilibré - Banque Nationale
+      extrait: Exemples de répartition ; Liquidités et court terme, Actions ; Minimale,
+        0 %, 50 % ; Cible, 0 %, 60 % ; Maximale, 10 %, 70 %
+    - url: https://www.vanguard.ca/fr/product/investment-capabilities/asset-allocation
+      titre: Solutions de répartition d'actifs de Vanguard
+      extrait: Nos solutions de répartition d'actifs font l'objet d'une surveillance
+        active et d'un rééquilibrage efficace, vous gagnez ainsi du temps et réduisez
+        les efforts
+    - url: https://www.cfaquebec.org/content/uploads/2019/10/CFA_FeuilletAdvisor-3F_FR_QC.pdf
+      titre: '[PDF] LES MANIÈRES DE RÉÉQUILIBRER UN PORTEFEUILLE'
+      extrait: Le rééquilibrage est nécessaire afin de concrétiser les avantages de
+        la diversification. Si les portefeuilles ne sont pas rééquilibrés, la répartition
+        dérivera.
+    - url: https://www.gerezmieuxvotreargent.ca/chemin-dapprentissage/votre-strategie-dinvestissement/determiner-la-composition-de-votre-portefeuille-dactifs-en-tant-quinvestisseur/
+      titre: Déterminer la composition de votre portefeuille d'actifs en tant qu ...
+      extrait: 'Pour tout investisseur, une bonne composition du portefeuille d''actifs
+        devrait : fournir le niveau de croissance dont vous avez besoin pour'
+    date_etablissement: '2025-11-20'
+    regles_identifiees: A determiner apres analyse manuelle des sources
+  allocation_prudent:
+    description: Allocation d'actifs pour profil prudent
+    sources:
+    - url: https://avenuedesinvestisseurs.fr/allocation-patrimoniale-repartition-allocation-ideale-actifs/
+      titre: 'Allocation patrimoniale : répartition/allocation idéale des actifs'
+      extrait: "Répondre\n\n    - Chris\n\n      Merci pour votre confirmation \U0001F642\
+        \n\n      Répondre\n Sébastien\n\n  Bonjour Nicolas,  \n   Un CGP m’affirme\
+        \ que leurs clients tournent à environ 10% de rendement par an sur l’ensemble\
+        \ de leur patrimoine. Réaliste ou fallacieux, selon vous ?\n\n  Répondre\n\
+        \n  + Nicolas Auteur de l’"
+    - url: https://fortunyconseil.fr/blog/profil-investisseur-prudent-equilibre-dynamique/
+      titre: 'Profil investisseur : prudent, équilibré, dynamique, quel est le vôtre
+        ?'
+      extrait: Pour autant, ce profil investisseur n’interdit pas de consacrer une
+        partie de son allocation d’actifs à des placements sans garantie. Il s’agit
+        alors d’une poche limitée de l’ordre de 15 à 20 % de l’épargne, qui peut être
+        placée dans l’immobilier ou les actions. Cette poche de diversification peut
+        c
+    - url: https://www.amf-france.org/fr/actualites-publications/actualites/utilisation-de-la-denomination-prudent-dans-la-gestion-collective-ou-la-gestion-sous-mandat-lamf-met
+      titre: Utilisation de la dénomination « prudent » dans la gestion collective
+        ...
+      extrait: L'utilisation du terme « prudent » est réservée aux portefeuilles qui
+        ne sont pas exposés à plus de 30% dans des actifs risqués, conformément à
+    - url: https://cgpp.fr/accueil/nos-obligations/questionnaire-de-profil-de-risques
+      titre: QUESTIONNAIRE DE PROFIL DE RISQUES
+      extrait: 'Profil Prudent. Allocation d''actifs. Pondération maximale. —Souhait
+        : sécurisation de vos investissements avec une faible prise de risques en
+        vue d''une'
+    - url: https://avenuedesinvestisseurs.fr/quel-conseiller-pour-quel-patrimoine/
+      titre: 'Choisir un conseiller en gestion de patrimoine en 2025 : les points
+        à ...'
+      extrait: "1/ Vous pouvez passer par les services d’un bon (important, en termes\
+        \ de compétence et d’objectivité) CGP pour le conseil :  \n         – conseil\
+        \ en allocation patrimoniale (x % fonds euro, y % actions, z % immobilier…à\
+        \ tenir dans le temps sauf grand changement de situation),  \n         – conseil\
+        \ jur"
+    - url: https://www.euodia.fr/blog/diversification-patrimoniale-strategies-allocation-actifs/
+      titre: 'Diversification patrimoniale : allocation d''actifs 2025 - Euodia Finance'
+      extrait: 'Cas n°2 : Michel et Françoise, 58 ans, 800 000€ de patrimoine financier,
+        retraite dans 7 ans. Allocation prudente : 50% fonds euros et obligations
+        (400 000€), 30% SCPI à capital variable pour liquidité (240 000€), 15% actions
+        défensives européennes (120 000€), 5% or physique protection (40 000€). Re'
+    - url: https://www.bnc.ca/particuliers/epargne-placements/profil-investisseur/prudent.html
+      titre: Profil d'investisseur prudent - Banque Nationale
+      extrait: Exemples de répartition ; Liquidités et court terme, Actions ; Minimale,
+        0 %, 10 % ; Cible, 0 %, 20 % ; Maximale, 10 %, 30 %
+    - url: https://www.vanguard.ca/fr/product/etf/asset-allocation/9577/vanguard-conservative-etf-portfolio
+      titre: (VCNS) Portefeuille FNB prudent Vanguard
+      extrait: La répartition d'actifs du portefeuille peut être reconstituée et rééquilibrée
+        à l'occasion au gré du sous-conseiller. Les portefeuilles des fonds sous-jacents
+    - url: https://www.cibcassetmanagement.com/email/assets/documents/pdfs/PortfolioConstruction_RoleofStrategicAssetAllocation_FR.pdf
+      titre: '[PDF] Le rôle de la répartition stratégique de l''actif'
+      extrait: La répartition stratégique de l'actif repose sur l'idée qu'une vaste
+        diversification améliore le profil risque-rendement d'un portefeuille, c'est-à-dire
+        qu'en
+    - url: https://privatebank.jpmorgan.com/eur/fr/insights/markets-and-investing/5-key-strategies-to-fortify-portfolios
+      titre: 5 stratégies clés pour renforcer les portefeuilles
+      extrait: 'des actions américaines à 1,4 %. Les classes d''actifs sont codées
+        par couleur : actions en vert, revenu fixe en orange et alternatives en bleu.
+        [...] Le graphique à barres affiche les rendements d''investissement de différentes
+        classes d''actifs. Le prêt direct est en tête avec un rendement de 12,2 %,'
+    date_etablissement: '2025-11-20'
+    regles_identifiees: A determiner apres analyse manuelle des sources
+  fonds_urgence:
+    description: Regles pour fonds d'urgence et liquidites
+    sources:
+    - url: https://noelse.com/fonds-durgence-dormez-enfin-sans-stress-financier/
+      titre: 'Fonds d''urgence : dormez enfin sans stress financier - Noelse'
+      extrait: 'Comment déterminer le montant idéal pour votre fonds d''urgence et
+        épargne de sécurité ?
+
+
+        La première question qui se pose concerne le montant à atteindre pour constituer
+        une épargne sécurité financière efficace. La règle traditionnelle recommande
+        entre 3 et 6 mois de dépenses essentielles pour votre'
+    - url: https://www.desjardins.com/fr/conseils/fonds-urgence-prevoir-imprevus.html
+      titre: 'Fonds d''urgence : prévoir les imprévus - Desjardins.com'
+      extrait: 'Un fonds d’urgence devrait couvrir de 3 à 6 mois de dépenses fixes
+        mensuelles. Cela inclut le loyer ou l’hypothèque, l’épicerie, les télécommunications
+        et les engagements financiers. Demandez-vous simplement : « Si mes revenus
+        étaient coupés de la moitié, de combien d’argent aurais-je besoin pour pa'
+    - url: https://www.scotiabank.com/ca/fr/particuliers/conseils-plus/articles-de-fonds/posts.fonds-de-prevoyance.html
+      titre: Votre guide pour constituer un fonds d'urgence | Posts
+      extrait: "Un fonds d’urgence vous permet de mettre de l’argent de côté pour\
+        \ parer aux dépenses imprévues ou aux besoins financiers urgents.\n Vous devriez\
+        \ mettre de côté l’équivalent de trois à six mois de frais de subsistance\
+        \ dans votre fonds d’urgence.\n Ces fonds doivent être conservés séparément\
+        \ sur un comp"
+    - url: https://www.bnc.ca/particuliers/conseils/impots-revenus/fonds-urgence.html
+      titre: Comment créer un fonds d'urgence? - Banque Nationale
+      extrait: '## 2. Combien mettre dans mon fonds d’urgence?
+
+
+        Ça, c’est LA question! Il n’y a pas de montant fixe pour un fonds d’urgence.
+        Certains parlent de trois à six mois de salaire. D’autres disent de trois
+        à six mois de dépenses. Voici la vraie question à vous poser : si vous perdez
+        votre emploi, combien d'
+    - url: https://www.canada.ca/fr/agence-consommation-matiere-financiere/services/epargnes-investissements/etablir-fonds-durgence.html
+      titre: Établir un fonds d'urgence - Canada.ca
+      extrait: 'Mieux vaut débuter avec un petit montant pour ne pas vous décourager.
+
+
+        Commencez par déterminer combien vous pouvez mettre de côté chaque semaine.
+        Que ce soit 50 $, 20 $, 5 $ ou quelques pièces de monnaie, l’important est
+        de commencer maintenant.
+
+
+        Idéalement, vous devriez tenter  d’épargner l’équiva'
+    - url: https://www.mesquestionsdargent.fr/epargne-et-placements/epargne-de-precaution
+      titre: 'Une épargne de précaution : pourquoi et comment faire'
+      extrait: 'Bien qu’il soit difficile d’évaluer les cas particuliers, il est admis
+        que le montant de l’épargne de précaution corresponde à l’équivalent de 2
+        à 6 mois de revenus et plus généralement à 3 mois.
+
+
+        Ce montant peut être déterminé selon une autre méthode qui consiste à compter
+        non pas en revenus mais e'
+    - url: https://plenit-finances.fr/gestion-de-patrimoine-a-partir-de-combien/
+      titre: Conseiller en gestion de patrimoine (CGP), à partir de quel ...
+      extrait: '### Pour un patrimoine entre 50000€ et 150000€
+
+
+        À ce niveau d''épargne, votre entrée en relation avec un conseiller indépendant
+        (CGPI) débouche en règle générale sur des prestations fondamentales mais néanmoins
+        précieuses: [...] Vous ne disposez pas encore des 50000 à 100000euros habituellement
+        requi'
+    - url: https://www.mozartprestigepatrimoine.fr/ressources/salaire-cgp/
+      titre: 'Salaire CGP : combien pouvez-vous gagner en 2025 ?'
+      extrait: 'Un conseiller en gestion de patrimoine (CGP) démarre sa carrière avec
+        une base attractive de 34 000 € bruts annuels. Cette rémunération se compose
+        généralement d’un salaire de base ou « salaire fixe » mensuel de 2 500 € bruts,
+        complété par une partie variable liée aux objectifs commerciaux.
+
+
+        Les ban'
+    - url: https://avenuedesinvestisseurs.fr/quel-conseiller-pour-quel-patrimoine/
+      titre: 'Choisir un conseiller en gestion de patrimoine en 2025 : les points
+        à ...'
+      extrait: 'On peut bien sûr se passer d’un CGP même avec x M€ de patrimoine,
+        mais le CGP peut apporter sa valeur ajoutée à de multiples occasions (même
+        avec peu de patrimoine) : personnalisation du régime matrimonial, optimisation
+        du statut et des revenus de l’entrepreneur, optimisation de l’épargne salariale,'
+    - url: https://gestiondepatrimoine.com/blog/cout-d-un-cgp.html
+      titre: Quel est le coût d'un conseiller en gestion de patrimoine en 2025 ?
+      extrait: 'Le comparatif avant/après et les projections des préconisations :
+        il s’agit de la conclusion du bilan dans lequel nous mettons en évidence l’intérêt
+        des solutions proposées par rapport à votre situation initiale. C’est là que
+        votre conviction doit être au maximum pour valider l’intérêt de travailler'
+    date_etablissement: '2025-11-20'
+    regles_identifiees: A determiner apres analyse manuelle des sources
