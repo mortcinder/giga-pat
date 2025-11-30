@@ -267,7 +267,38 @@
         },
         "montant": { "type": "number", "minimum": 0 },
         "montant_eur_equivalent": { "type": "number", "minimum": 0 },
-        "metadata": { "type": "object", "additionalProperties": true }
+        "metadata": {
+          "type": "object",
+          "description": "Métadonnées optionnelles pour enrichir les données",
+          "properties": {
+            "juridiction": {
+              "type": "string",
+              "description": "Juridiction principale de l'établissement",
+              "examples": ["France", "Suisse", "Luxembourg", "Pays-Bas", "États-Unis"]
+            },
+            "juridiction_pays": {
+              "type": "string",
+              "description": "Pays ISO 3166",
+              "examples": ["France", "Suisse", "Luxembourg", "Pays-Bas", "États-Unis"]
+            },
+            "garantie_depots": {
+              "type": "string",
+              "description": "Garantie des dépôts applicable",
+              "examples": ["100000 EUR (FGDR)", "100000 CHF (esisuisse)", "N/A"]
+            },
+            "exposition_sapin_2": {
+              "type": "string",
+              "enum": ["OUI", "NON"],
+              "description": "Exposition à la loi Sapin 2 (France)"
+            },
+            "exposition_risque_france": {
+              "type": "string",
+              "enum": ["FAIBLE", "MOYENNE", "ELEVEE"],
+              "description": "Niveau d'exposition au risque France"
+            }
+          },
+          "additionalProperties": true
+        }
       },
       "additionalProperties": false
     },
@@ -335,7 +366,23 @@
         "montant_eur_equivalent": { "type": "number", "minimum": 0 },
         "source_file": { "type": "string", "pattern": "\\.(csv|pdf|json)$" },
         "parser_strategy": { "type": "string" },
-        "metadata": { "type": "object", "additionalProperties": true }
+        "metadata": {
+          "type": "object",
+          "description": "Métadonnées optionnelles pour enrichir les données crypto",
+          "properties": {
+            "juridiction": {
+              "type": "string",
+              "description": "Juridiction principale de la plateforme/custodian",
+              "examples": ["France", "États-Unis", "Suisse", "N/A (self-custody)"]
+            },
+            "juridiction_pays": {
+              "type": "string",
+              "description": "Pays ISO 3166 (N/A pour self-custody/DeFi)",
+              "examples": ["France", "États-Unis", "Suisse", "N/A"]
+            }
+          },
+          "additionalProperties": true
+        }
       },
       "additionalProperties": false
     },
@@ -368,7 +415,23 @@
           "pattern": "^[A-Z]{3}$",
           "default": "EUR"
         },
-        "metadata": { "type": "object", "additionalProperties": true }
+        "metadata": {
+          "type": "object",
+          "description": "Métadonnées optionnelles pour enrichir les données immobilières",
+          "properties": {
+            "juridiction": {
+              "type": "string",
+              "description": "Juridiction/pays où se situe le bien",
+              "examples": ["France", "Suisse", "Portugal", "Espagne"]
+            },
+            "juridiction_pays": {
+              "type": "string",
+              "description": "Pays ISO 3166",
+              "examples": ["France", "Suisse", "Portugal", "Espagne"]
+            }
+          },
+          "additionalProperties": true
+        }
       },
       "additionalProperties": false
     }

@@ -1,12 +1,30 @@
 # 💼 Patrimoine Analyzer
 
+![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.3-orange.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 **Générateur automatisé de rapports patrimoniaux professionnels**
 
-**Version 2.0** - Architecture manifest-driven avec parsers pluggables
+**Version 2.1.3** - Parser CrypCool v2026 avec déduction des frais
 
 Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés avec analyse approfondie, recherches web et évaluation des risques.
 
-## 🆕 Nouveautés v2.1 (Novembre 2025)
+## 🆕 Nouveautés v2.1.3 (Novembre 2025)
+
+### Parser CrypCool v2026 (v2.1.3) ⭐
+- ✅ **Format transactionnel** : Support du nouveau format CSV CrypCool (Timestamp, Operation type, Base amount, etc.)
+- ✅ **Déduction des frais** : Frais payés en crypto automatiquement déduits du solde
+- ✅ **Trades crypto-to-crypto** : Support complet (ex: BTC dépensé pour acheter VRO)
+- ✅ **Multi-crypto** : BTC, ETH, VRO et autres cryptos dans un seul fichier
+- ⚠️ **Note** : Valorisation ~2-3% inférieure à l'affichage CrypCool (frais réels déduits + prix CoinGecko)
+
+### Valorisation immobilière automatique (v2.1.2)
+- ✅ **Réévaluation dynamique** : Valeur des biens recalculée à CHAQUE génération de rapport
+- ✅ **Extraction web** : Prix/m² depuis Brave API avec regex optimisés
+- ✅ **Fallback intelligent** : Prix ville quand API indisponible (Nanterre: 5300€/m², Paris: 10500€/m²)
+- ✅ **Plus-value** : Calcul automatique d'appréciation depuis acquisition
+- ⚠️ **Breaking change** : `valeur_actuelle` NE DOIT PLUS être dans manifest.json
 
 ### Architecture homogène v2.1
 - ✅ **Custodian unifié** : `custodian` + `custodian_name` + `custody_type` pour tous les actifs
@@ -18,6 +36,7 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **Pattern matching** : `source_pattern: "Bitstack/[BIT] - *.csv"` détecte automatiquement
 - ✅ **Performance** : 80% plus rapide avec cache (MD5-based invalidation)
 - ✅ **Crypto API** : Conversion BTC→EUR automatique via CoinGecko (gratuit)
+- ✅ **Parser BoursoBank PER** : Gestion encodage Unicode propriétaire (Private Use Area)
 
 ### Base v2.0
 - ✅ **Manifest-driven** : `manifest.json` comme source de vérité unique
@@ -25,6 +44,96 @@ Transformez vos fichiers sources (CSV, PDF, JSON) en rapports HTML détaillés a
 - ✅ **Profil investisseur** : Défini dans manifest (dynamique/équilibré/prudent)
 - ✅ **Fallback automatique** : Robustesse accrue du parsing
 - ✅ **Migration v1→v2** : Script automatique `generate_manifest.py`
+
+---
+
+## ⚠️ Prérequis
+
+### Python 3.10 ou supérieur **OBLIGATOIRE**
+
+**⛔ Ce projet n'est PAS compatible avec Python 3.7, 3.8 ou 3.9**
+
+Le projet utilise des fonctionnalités modernes de Python qui ne sont disponibles qu'à partir de la version 3.10 :
+- Type hints avec syntaxe native (`dict[str, Any]` au lieu de `Dict[str, Any]`)
+- Méthodes de chaînes modernes (`removesuffix`, `removeprefix`)
+- Dépendances récentes incompatibles avec les anciennes versions
+
+**Vérifiez votre version Python :**
+
+```bash
+python --version
+# ou
+python3 --version
+```
+
+**Versions supportées :**
+- ✅ Python 3.10.x
+- ✅ Python 3.11.x
+- ✅ Python 3.12.x
+- ❌ Python 3.7 / 3.8 / 3.9 (incompatibles)
+
+**Si vous avez Python <3.10**, le script `main.py` affichera un message d'erreur clair avec des instructions d'installation.
+
+### Installation Python 3.10+
+
+<details>
+<summary>🪟 Windows</summary>
+
+1. Télécharger l'installateur depuis [python.org](https://www.python.org/downloads/)
+2. Lancer l'installateur
+3. **Important** : Cocher "Add Python to PATH"
+4. Vérifier : `python --version`
+
+</details>
+
+<details>
+<summary>🍎 macOS</summary>
+
+**Via Homebrew (recommandé) :**
+```bash
+brew install python@3.10
+```
+
+**Via pyenv (gestion multi-versions) :**
+```bash
+brew install pyenv
+pyenv install 3.10.0
+pyenv local 3.10.0
+```
+
+Vérifier : `python3 --version`
+
+</details>
+
+<details>
+<summary>🐧 Linux</summary>
+
+**Ubuntu/Debian :**
+```bash
+sudo apt update
+sudo apt install python3.10 python3.10-venv python3-pip
+```
+
+**Fedora/RHEL :**
+```bash
+sudo dnf install python3.10
+```
+
+**Arch Linux :**
+```bash
+sudo pacman -S python
+```
+
+Vérifier : `python3 --version`
+
+</details>
+
+### Dépendances Python
+
+Une fois Python 3.10+ installé :
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
@@ -112,6 +221,78 @@ Le `manifest.json` est le nouveau point d'entrée v2.0 qui définit :
 
 **Profils disponibles** : `dynamique`, `equilibre`, `prudent`, `default`
 
+## 🌍 Enrichir les juridictions des établissements
+
+### Comptes titres (PEA, CTO, AV, PER)
+
+Les juridictions des comptes parsés sont **enrichies automatiquement** depuis `config/etablissements_financiers.yaml`.
+
+Le fichier contient 40+ établissements pré-configurés (banques françaises, courtiers internationaux, plateformes crypto, etc.).
+
+**Aucune action requise** si votre établissement est dans la liste. Sinon, ajoutez-le :
+
+```json
+{
+  "etablissements": {
+    "votre_banque": {
+      "nom": "Votre Banque",
+      "juridiction_principale": "Luxembourg",
+      "pays": "Luxembourg",
+      "type": "Banque",
+      "garantie_depots": "100000 EUR (FGDL)",
+      "exposition_sapin_2": "NON",
+      "exposition_risque_france": "FAIBLE"
+    }
+  }
+}
+```
+
+### Actifs manuels (liquidités, obligations, crypto, métaux précieux, immobilier)
+
+Pour les actifs saisis manuellement dans `manifest.json`, ajoutez les métadonnées de juridiction :
+
+```json
+{
+  "patrimoine": {
+    "liquidites": [
+      {
+        "id": "ubs_depot_001",
+        "custodian": "ubs",
+        "custodian_name": "UBS Bank",
+        "custody_type": "institutional",
+        "type_compte": "Compte dépôt",
+        "currency": "CHF",
+        "montant": 50000,
+        "metadata": {
+          "juridiction": "Suisse",
+          "juridiction_pays": "Suisse",
+          "garantie_depots": "100000 CHF (esisuisse)",
+          "exposition_sapin_2": "NON",
+          "exposition_risque_france": "FAIBLE"
+        }
+      }
+    ],
+    "crypto": [
+      {
+        "id": "ledger_btc_001",
+        "custodian": "ledger",
+        "custodian_name": "Ledger (self-custody)",
+        "custody_type": "self_custody",
+        "type_actif": "BTC",
+        "currency": "EUR",
+        "montant": 5000,
+        "metadata": {
+          "juridiction": "N/A",
+          "juridiction_pays": "N/A"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Impact** : La juridiction alimente le score de diversification (40% du score) et les risques de concentration.
+
 ## 🏗️ Architecture v2.0
 
 ```
@@ -132,11 +313,20 @@ tools/parsers/
 ├── registry.py                 # Registry + fallback
 ├── bitstack/                   # v2.1: Parser Bitstack
 │   └── transaction_history.py
+├── boursobank/                 # v2.1.1: Parser BoursoBank
+│   └── per_v2025.py           # Parser PER (encodage propriétaire)
+├── crypcool/                   # v2.1.3: Parsers CrypCool
+│   ├── csv_transaction_aggregator_v2025.py  # Format colonnaire (legacy)
+│   └── csv_transaction_aggregator_v2026.py  # Format transactionnel + fees
 ├── credit_agricole/
 │   ├── pea_v2025.py           # Parser PEA CA format 2025
 │   └── av_v2_lignes.py        # Parser AV CA 2 lignes
 └── generic/
     └── csv_flexible.py         # Parser CSV générique
+
+tools/utils/
+├── risk_analyzer.py           # Analyse des risques (7 catégories)
+└── real_estate_valorizer.py   # v2.1.2: Valorisation immobilière
 ```
 
 **Avantages** :
@@ -245,6 +435,123 @@ cp tools/normalizer_v1_backup.py tools/normalizer.py
 
 # Tester
 python main.py
+```
+
+## 🔀 Workflow Git pour développement multi-instances
+
+Si vous développez sur plusieurs machines (Windows, macOS) ou avec Claude Code Web, suivez ce workflow pour éviter le chaos de branches.
+
+### Structure des branches
+
+```
+main        Production stable (tags: v2.0, v2.1, etc.)
+  ↓
+dev         Développement actif (toutes les instances travaillent ici)
+  ↓
+claude/[feature]-[ID]  Branches temporaires Claude Code Web (auto-supprimées après merge)
+```
+
+### Règles de base
+
+**Sur Claude Code Desktop (Windows/macOS)** :
+```bash
+# Toujours travailler sur dev
+git checkout dev
+git pull origin dev
+
+# Faire vos modifications
+# ...
+
+# Commit et push régulièrement
+git add .
+git commit -m "feat: description du changement"
+git push origin dev
+```
+
+**Sur Claude Code Web** :
+```bash
+# Claude Code Web crée automatiquement des branches avec ID
+# Format: claude/[description]-[ID]
+
+# 1. Après le travail de Claude, merger vers dev
+git checkout dev
+git pull origin dev
+git merge claude/[feature]-[ID]
+git push origin dev
+
+# 2. Supprimer la branche temporaire (local + remote)
+git branch -d claude/[feature]-[ID]
+git push origin --delete claude/[feature]-[ID]
+```
+
+**Release vers main** (uniquement quand version stable) :
+```bash
+# Merger dev → main
+git checkout main
+git pull origin main
+git merge dev
+git tag v2.2.0  # Ou version appropriée
+git push origin main --tags
+```
+
+### Commandes utiles
+
+```bash
+# Voir toutes les branches
+git branch -a
+
+# Nettoyer les branches mergées localement
+git branch --merged dev | grep -v "^\*\|main\|dev" | xargs git branch -d
+
+# Nettoyer les branches remote obsolètes
+git fetch --prune
+
+# Voir l'historique des branches
+git log --all --oneline --graph --decorate -10
+```
+
+### Synchronisation entre instances
+
+**Avant de commencer à travailler** :
+```bash
+git checkout dev
+git pull origin dev
+```
+
+**Après chaque session de travail** :
+```bash
+git add .
+git commit -m "description"
+git push origin dev
+```
+
+### En cas de conflit
+
+```bash
+# 1. Récupérer les derniers changements
+git pull origin dev
+
+# 2. Si conflit, résoudre manuellement
+# Éditer les fichiers marqués en conflit
+
+# 3. Marquer comme résolu
+git add .
+git commit -m "fix: resolve merge conflict"
+git push origin dev
+```
+
+### Nettoyage périodique
+
+**Mensuel ou après releases** :
+```bash
+# Lister toutes les branches remote
+git branch -r
+
+# Supprimer les branches claude/* obsolètes (déjà mergées)
+git push origin --delete claude/[branch-name]
+
+# Nettoyer les références locales
+git fetch --prune
 ```
 
 ## 📄 Licence

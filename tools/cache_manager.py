@@ -31,15 +31,15 @@ class CacheManager:
 
     def get_file_hash(self, file_path: str) -> str:
         """
-        Calcule le hash MD5 d'un fichier.
+        Calcule le hash SHA-256 d'un fichier pour vérification d'intégrité.
 
         Args:
             file_path: Chemin vers le fichier
 
         Returns:
-            Hash MD5 hexadécimal
+            Hash SHA-256 hexadécimal
         """
-        hasher = hashlib.md5()
+        hasher = hashlib.sha256()
         with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b''):
                 hasher.update(chunk)
@@ -163,12 +163,20 @@ class CacheManager:
         Détermine si une année doit être mise en cache.
 
         Règle: Toutes les années AVANT l'année courante sont cachées.
+        - Années passées (ex: 2022-2024): Cachées (données figées)
+        - Année courante (ex: 2025): Toujours recalculée (données évolutives)
+
+        Métadonnées du cache incluent:
+        - file_hash: Hash MD5 du fichier source (pour détection de modifications)
+        - cached_at: Timestamp ISO de création du cache
+        - year: Année fiscale concernée
+        - custodian: Établissement financier
 
         Args:
             year: Année à vérifier
 
         Returns:
-            True si l'année doit être cachée
+            True si l'année doit être cachée (year < année courante)
         """
         current_year = datetime.now().year
         return year < current_year
@@ -209,3 +217,50 @@ class CacheManager:
             'total_size_mb': round(total_size / (1024 * 1024), 2),
             'files': [f.name for f in cache_files]
         }
+
+    def enforce_cache_limit(self, max_size_mb: int = 100) -> None:
+        """
+        Nettoie le cache si la taille dépasse la limite.
+
+        Stratégie: Suppression des fichiers les plus anciens (LRU).
+
+        Args:
+            max_size_mb: Taille maximale du cache en Mo
+        """
+        if not self.cache_dir.exists():
+            return
+
+        # Calculer taille totale
+        total_size = 0
+        cache_files = []
+
+        for cache_file in self.cache_dir.glob("*.json"):
+            size = cache_file.stat().st_size
+            mtime = cache_file.stat().st_mtime
+            total_size += size
+            cache_files.append({
+                'path': cache_file,
+                'size': size,
+                'mtime': mtime
+            })
+
+        total_size_mb = total_size / (1024 * 1024)
+
+        if total_size_mb <= max_size_mb:
+            self.logger.info(f"Cache size: {total_size_mb:.2f} MB (under limit: {max_size_mb} MB)")
+            return
+
+        # Trier par date de modification (plus ancien en premier)
+        cache_files.sort(key=lambda x: x['mtime'])
+
+        # Supprimer les plus anciens jusqu'à passer sous la limite
+        removed_count = 0
+        for cache_file in cache_files:
+            if total_size_mb <= max_size_mb:
+                break
+
+            cache_file['path'].unlink()
+            total_size_mb -= cache_file['size'] / (1024 * 1024)
+            removed_count += 1
+
+        self.logger.info(f"Cache cleanup: removed {removed_count} files, new size: {total_size_mb:.2f} MB")

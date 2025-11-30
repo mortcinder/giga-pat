@@ -49,6 +49,10 @@ class WebResearcher:
         # API Brave Search endpoint
         self.api_url = "https://api.search.brave.com/res/v1/web/search"
 
+        # Session HTTP avec pooling de connexions
+        self.session = requests.Session()
+        self.session.verify = True  # SSL verification explicite
+
     def search(
         self, sujet: str, queries: List[str], context: str = ""
     ) -> List[Dict[str, Any]]:
@@ -171,11 +175,12 @@ class WebResearcher:
 
         try:
             self.logger.debug(f"Appel Brave API: {query}")
-            response = requests.get(
+            response = self.session.get(
                 self.api_url,
                 headers=headers,
                 params=params,
-                timeout=self.timeout
+                timeout=self.timeout,
+                verify=True  # SSL verification explicite
             )
 
             # Vérifier le code de réponse
@@ -197,7 +202,12 @@ class WebResearcher:
             self.logger.warning(f"Timeout API Brave pour: {query}")
             raise
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"Erreur requête Brave API: {e}")
+            # Sanitize error message - ne jamais exposer l'API key
+            error_msg = str(e)
+            if self.api_key and self.api_key in error_msg:
+                error_msg = error_msg.replace(self.api_key, "[REDACTED]")
+
+            self.logger.error(f"Erreur requête Brave API: {error_msg}")
             raise
         except Exception as e:
             self.logger.error(f"Erreur parsing réponse Brave: {e}")

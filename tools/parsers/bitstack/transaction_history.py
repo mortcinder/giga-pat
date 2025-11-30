@@ -3,17 +3,35 @@ Parser pour les fichiers de transaction Bitstack (CSV).
 
 Ce parser supporte:
 - Format CSV d'historique de transactions Bitstack
-- Calcul automatique du solde BTC (achats - retraits)
+- Calcul automatique du solde BTC (achats - retraits + dépôts)
 - Support multi-années avec système de cache
 
 Structure CSV:
 Type,Date,Fuseau horaire,Montant reçu,Monnaie ou jeton reçu,Montant envoyé,
 Monnaie ou jeton envoyé,Frais,Monnaie ou jeton des frais,Description,...
 
-Types de transactions:
-- Échange: Achat de BTC avec EUR
-- Retrait: Envoi de BTC vers wallet externe
-- Dépôt: Réception de BTC (cadeau, transfert)
+Types de transactions supportées:
+- Échange: Achat de BTC avec EUR (ajoute au solde)
+- Retrait: Envoi de BTC vers wallet externe (soustrait du solde)
+- Dépôt: Réception de BTC - cadeau/transfert (ajoute au solde)
+
+Format de sortie:
+{
+  "type_compte": "Crypto",
+  "positions": [{
+    "nom": "Bitcoin 2022",
+    "type": "BTC",
+    "quantite": 0.00062009,
+    "devise": "BTC",
+    "metadata": {
+      "year": "2022",
+      "transaction_count": 32
+    }
+  }]
+}
+
+Logique de calcul du solde:
+cumulative_btc = sum(purchases) - sum(withdrawals) + sum(deposits)
 
 Version: v2025
 Auteur: Claude Code
@@ -34,7 +52,10 @@ import logging
 class BitstackTransactionHistoryParser(BaseParser):
     """Parser pour fichiers CSV d'historique Bitstack."""
 
-    strategy_name = "bitstack.transaction_history.v2025"
+    @property
+    def strategy_name(self) -> str:
+        """Identifiant unique de la stratégie de parsing."""
+        return "bitstack.transaction_history.v2025"
 
     def __init__(self):
         super().__init__()
@@ -47,7 +68,7 @@ class BitstackTransactionHistoryParser(BaseParser):
         """Formats supportés par ce parser."""
         return ['csv']
 
-    def can_parse(self, file_path: str, metadata: Dict[str, Any]) -> bool:
+    def can_parse(self, file_path: str, metadata: Dict[str, Any]) -> float:
         """
         Vérifie si le fichier peut être parsé par ce parser.
 
@@ -55,12 +76,15 @@ class BitstackTransactionHistoryParser(BaseParser):
         - Fichier CSV
         - Pattern [BIT] - *.csv
         - Contient les colonnes attendues
+
+        Returns:
+            float: Score de confiance (0.0 = impossible, 1.0 = certain)
         """
         path = Path(file_path)
 
         # Vérification du pattern de nom
         if not path.name.startswith('[BIT]') or path.suffix.lower() != '.csv':
-            return False
+            return 0.0
 
         # Vérification des colonnes
         try:
@@ -68,10 +92,10 @@ class BitstackTransactionHistoryParser(BaseParser):
                 reader = csv.DictReader(f)
                 headers = reader.fieldnames or []
                 required = ['Type', 'Date', 'Montant reçu', 'Monnaie ou jeton reçu']
-                return all(col in headers for col in required)
+                return 1.0 if all(col in headers for col in required) else 0.0
         except Exception as e:
             self.logger.warning(f"Impossible de vérifier les colonnes: {e}")
-            return False
+            return 0.0
 
     def parse(self, file_path: str, metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -100,8 +124,9 @@ class BitstackTransactionHistoryParser(BaseParser):
 
             # Retourner un résumé du solde pour cette période
             position = {
-                'nom': f"Bitcoin {year}",
-                'type': 'BTC',
+                'nom': 'Bitcoin',  # Nom générique (pas par année)
+                'ticker': 'BTC',    # ✅ Ajout du ticker pour la conversion EUR
+                'type': 'Crypto',
                 'quantite': float(self.btc_balance),
                 'valeur_unitaire': 0,  # Sera enrichi par le normalizer avec prix actuel
                 'valeur_totale': 0,    # Sera calculé par le normalizer
@@ -170,7 +195,7 @@ class BitstackTransactionHistoryParser(BaseParser):
         except (InvalidOperation, ValueError):
             return Decimal('0')
 
-    def validate(self, parsed_data: Dict[str, Any]) -> bool:
+    def validate(self, parsed_data: Dict[str, Any]) -> List[str]:
         """
         Valide les données parsées.
 
@@ -178,28 +203,31 @@ class BitstackTransactionHistoryParser(BaseParser):
         - Structure correcte (dict avec 'positions')
         - Au moins une position
         - Solde BTC >= 0 (cohérence des transactions)
+
+        Returns:
+            List[str]: Liste des anomalies détectées (vide si tout est valide)
         """
+        anomalies = []
+
         if not parsed_data:
-            self.logger.error("Aucune donnée parsée")
-            return False
+            anomalies.append("Aucune donnée parsée")
+            return anomalies
 
         # Check for dict structure
         if not isinstance(parsed_data, dict):
-            self.logger.error(f"Format incorrect: attendu dict, obtenu {type(parsed_data)}")
-            return False
+            anomalies.append(f"Format incorrect: attendu dict, obtenu {type(parsed_data)}")
+            return anomalies
 
         positions = parsed_data.get('positions', [])
         if not positions:
-            self.logger.error("Aucune position trouvée")
-            return False
+            anomalies.append("Aucune position trouvée")
+            return anomalies
 
         if len(positions) != 1:
-            self.logger.error(f"Attendu 1 position résumée, obtenu {len(positions)}")
-            return False
+            anomalies.append(f"Attendu 1 position résumée, obtenu {len(positions)}")
 
         btc_qty = positions[0].get('quantite', 0)
         if btc_qty < 0:
-            self.logger.error(f"Solde BTC négatif: {btc_qty}")
-            return False
+            anomalies.append(f"Solde BTC négatif: {btc_qty}")
 
-        return True
+        return anomalies

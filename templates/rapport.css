@@ -1,16 +1,11 @@
 /* =====================================================
-   rapport.css — version optimisée (préserve le rendu existant)
-   - Organisation stricte des sections
-   - Élimination des doublons (notamment .stress)
-   - Unification des styles communs (big-num)
-   - Commentaires clairs sans verbiage excessif
+   rapport.css — version harmonisée (puces <li> alignées)
    ===================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 /* =====================================================
    1) Variables & fondations typographiques
    ===================================================== */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
 :root {
     /* Couleurs principales */
     --bg: #ffffff;
@@ -18,7 +13,7 @@
     --text-light: #475569;
     --text-alpha: rgba(51, 65, 85, 0.1);
     --muted: #64748b;
-    --blue: #0e1823;
+    --blue: #162846;
     --blue-dark: #070c14;
     --blue-light: #dde2f2;
     --gold: #b29965;
@@ -29,9 +24,11 @@
     --red: #b23a3a;
     --red-dark: #7a1e1e;
     --red-light: #f3d5d2;
+    --red-light-alpha: rgba(243, 227, 226, 1);
     --green: #477f50;
     --green-dark: #305c38;
     --green-light: #cfe3d2;
+    --green-light-alpha: rgba(214, 235, 217, 1);
     --slate: #5c6c88; /* Diversification - Bleu ardoise */
     --slate-dark: #3e4a60;
     --slate-light: #d8dee9;
@@ -44,7 +41,7 @@
     --silver: #a1aab5; /* Fiscalité - Argent bleuté */
     --silver-dark: #707781;
     --silver-light: #e8ebee;
-    --copper: #b46f5b; /* Croissance - Vert forêt */
+    --copper: #b46f5b; /* Croissance - Cuivre rosé */
     --copper-dark: #7e4a3a;
     --copper-light: #e6c1b4;
 
@@ -60,7 +57,8 @@
     --border-side-blue: 4px solid var(--blue);
     --border-side-red: 4px solid var(--red);
     --border-side-gray: 5px solid var(--gray-light);
-    --border-side-dashed: 1px dashed #e5e7eb;
+    --border-side-dashed-dark: 1px dashed var(--text-alpha);
+    --border-side-dashed-light: 1px dashed var(--gray-light);
     --shadow-card: 0 6px 18px rgba(16, 24, 40, 0.06);
     --shadow-cover: 0 10px 30px rgba(2, 6, 23, 0.18);
     --border-slate: 4px solid var(--slate);
@@ -114,6 +112,26 @@ body {
 }
 
 /* =====================================================
+   2.1) Base listes harmonisées
+   ===================================================== */
+ul {
+    margin: 6px 0 0 14px;
+    padding-left: 14px;
+    list-style: disc;
+    list-style-position: outside;
+}
+li {
+    font-size: var(--font-size-sm);
+    margin: 2px 0;
+}
+
+/* Exceptions / listes sans puces ou spécifiques seront surchargées plus bas :
+   - .toc ul
+   - .syn-note-list
+   - etc.
+*/
+
+/* =====================================================
    3) Impression / PDF
    ===================================================== */
 @page {
@@ -136,7 +154,7 @@ body {
 }
 
 /* =====================================================
-   4) Structure générale (titres, sommaire, tables, badges, alerts)
+   4) Structure générale (titres, sommaire, tables, badges, layouts)
    ===================================================== */
 
 /* Titres de section */
@@ -157,6 +175,13 @@ section h2::before {
     height: 70%;
     background: var(--gold);
     border-radius: 2px;
+}
+
+/* Sous-titres de chapitre */
+.subtitle {
+    margin: 8px 0 16px;
+    color: var(--text-light);
+    font-size: var(--font-size-sm);
 }
 
 /* Sommaire */
@@ -224,8 +249,10 @@ tbody tr:nth-child(even) {
     white-space: nowrap;
 }
 
-/* Badges */
-.badge {
+/* Badges : base + variantes */
+.badge,
+.concentration.badge,
+.optimization.badge {
     display: inline-block;
     padding: 5px 10px;
     border-radius: 999px;
@@ -236,10 +263,18 @@ tbody tr:nth-child(even) {
     color: var(--blue-dark);
     background: var(--blue-light);
 }
+
+/* États de sévérité */
+.concentration.badge.crit,
+.optimization.badge.crit,
 .badge.crit,
 .badge.high {
     background: var(--red-light);
     color: var(--red-dark);
+}
+.concentration.badge.crit,
+.optimization.badge.crit {
+    background: var(--red-light-alpha);
 }
 .badge.mid {
     background: var(--gold-light);
@@ -249,34 +284,48 @@ tbody tr:nth-child(even) {
     background: var(--green-light);
     color: var(--green-dark);
 }
+.concentration.badge.low,
+.optimization.badge.low {
+    background: var(--green-light-alpha);
+}
 .badge.neutral {
     background: var(--blue-light);
     color: var(--blue-dark);
 }
-table .badge {
-    padding: 3px 8px;
-} /* version compacte */
 
-/* Alertes simples */
-.alert {
-    padding: 12px;
-    border-left: var(--border-side-red);
-    background: var(--red-light);
-    border-radius: var(--border-radius);
-    margin: 12px 0;
+table .badge {
+    padding: 3px 8px; /* version compacte en tableau */
 }
 
-/* Titres unifiés des cartes */
-.card-title,
+/* Layouts */
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+/* Header de cartes */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+.alert h3,
+.marko h3,
+.methodology h3,
 .reco h3,
-.alert strong,
-.stress .scenario,
-.mk-card-current h3,
-.mk-card-optimal h3 {
+.risque h3,
+.stress .scenario {
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
-    color: var(--blue-dark);
     margin: var(--margin-h3);
+    color: var(--blue-dark);
+    font-weight: var(--font-weight-bold);
     line-height: 1.3;
     letter-spacing: 0.1px;
 }
@@ -386,47 +435,99 @@ table .badge {
     margin-top: 8px;
 }
 
-/* 5.3 Risques patrimoniaux */
-.risque {
+/* 5.3 Cartes : alertes, risques, reco, Markowitz, stress */
+.alert,
+.marko,
+.methodology,
+.reco,
+.risque,
+.stress {
     position: relative;
-    background: var(--red-light);
     border: var(--border-gray);
-    border-left: var(--border-side-red);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-card);
     padding: var(--padding-card);
     margin: 12px 0;
 }
-.risque h3 {
-    margin: var(--margin-h3);
-    color: var(--blue-dark);
-    font-weight: var(--font-weight-bold);
+
+/* Fond + bordure par type */
+.alert,
+.risque {
+    background: var(--red-light);
+    border-left: var(--border-side-red);
 }
+.marko,
+.reco,
+.stress {
+    background: var(--subtle);
+}
+.methodology,
+.reco {
+    border-left: var(--border-side-gray);
+}
+.stress {
+    border-left: var(--border-side-gold);
+}
+.stress.low {
+    border-left-color: var(--green);
+}
+.stress.mid {
+    border-left-color: var(--gold);
+}
+.stress.high {
+    border-left-color: var(--red);
+}
+.current {
+    border-left: var(--border-side-red);
+}
+.optimal {
+    border-left: var(--border-side-gold);
+}
+
+.alert p,
+.marko p,
+.reco p,
 .risque p {
     color: var(--text);
 }
+.alert p + p,
+.reco p + p,
 .risque p + p {
     margin-top: 8px;
-    border-top: var(--border-side-dashed);
+    border-top: var(--border-side-dashed-dark);
     padding-top: 8px;
 }
-.risque strong {
+
+.alert strong,
+.marko strong,
+.reco strong,
+.risque strong,
+.stress strong {
     color: var(--blue);
 }
-.risque details summary {
-    font-weight: var(--font-weight-semibold);
-    margin-top: 10px;
-    color: var(--blue-dark);
-}
-.risque details ul {
-    margin: 6px 0 0 14px;
-    padding: 0;
-    list-style: disc;
-    color: var(--text);
-}
-.risque details li {
+
+/* Listes dans les cartes (harmonisation) */
+.alert li,
+.risque li,
+.reco li,
+.stress li {
     font-size: var(--font-size-sm);
 }
+
+/* Markowitz : listes à puces custom (sans puce native) */
+.marko li {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+.marko li::before {
+    content: "•";
+    position: absolute;
+    left: -14px;
+    line-height: 1.4;
+}
+
+/* Liens sources dans les risques */
 .risque ul[data-field="sources_list"] a {
     font-weight: var(--font-weight-medium);
     color: var(--blue-dark);
@@ -438,79 +539,14 @@ table .badge {
 }
 
 /* 5.4 Recommandations */
-.stack {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-.reco {
-    position: relative;
-    background: var(--subtle);
-    border: var(--border-gray);
-    border-left: var(--border-side-gray);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-card);
-    padding: var(--padding-card);
-}
-.reco h3 {
-    margin: var(--margin-h3);
-    color: var(--blue-dark);
-}
-.reco p {
-    color: var(--text);
-}
-.reco p + p {
-    margin-top: 8px;
-    border-top: var(--border-side-dashed);
-    padding-top: 8px;
-}
-.stress strong,
-.reco strong {
-    color: var(--blue);
-}
-.markowitz-methodology small.muted,
+.methodology small.muted,
 .reco small.muted {
     font-size: var(--font-size-xs);
-    color: #6b7280;
+    color: var(--muted);
     font-style: italic;
 }
 
-/* 5.5 Tests de résistance */
-/* NOTE: Consolidation des styles .stress (suppression des doublons) */
-.stress-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-    max-width: 700px;
-    margin: 0 auto;
-}
-.stress {
-    position: relative;
-    background: var(--subtle);
-    border: var(--border-gray);
-    border-left: var(--border-side-gold);
-    border-radius: var(--border-radius);
-    padding: var(--padding-card);
-    box-shadow: var(--shadow-card);
-}
-.stress.low {
-    border-left-color: var(--green);
-}
-.stress.mid {
-    border-left-color: var(--gold);
-}
-.stress.high {
-    border-left-color: var(--red);
-}
-
-.stress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 6px;
-}
-
-/* Bloc harmonisé prix/% */
+/* 5.5 Tests de résistance : bloc impact / descriptif */
 .stress .impact {
     display: flex;
     align-items: baseline;
@@ -530,12 +566,13 @@ table .badge {
 }
 .stress p.description {
     margin-top: 8px;
-    border-top: var(--border-side-dashed);
+    border-top: var(--border-side-dashed-light);
     padding-top: 8px;
     color: var(--text);
     line-height: 1.45;
 }
-/* Compatibilité descendante (si anciens templates utilisent .value/.context/.details) */
+
+/* Compat desc. (anciens templates .value/.context/.details) */
 .stress .value {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
@@ -555,7 +592,7 @@ table .badge {
     margin-top: 8px;
 }
 
-/* 5.6 Markowitz / Synthèse */
+/* 5.6 Markowitz / Méthodo */
 .chart-wrap {
     max-width: 520px;
     margin: 16px auto;
@@ -568,91 +605,26 @@ table .badge {
     max-width: 90%;
     border-radius: var(--border-radius);
 }
-.markowitz-chart .chart-caption {
+.markowitz-chart .markowitz-chart-caption {
     margin-top: 8px;
     font-size: var(--font-size-sm);
     color: var(--muted);
     font-style: italic;
 }
 
-.markowitz-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-top: 16px;
-}
-.mk-card-current,
-.mk-card-optimal {
-    padding: var(--padding-card);
-    border: var(--border-gray);
-    border-radius: var(--border-radius);
-    border-left: var(--border-side-blue);
-    background: var(--subtle);
-    box-shadow: var(--shadow-card);
-}
-.mk-card-optimal {
-    border-left: var(--border-side-gold);
-}
-.mk-card li {
-    display: flex;
-    justify-content: space-between;
-    margin: 6px 0;
-    color: #334155;
-    font-size: var(--font-size-sm);
-    position: relative;
-}
-.mk-card-li::before {
-    content: "•";
-    position: absolute;
-    left: -14px;
-    color: var(--blue-dark);
-    font-weight: var(--font-weight-bold);
-    line-height: 1.4;
-}
-.markowitz-methodology {
-    margin-top: 40px;
-    background: var(--subtle);
-    border: var(--border-gray);
-    border-left: var(--border-side-gray);
-    border-radius: var(--border-radius);
-    padding: var(--padding-card);
-    box-shadow: var(--shadow-card);
-}
-.markowitz-methodology h3 {
-    font-size: var(--font-size-md);
-    color: var(--blue-dark);
-    margin-bottom: 16px;
-}
-.methodology-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-}
-.methodology-content h4 {
+/* Contenu en 2 colonnes (méthodo & limites) */
+.grid h4 {
     color: var(--blue);
     font-size: var(--font-size-md);
     margin-bottom: 10px;
     font-weight: var(--font-weight-bold);
 }
-.methodology-content ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.methodology-content li {
+.methodology .grid li {
     padding: 5px 0;
-    border-bottom: var(--border-side-dashed);
-    color: var(--text-light);
-    font-size: var(--font-size-sm);
+    border-bottom: var(--border-side-dashed-light);
 }
-.methodology-content li:last-child {
+.methodology .grid li:last-child {
     border-bottom: none;
-}
-.methodology-content .limits li::before {
-    content: "●";
-    color: var(--gold);
-    margin-right: 8px;
-    font-size: var(--font-size-xxs);
 }
 
 /* =====================================================
@@ -695,6 +667,7 @@ footer {
     box-shadow: var(--shadow-card);
 }
 
+/* Titre principal (dans le header du bloc synthèse) */
 .scores-unified-card > h3 {
     font-size: var(--font-size-md);
     color: var(--blue-dark);
@@ -721,19 +694,15 @@ footer {
 .score-section.diversification {
     border-left-color: var(--slate);
 }
-
 .score-section.resilience {
     border-left-color: var(--taupe);
 }
-
 .score-section.liquidite {
     border-left-color: var(--plum);
 }
-
 .score-section.fiscalite {
     border-left-color: var(--silver);
 }
-
 .score-section.croissance {
     border-left-color: var(--copper);
 }
@@ -745,51 +714,45 @@ footer {
     gap: 10px;
     margin-bottom: 10px;
 }
-
 .score-title strong {
     font-size: var(--font-size-md);
     color: var(--blue);
     font-weight: var(--font-weight-bold);
 }
 
+/* Grid des K/V et notes */
 .syn-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px 18px;
     margin-top: 8px;
 }
-
 .syn-kv {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 8px;
     align-items: baseline;
     font-size: var(--font-size-sm);
-    border-bottom: var(--border-side-dashed);
+    border-bottom: var(--border-side-dashed-light);
 }
-
 .syn-kv strong {
     color: var(--text-light);
 }
-
 .syn-note-list {
     list-style: none;
     padding: 0;
     margin: 12px 0 0 0;
 }
-
 .syn-note-list li {
     padding: 8px 0;
-    border-bottom: var(--border-side-dashed);
+    border-bottom: var(--border-side-dashed-light);
     color: var(--text-light);
     font-size: var(--font-size-sm);
     line-height: 1.6;
 }
-
 .syn-note-list li:last-child {
     border-bottom: none;
 }
-
 .syn-note-list strong {
     color: var(--blue-dark);
     font-weight: var(--font-weight-bold);
@@ -817,16 +780,13 @@ footer {
         max-width: 100%;
         margin: 16px 0;
     }
-    .markowitz-cards {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* =====================================================
-   Harmonisation des tableaux (sections 1 & 2)
+   8) Harmonisation des tableaux (sections 1 & 2)
    ===================================================== */
 
-/* Colonnes alignées et proportionnelles */
+/* Harmonisation colonnes 1 & 2 — tableaux sections 1 et 2 */
 #etablissements table th:nth-child(1),
 #actifs table th:nth-child(1) {
     width: 40%;
@@ -840,8 +800,8 @@ footer {
 
 /* Corps de tableau — cellules texte alignées à gauche */
 #etablissements table td:nth-child(1),
-#actifs table td:nth-child(1),
 #etablissements table td:nth-child(2),
+#actifs table td:nth-child(1),
 #actifs table td:nth-child(2) {
     text-align: left;
     vertical-align: middle;
@@ -855,49 +815,23 @@ footer {
     color: var(--blue-dark);
 }
 
-/* Uniformisation des espacements */
-#actifs table td,
-#etablissements table td {
-    padding: 10px 12px;
-}
-/* Harmonisation colonnes 1 & 2 — tableaux sections 1 et 2 */
-#etablissements table th:nth-child(1),
-#actifs table th:nth-child(1) {
-    width: 40%;
-    text-align: left;
-}
-#etablissements table th:nth-child(2),
-#actifs table th:nth-child(2) {
-    width: 25%;
-    text-align: left;
-}
-
-#etablissements table td:nth-child(1),
-#etablissements table td:nth-child(2),
-#actifs table td:nth-child(1),
-#actifs table td:nth-child(2) {
-    text-align: left;
-    vertical-align: middle;
-}
-
-/* Colonne 1 du tableau 2 en deux lignes, ligne 1 = style de référence (gras) */
+/* Colonne 1 du tableau 2 en deux lignes */
 #actifs table td:nth-child(1) .cell-primary {
     display: block;
-    font-weight: var(--font-weight-bold); /* comme <strong> du tableau 1 */
+    font-weight: var(--font-weight-bold);
     color: var(--blue-dark);
 }
 #actifs table td:nth-child(1) .cell-secondary {
     display: block;
     margin-top: 2px;
-    color: var(--muted); /* style actuel */
+    color: var(--muted);
     font-size: var(--font-size-sm);
     line-height: 1.5;
 }
 
-/* Structure deux niveaux pour colonne Écart benchmark (5ème colonne) */
+/* Colonne Écart benchmark (5ème colonne) en deux niveaux */
 #actifs table td:nth-child(5) .cell-primary {
     display: block;
-    /* Le badge reste inline, mais le span parent est en block pour forcer le retour à la ligne */
 }
 #actifs table td:nth-child(5) .cell-secondary {
     display: block;
@@ -907,7 +841,7 @@ footer {
     line-height: 1.5;
 }
 
-/* Optionnel : même pad pour les cellules */
+/* Padding homogène des cellules */
 #etablissements table td,
 #actifs table td {
     padding: 10px 12px;

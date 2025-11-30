@@ -71,8 +71,15 @@ class PatrimoineAnalyzer:
             # Note: active_profile sera déterminé dynamiquement dans analyze()
             # à partir des données d'entrée (v2.0: profil_risque du manifest)
 
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Erreur d'accès au fichier de configuration: {e}")
+            self._load_default_analysis_config()
+        except yaml.YAMLError as e:
+            self.logger.error(f"Erreur de parsing YAML dans la configuration: {e}")
+            self._load_default_analysis_config()
         except Exception as e:
-            self.logger.error(f"Erreur lors du chargement de la configuration: {e}")
+            self.logger.error(f"Erreur inattendue lors du chargement de la configuration: {e}")
+            self.logger.exception("Stack trace complète:")
             self._load_default_analysis_config()
 
     def _load_default_analysis_config(self):
@@ -392,12 +399,17 @@ class PatrimoineAnalyzer:
         Section 3.2.5.1 du PRD
         """
         total_financier = data["patrimoine"]["financier"]["total"]
-        total_global = (
-            total_financier +
-            data["patrimoine"].get("crypto", {}).get("total", 0) +
-            data["patrimoine"].get("metaux_precieux", {}).get("total", 0) +
-            data["patrimoine"].get("immobilier", {}).get("total", 0)
-        )
+        total_crypto = data["patrimoine"].get("crypto", {}).get("total", 0)
+        total_metaux = data["patrimoine"].get("metaux_precieux", {}).get("total", 0)
+        total_immobilier = data["patrimoine"].get("immobilier", {}).get("total", 0)
+
+        # Total mobilier = patrimoine financier + crypto + métaux (exclut immobilier)
+        # Utilisé pour "Répartition par établissements" (patrimoine financier/mobilier)
+        total_mobilier = total_financier + total_crypto + total_metaux
+
+        # Total global = tout le patrimoine (incluant immobilier)
+        # Utilisé pour "Classes d'actifs" et score de diversification
+        total_global = total_mobilier + total_immobilier
 
         repartition = {
             "par_etablissement": [],
@@ -406,9 +418,11 @@ class PatrimoineAnalyzer:
         }
 
         # Répartition par établissement (financier)
+        # Note: Pourcentages calculés sur patrimoine MOBILIER (financier + crypto + métaux)
+        # pour refléter la concentration au sein du patrimoine mobilier (hors immobilier)
         for etab in data["patrimoine"]["financier"]["etablissements"]:
-            if total_global > 0:
-                pct = (etab["total"] / total_global) * 100
+            if total_mobilier > 0:
+                pct = (etab["total"] / total_mobilier) * 100
 
                 # Déterminer niveau de risque concentration
                 seuils = self.config.get("analyzer", {}).get("risk_thresholds", {})
@@ -434,10 +448,11 @@ class PatrimoineAnalyzer:
                 })
 
         # Ajouter plateformes crypto
+        # Note: Pourcentages calculés sur patrimoine MOBILIER (financier + crypto + métaux)
         justifications = self.analysis_config.get("risk_justifications", {})
         for plat in data["patrimoine"].get("crypto", {}).get("plateformes", []):
-            if total_global > 0 and plat.get("total", 0) > 0:
-                pct = (plat["total"] / total_global) * 100
+            if total_mobilier > 0 and plat.get("total", 0) > 0:
+                pct = (plat["total"] / total_mobilier) * 100
 
                 repartition["par_etablissement"].append({
                     "nom": plat["nom"],
@@ -449,9 +464,10 @@ class PatrimoineAnalyzer:
                 })
 
         # Ajouter Veracash (métaux précieux)
+        # Note: Pourcentages calculés sur patrimoine MOBILIER (financier + crypto + métaux)
         metaux = data["patrimoine"].get("metaux_precieux", {})
-        if total_global > 0 and metaux.get("total", 0) > 0:
-            pct = (metaux["total"] / total_global) * 100
+        if total_mobilier > 0 and metaux.get("total", 0) > 0:
+            pct = (metaux["total"] / total_mobilier) * 100
 
             repartition["par_etablissement"].append({
                 "nom": metaux.get("plateforme", "Métaux précieux"),
@@ -652,6 +668,8 @@ class PatrimoineAnalyzer:
         repartition["par_classe_actifs"] = actifs_detailles
 
         # Concentration juridictionnelle
+        # Note: Pourcentages calculés sur patrimoine FINANCIER uniquement
+        # car les juridictions sont liées aux établissements financiers
         juridictions = {}
         for etab in data["patrimoine"]["financier"]["etablissements"]:
             jur = etab.get("juridiction", "Inconnue")
@@ -661,8 +679,8 @@ class PatrimoineAnalyzer:
         repartition["par_juridiction"] = []
 
         for jur, montant in juridictions.items():
-            if total_global > 0:
-                pct = (montant / total_global) * 100
+            if total_financier > 0:
+                pct = (montant / total_financier) * 100
                 seuils = self.config.get("analyzer", {}).get("risk_thresholds", {})
 
                 if pct >= seuils.get("concentration_juridiction_critique", 80):
@@ -1188,7 +1206,7 @@ class PatrimoineAnalyzer:
             interpretation = ""
             if optimal_range[0] <= pct_actions <= optimal_range[1]:
                 score = 10
-                interpretation = f"Exposition optimale pour votre profil ({optimal_range[0]}-{optimal_range[1]}%)"
+                interpretation = f"Exposition optimale pour le profil {self.active_profile} ({optimal_range[0]}-{optimal_range[1]}%)"
             else:
                 # Vérifier si dans une plage "good"
                 in_good = any(r[0] <= pct_actions <= r[1] for r in good_ranges)
